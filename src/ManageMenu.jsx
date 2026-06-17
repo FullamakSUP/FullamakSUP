@@ -520,10 +520,11 @@ function ManageMenu() {
   // LOAD DATA - FIXED with better error handling
   // ============================================================
   useEffect(() => {
+    console.log('🔄 Initializing ManageMenu...')
     loadAllData()
     loadSpecialMenu()
     loadPromotions()
-    loadAvailableMenu() // <-- Ensure this is called
+    loadAvailableMenu() // <-- PASTIKAN INI ADA!
   }, [])
 
   useEffect(() => {
@@ -593,6 +594,7 @@ function ManageMenu() {
   // ============================================================
   async function loadAvailableMenu() {
     try {
+      console.log('🔄 Loading available menu items...')
       const { data, error } = await supabase
         .from('menu')
         .select('id, name, price, category, has_options')
@@ -605,6 +607,7 @@ function ManageMenu() {
       }
       
       console.log('✅ Available menu items loaded:', data?.length || 0, 'items')
+      console.log('📋 Sample items:', data?.slice(0, 3))
       setAvailableMenuItems(data || [])
     } catch (err) {
       console.error('❌ Error in loadAvailableMenu:', err)
@@ -3027,7 +3030,7 @@ function ManageMenu() {
           </div>
         )}
 
-        {/* ADD PROMOTION MODAL - FIXED with better item selection */}
+        {/* ADD PROMOTION MODAL - FIXED with debugging */}
         {showAddPromoModal && (
           <div style={modalOverlayStyle}>
             <div style={modalContentStyle}>
@@ -3084,20 +3087,28 @@ function ManageMenu() {
 
               {(promoFormData.type === 'set_menu' || promoFormData.type === 'bundle') && (
                 <>
+                  <div style={{ fontSize: '12px', color: textMuted, marginBottom: '8px' }}>
+                    {availableMenuItems.length > 0 
+                      ? `📋 ${availableMenuItems.length} items available. Hold Ctrl/Cmd to select multiple.` 
+                      : '⚠️ No items available. Please add menu items first.'}
+                  </div>
                   <select
                     multiple
                     value={promoFormData.selected_bundle_items}
                     onChange={(e) => {
                       const selected = Array.from(e.target.selectedOptions, option => parseInt(option.value))
+                      console.log('Selected items:', selected)
                       setPromoFormData({...promoFormData, selected_bundle_items: selected})
                     }}
-                    style={{...inputStyle, height: '100px'}}
+                    style={{...inputStyle, height: '120px'}}
                   >
                     {availableMenuItems.length === 0 ? (
-                      <option value="" disabled>No items available</option>
+                      <option value="" disabled>No items available - add menu items first</option>
                     ) : (
                       availableMenuItems.map(item => (
-                        <option key={item.id} value={item.id}>{item.name} (RM {item.price})</option>
+                        <option key={item.id} value={item.id}>
+                          {item.name} (RM {item.price})
+                        </option>
                       ))
                     )}
                   </select>
@@ -3144,7 +3155,7 @@ function ManageMenu() {
           </div>
         )}
 
-        {/* EDIT PROMOTION MODAL - FIXED with better item selection */}
+        {/* EDIT PROMOTION MODAL - FIXED with debugging */}
         {showEditPromoModal && selectedPromo && (
           <div style={modalOverlayStyle}>
             <div style={modalContentStyle}>
@@ -3201,20 +3212,28 @@ function ManageMenu() {
 
               {(promoFormData.type === 'set_menu' || promoFormData.type === 'bundle') && (
                 <>
+                  <div style={{ fontSize: '12px', color: textMuted, marginBottom: '8px' }}>
+                    {availableMenuItems.length > 0 
+                      ? `📋 ${availableMenuItems.length} items available. Hold Ctrl/Cmd to select multiple.` 
+                      : '⚠️ No items available. Please add menu items first.'}
+                  </div>
                   <select
                     multiple
                     value={promoFormData.selected_bundle_items}
                     onChange={(e) => {
                       const selected = Array.from(e.target.selectedOptions, option => parseInt(option.value))
+                      console.log('Selected items:', selected)
                       setPromoFormData({...promoFormData, selected_bundle_items: selected})
                     }}
-                    style={{...inputStyle, height: '100px'}}
+                    style={{...inputStyle, height: '120px'}}
                   >
                     {availableMenuItems.length === 0 ? (
-                      <option value="" disabled>No items available</option>
+                      <option value="" disabled>No items available - add menu items first</option>
                     ) : (
                       availableMenuItems.map(item => (
-                        <option key={item.id} value={item.id}>{item.name} (RM {item.price})</option>
+                        <option key={item.id} value={item.id}>
+                          {item.name} (RM {item.price})
+                        </option>
                       ))
                     )}
                   </select>
