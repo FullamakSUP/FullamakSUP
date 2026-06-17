@@ -517,14 +517,14 @@ function ManageMenu() {
   }
 
   // ============================================================
-  // LOAD DATA - FIXED with better error handling
+  // LOAD DATA
   // ============================================================
   useEffect(() => {
     console.log('🔄 Initializing ManageMenu...')
     loadAllData()
     loadSpecialMenu()
     loadPromotions()
-    loadAvailableMenu() // <-- PASTIKAN INI ADA!
+    loadAvailableMenu()
   }, [])
 
   useEffect(() => {
@@ -590,7 +590,7 @@ function ManageMenu() {
   }
 
   // ============================================================
-  // LOAD AVAILABLE MENU - FIXED with better error handling and logging
+  // LOAD AVAILABLE MENU
   // ============================================================
   async function loadAvailableMenu() {
     try {
@@ -3030,7 +3030,9 @@ function ManageMenu() {
           </div>
         )}
 
-        {/* ADD PROMOTION MODAL - FIXED with debugging */}
+        {/* ========================================================== */}
+        {/* ADD PROMOTION MODAL - FIXED with checkbox checklist for mobile */}
+        {/* ========================================================== */}
         {showAddPromoModal && (
           <div style={modalOverlayStyle}>
             <div style={modalContentStyle}>
@@ -3089,29 +3091,62 @@ function ManageMenu() {
                 <>
                   <div style={{ fontSize: '12px', color: textMuted, marginBottom: '8px' }}>
                     {availableMenuItems.length > 0 
-                      ? `📋 ${availableMenuItems.length} items available. Hold Ctrl/Cmd to select multiple.` 
+                      ? `📋 ${availableMenuItems.length} items available. Tap checkbox to select.` 
                       : '⚠️ No items available. Please add menu items first.'}
                   </div>
-                  <select
-                    multiple
-                    value={promoFormData.selected_bundle_items}
-                    onChange={(e) => {
-                      const selected = Array.from(e.target.selectedOptions, option => parseInt(option.value))
-                      console.log('Selected items:', selected)
-                      setPromoFormData({...promoFormData, selected_bundle_items: selected})
-                    }}
-                    style={{...inputStyle, height: '120px'}}
-                  >
+                  
+                  {/* CHECKBOX LIST - MOBILE FRIENDLY */}
+                  <div style={{ 
+                    maxHeight: '150px', 
+                    overflowY: 'auto', 
+                    border: `1px solid ${inputBorder}`, 
+                    borderRadius: '12px', 
+                    padding: '8px',
+                    background: inputBg,
+                    marginBottom: '12px'
+                  }}>
                     {availableMenuItems.length === 0 ? (
-                      <option value="" disabled>No items available - add menu items first</option>
+                      <div style={{ color: textMuted, padding: '8px', textAlign: 'center' }}>
+                        No items available - add menu items first
+                      </div>
                     ) : (
                       availableMenuItems.map(item => (
-                        <option key={item.id} value={item.id}>
-                          {item.name} (RM {item.price})
-                        </option>
+                        <label key={item.id} style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '10px',
+                          padding: '6px 8px',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          color: textColor,
+                          borderBottom: `1px solid ${borderColor}`,
+                        }}>
+                          <input
+                            type="checkbox"
+                            checked={promoFormData.selected_bundle_items.includes(item.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setPromoFormData({
+                                  ...promoFormData, 
+                                  selected_bundle_items: [...promoFormData.selected_bundle_items, item.id]
+                                })
+                              } else {
+                                setPromoFormData({
+                                  ...promoFormData, 
+                                  selected_bundle_items: promoFormData.selected_bundle_items.filter(id => id !== item.id)
+                                })
+                              }
+                            }}
+                            style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                          />
+                          <span style={{ fontSize: '14px' }}>
+                            {item.name} <span style={{ color: '#22c55e', fontWeight: 'bold' }}>(RM {item.price})</span>
+                          </span>
+                        </label>
                       ))
                     )}
-                  </select>
+                  </div>
+                  
                   <input
                     type="number"
                     step="0.01"
@@ -3155,7 +3190,9 @@ function ManageMenu() {
           </div>
         )}
 
-        {/* EDIT PROMOTION MODAL - FIXED with debugging */}
+        {/* ========================================================== */}
+        {/* EDIT PROMOTION MODAL - FIXED with checkbox checklist for mobile */}
+        {/* ========================================================== */}
         {showEditPromoModal && selectedPromo && (
           <div style={modalOverlayStyle}>
             <div style={modalContentStyle}>
@@ -3214,29 +3251,62 @@ function ManageMenu() {
                 <>
                   <div style={{ fontSize: '12px', color: textMuted, marginBottom: '8px' }}>
                     {availableMenuItems.length > 0 
-                      ? `📋 ${availableMenuItems.length} items available. Hold Ctrl/Cmd to select multiple.` 
+                      ? `📋 ${availableMenuItems.length} items available. Tap checkbox to select.` 
                       : '⚠️ No items available. Please add menu items first.'}
                   </div>
-                  <select
-                    multiple
-                    value={promoFormData.selected_bundle_items}
-                    onChange={(e) => {
-                      const selected = Array.from(e.target.selectedOptions, option => parseInt(option.value))
-                      console.log('Selected items:', selected)
-                      setPromoFormData({...promoFormData, selected_bundle_items: selected})
-                    }}
-                    style={{...inputStyle, height: '120px'}}
-                  >
+                  
+                  {/* CHECKBOX LIST - MOBILE FRIENDLY */}
+                  <div style={{ 
+                    maxHeight: '150px', 
+                    overflowY: 'auto', 
+                    border: `1px solid ${inputBorder}`, 
+                    borderRadius: '12px', 
+                    padding: '8px',
+                    background: inputBg,
+                    marginBottom: '12px'
+                  }}>
                     {availableMenuItems.length === 0 ? (
-                      <option value="" disabled>No items available - add menu items first</option>
+                      <div style={{ color: textMuted, padding: '8px', textAlign: 'center' }}>
+                        No items available - add menu items first
+                      </div>
                     ) : (
                       availableMenuItems.map(item => (
-                        <option key={item.id} value={item.id}>
-                          {item.name} (RM {item.price})
-                        </option>
+                        <label key={item.id} style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '10px',
+                          padding: '6px 8px',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          color: textColor,
+                          borderBottom: `1px solid ${borderColor}`,
+                        }}>
+                          <input
+                            type="checkbox"
+                            checked={promoFormData.selected_bundle_items.includes(item.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setPromoFormData({
+                                  ...promoFormData, 
+                                  selected_bundle_items: [...promoFormData.selected_bundle_items, item.id]
+                                })
+                              } else {
+                                setPromoFormData({
+                                  ...promoFormData, 
+                                  selected_bundle_items: promoFormData.selected_bundle_items.filter(id => id !== item.id)
+                                })
+                              }
+                            }}
+                            style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                          />
+                          <span style={{ fontSize: '14px' }}>
+                            {item.name} <span style={{ color: '#22c55e', fontWeight: 'bold' }}>(RM {item.price})</span>
+                          </span>
+                        </label>
                       ))
                     )}
-                  </select>
+                  </div>
+                  
                   <input
                     type="number"
                     step="0.01"
