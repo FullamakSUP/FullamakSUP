@@ -1,0 +1,2630 @@
+import { useState, useEffect } from 'react'
+import { useTheme } from './context/ThemeContext'
+import { useLanguage } from './context/LanguageContext'
+import Sidebar from './components/Sidebar'
+import { supabase } from './lib/supabase'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+
+// ============================================================
+// SORTABLE MENU ITEM - FIXED
+// ============================================================
+function SortableMenuItem({ item, children }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: item.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    cursor: 'grab',
+    touchAction: 'none',
+  }
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      {children}
+    </div>
+  )
+}
+
+// ============================================================
+// MAIN COMPONENT
+// ============================================================
+function ManageMenu() {
+  const { darkMode } = useTheme()
+  const { language } = useLanguage()
+  
+  // ===== STATE =====
+  const [menu, setMenu] = useState([])
+  const [categories, setCategories] = useState([])
+  const [drinkOptions, setDrinkOptions] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState('regular')
+  const [activeCategory, setActiveCategory] = useState('all')
+  const [uploading, setUploading] = useState(false)
+  const [message, setMessage] = useState('')
+  const [searchMenuTerm, setSearchMenuTerm] = useState('')
+  const [isMobile, setIsMobile] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
+  
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 12
+
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [selectedItem, setSelectedItem] = useState(null)
+  const [formData, setFormData] = useState({ 
+    name: '', 
+    price: '', 
+    category: '', 
+    stock: 0, 
+    image_url: '', 
+    image_file: null,
+    description: ''
+  })
+  
+  const [showDrinkModal, setShowDrinkModal] = useState(false)
+  const [newDrinkName, setNewDrinkName] = useState('')
+  const [newDrinkPanas, setNewDrinkPanas] = useState('')
+  const [newDrinkSejuk, setNewDrinkSejuk] = useState('')
+  const [newDrinkBungkus, setNewDrinkBungkus] = useState('')
+  const [newDrinkStock, setNewDrinkStock] = useState(100)
+  const [drinkPriceEdits, setDrinkPriceEdits] = useState({})
+
+  const [specialMenuEnabled, setSpecialMenuEnabled] = useState(false)
+  const [specialMenuTitle, setSpecialMenuTitle] = useState('Istimewa Hari Ini')
+  const [specialItems, setSpecialItems] = useState([])
+  const [showAddSpecialModal, setShowAddSpecialModal] = useState(false)
+  const [showEditSpecialModal, setShowEditSpecialModal] = useState(false)
+  const [selectedSpecialItem, setSelectedSpecialItem] = useState(null)
+  const [specialFormData, setSpecialFormData] = useState({ 
+    name: '', 
+    price: '', 
+    stock: '', 
+    image_url: '', 
+    image_file: null,
+    description: '' 
+  })
+
+  const [promotions, setPromotions] = useState([])
+  const [showAddPromoModal, setShowAddPromoModal] = useState(false)
+  const [showEditPromoModal, setShowEditPromoModal] = useState(false)
+  const [selectedPromo, setSelectedPromo] = useState(null)
+  const [availableMenuItems, setAvailableMenuItems] = useState([])
+  const [promoFormData, setPromoFormData] = useState({
+    name: '',
+    type: 'set_menu',
+    trigger_item_id: null,
+    free_item_id: null,
+    selected_bundle_items: [],
+    bundle_price: 0,
+    start_date: '',
+    end_date: '',
+    is_active: true,
+    image_url: '',
+    image_file: null
+  })
+
+  const [showOptionsModal, setShowOptionsModal] = useState(false)
+  const [selectedMenuForOptions, setSelectedMenuForOptions] = useState(null)
+  const [menuOptions, setMenuOptions] = useState([])
+  const [optionForm, setOptionForm] = useState({ 
+    option_name: '', 
+    price_adjustment: '', 
+    is_absolute_price: true,
+    sort_order: 0
+  })
+  const [editingOption, setEditingOption] = useState(null)
+
+  const STORAGE_BUCKET = 'restaurant-logos'
+
+  // ===== DND SENSORS - FIXED =====
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // Better for mobile
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
+
+  // ============================================================
+  // TRANSLATIONS - FULLY COMPLETE
+  // ============================================================
+  const translations = {
+    // HEADER
+    manage_menu: { en: '📋 Manage Menu', ms: '📋 Urus Menu' },
+    manage_menu_sub: { en: 'Drag & drop to reorder menu items', ms: 'Seret & lepas untuk susun menu' },
+    
+    // TABS
+    regular_menu: { en: '🍽️ Regular Menu', ms: '🍽️ Menu Biasa' },
+    special_menu: { en: '⭐ Special Menu', ms: '⭐ Menu Istimewa' },
+    promotions: { en: '🏷️ Promotions', ms: '🏷️ Promosi' },
+    
+    // BUTTONS
+    add_menu: { en: '+ Add Menu', ms: '+ Tambah Menu' },
+    add_drink: { en: '+ Add Drink', ms: '+ Tambah Minuman' },
+    add_promotion: { en: '+ Add Promotion', ms: '+ Tambah Promosi' },
+    edit_promotion: { en: '✏️ Edit Promotion', ms: '✏️ Edit Promosi' },
+    
+    // SEARCH
+    search_menu: { en: 'Search menu...', ms: 'Cari menu...' },
+    all: { en: '🍽️ All', ms: '🍽️ Semua' },
+    
+    // STATUS
+    no_menu: { en: 'No menu items', ms: 'Tiada menu' },
+    stock: { en: 'Stock', ms: 'Stok' },
+    edit: { en: 'Edit', ms: 'Edit' },
+    delete: { en: 'Delete', ms: 'Hapus' },
+    save: { en: 'Save', ms: 'Simpan' },
+    cancel: { en: 'Cancel', ms: 'Batal' },
+    add: { en: 'Add', ms: 'Tambah' },
+    close: { en: 'Close', ms: 'Tutup' },
+    out_of_stock: { en: 'OUT', ms: 'HABIS' },
+    low_stock: { en: 'LOW', ms: 'RENDAH' },
+    ok: { en: 'OK', ms: 'OK' },
+    
+    // DRINK TYPES
+    hot: { en: '🔥 Hot', ms: '🔥 Panas' },
+    cold: { en: '🧊 Cold', ms: '🧊 Sejuk' },
+    takeaway: { en: '📦 Takeaway', ms: '📦 Bungkus' },
+    
+    // PAGINATION
+    showing: { en: 'Showing', ms: 'Menunjukkan' },
+    of: { en: 'of', ms: 'daripada' },
+    items: { en: 'items', ms: 'item' },
+    
+    // SPECIAL MENU
+    activate_special: { en: '⭐ Activate Special Menu', ms: '⭐ Aktifkan Menu Istimewa' },
+    activate_special_desc: { en: 'Display special menu on homepage', ms: 'Paparkan menu istimewa di laman utama' },
+    special_title: { en: '⭐ Special Menu Title', ms: '⭐ Tajuk Menu Istimewa' },
+    special_items: { en: '📋 Special Items', ms: '📋 Item Istimewa' },
+    no_special_items: { en: 'No special items. Click "Add" to start.', ms: 'Tiada item istimewa. Klik "Tambah" untuk mula.' },
+    add_special: { en: '➕ Add Special Item', ms: '➕ Tambah Item Istimewa' },
+    edit_special: { en: '✏️ Edit Special Item', ms: '✏️ Edit Item Istimewa' },
+    
+    // PROMOTIONS
+    no_promotions: { en: 'No promotions. Click "Add Promotion" to start.', ms: 'Tiada promosi. Klik "Tambah Promosi" untuk mula.' },
+    active: { en: 'ACTIVE', ms: 'AKTIF' },
+    inactive: { en: 'INACTIVE', ms: 'TIDAK AKTIF' },
+    disable: { en: '❌ Disable', ms: '❌ Lumpuhkan' },
+    enable: { en: '✅ Enable', ms: '✅ Aktifkan' },
+    promo_name: { en: 'Promotion Name *', ms: 'Nama Promosi *' },
+    promo_type: { en: 'Promotion Type', ms: 'Jenis Promosi' },
+    set_menu: { en: '🍽️ Set Menu', ms: '🍽️ Set Menu' },
+    bundle: { en: '📦 Bundle', ms: '📦 Bundle' },
+    bogo: { en: '🎁 Buy 1 Free 1', ms: '🎁 Beli 1 Percuma 1' },
+    trigger_item: { en: '🎁 Purchased Item', ms: '🎁 Item yang Dibeli' },
+    free_item: { en: '🎁 Free Item', ms: '🎁 Item Percuma' },
+    select_item: { en: '-- Select Item --', ms: '-- Pilih Item --' },
+    bundle_items: { en: '📦 Select Bundle Items', ms: '📦 Pilih Item dalam Promosi' },
+    promo_price: { en: '💰 Promotion Price (RM)', ms: '💰 Harga Promosi (RM)' },
+    start_date: { en: '📅 Start Date', ms: '📅 Tarikh Mula' },
+    end_date: { en: '📅 End Date', ms: '📅 Tarikh Akhir' },
+    promo_image: { en: '🖼️ Promotion Image', ms: '🖼️ Gambar Promosi' },
+    activate_promo: { en: '✅ Activate Promotion', ms: '✅ Aktifkan Promosi' },
+    
+    // SIZE OPTIONS
+    size_options: { en: '⚙️ Size Options', ms: '⚙️ Pilihan Saiz' },
+    add_size: { en: '➕ Add New Size', ms: '➕ Tambah Saiz Baru' },
+    edit_size: { en: '✏️ Edit Size', ms: '✏️ Edit Saiz' },
+    size_name: { en: 'Name (e.g: Small, Medium, Large)', ms: 'Nama (cth: Kecil, Sederhana, Besar)' },
+    size_price: { en: 'Price (RM)', ms: 'Harga (RM)' },
+    absolute_price: { en: 'Absolute Price', ms: 'Harga Mutlak' },
+    sort_order: { en: 'Sort Order', ms: 'Urutan' },
+    size_list: { en: '📋 Size List', ms: '📋 Senarai Saiz' },
+    no_sizes: { en: 'No size options available.', ms: 'Tiada pilihan saiz.' },
+    
+    // MODALS
+    add_drink_title: { en: '🥤 Add Drink (Hot/Cold/Takeaway)', ms: '🥤 Tambah Minuman (Panas/Sejuk/Bungkus)' },
+    drink_name: { en: 'Drink Name', ms: 'Nama Minuman' },
+    hot_price: { en: '🔥 Hot Price', ms: '🔥 Harga Panas' },
+    cold_price: { en: '🧊 Cold Price', ms: '🧊 Harga Sejuk' },
+    takeaway_price: { en: '📦 Takeaway Price', ms: '📦 Harga Bungkus' },
+    edit_menu: { en: '✏️ Edit Menu', ms: '✏️ Edit Menu' },
+    select_category: { en: 'Select Category', ms: 'Pilih Kategori' },
+    preview: { en: 'Preview', ms: 'Pratonton' },
+    stock_qty: { en: 'Stock Quantity', ms: 'Kuantiti Stok' },
+    has_size_options: { en: '⚙️ Has size options', ms: '⚙️ Ada pilihan saiz' },
+    
+    // FORM FIELDS
+    name: { en: 'Name', ms: 'Nama' },
+    price: { en: 'Price', ms: 'Harga' },
+    description: { en: 'Description', ms: 'Keterangan' },
+    image: { en: 'Image', ms: 'Gambar' },
+    category: { en: 'Category', ms: 'Kategori' },
+    
+    // MESSAGES - ALL TRANSLATED
+    order_updated: { en: 'Menu order updated!', ms: 'Urutan menu dikemaskini!' },
+    already_exists: { en: 'already exists!', ms: 'sudah wujud!' },
+    confirm_delete: { en: 'Are you sure you want to delete', ms: 'Adakah anda pasti mahu padam' },
+    confirm_delete_image: { en: 'Are you sure you want to delete this image?', ms: 'Adakah anda pasti mahu padam gambar ini?' },
+    price_updated: { en: 'price updated!', ms: 'harga dikemaskini!' },
+    stock_updated_to: { en: 'stock updated to', ms: 'stok dikemaskini kepada' },
+    option_added: { en: 'Size option added!', ms: 'Pilihan saiz ditambah!' },
+    option_updated: { en: 'Size option updated!', ms: 'Pilihan saiz dikemaskini!' },
+    option_deleted: { en: 'Size option deleted!', ms: 'Pilihan saiz dipadam!' },
+    menu_added: { en: 'Menu item added!', ms: 'Item menu ditambah!' },
+    menu_updated: { en: 'Menu item updated!', ms: 'Item menu dikemaskini!' },
+    special_added: { en: 'Special item added!', ms: 'Item istimewa ditambah!' },
+    special_updated: { en: 'Special item updated!', ms: 'Item istimewa dikemaskini!' },
+    promo_added: { en: 'Promotion added!', ms: 'Promosi ditambah!' },
+    promo_updated: { en: 'Promotion updated!', ms: 'Promosi dikemaskini!' },
+    promo_disabled: { en: 'Promotion disabled!', ms: 'Promosi dilumpuhkan!' },
+    promo_enabled: { en: 'Promotion enabled!', ms: 'Promosi diaktifkan!' },
+    deleted: { en: 'deleted!', ms: 'dipadam!' },
+    image_deleted: { en: 'Image deleted!', ms: 'Gambar dipadam!' },
+    image_delete_fail: { en: 'Failed to delete image!', ms: 'Gagal padam gambar!' },
+    upload_fail: { en: 'Upload failed!', ms: 'Muat naik gagal!' },
+    upload_success: { en: 'Upload successful', ms: 'Muat naik berjaya' },
+    required: { en: 'is required!', ms: 'diperlukan!' },
+    and: { en: 'and', ms: 'dan' },
+    error: { en: 'Error', ms: 'Ralat' },
+    invalid_price: { en: 'Please enter a valid price!', ms: 'Sila masukkan harga yang sah!' },
+    drink_added: { en: 'Drink added successfully!', ms: 'Minuman berjaya ditambah!' },
+  }
+
+  const translate = (key) => {
+    if (!translations[key]) return key
+    return language === 'en' ? translations[key].en : translations[key].ms
+  }
+
+  // ============================================================
+  // THEME COLORS - FIXED DARKMODE (MORE READABLE)
+  // ============================================================
+  const bgColor = darkMode ? '#0f172a' : '#f1f5f9'
+  const cardBg = darkMode ? 'rgba(30, 41, 59, 0.95)' : 'rgba(255, 255, 255, 0.95)'
+  const textColor = darkMode ? '#e2e8f0' : '#1e293b'
+  const textMuted = darkMode ? '#94a3b8' : '#64748b'
+  const borderColor = darkMode ? 'rgba(71, 85, 105, 0.4)' : 'rgba(203, 213, 225, 0.5)'
+  const secondaryBg = darkMode ? 'rgba(51, 65, 85, 0.6)' : 'rgba(248, 250, 252, 0.9)'
+  const inputBg = darkMode ? '#1e293b' : '#ffffff'
+  const inputBorder = darkMode ? '#475569' : '#cbd5e1'
+  const inputText = darkMode ? '#e2e8f0' : '#1e293b'
+  const glassBorder = darkMode ? 'rgba(71, 85, 105, 0.2)' : 'rgba(203, 213, 225, 0.4)'
+  
+  const glassEffect = {
+    background: cardBg,
+    backdropFilter: 'blur(12px)',
+    border: `1px solid ${glassBorder}`,
+    boxShadow: darkMode 
+      ? '0 8px 32px rgba(0, 0, 0, 0.4)' 
+      : '0 8px 32px rgba(0, 0, 0, 0.06)'
+  }
+
+  // ============================================================
+  // MODAL STYLES
+  // ============================================================
+  const modalOverlayStyle = {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'rgba(0,0,0,0.8)',
+    backdropFilter: 'blur(8px)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+    animation: 'fadeIn 0.25s ease',
+    padding: '16px'
+  }
+
+  const modalContentStyle = {
+    background: cardBg,
+    borderRadius: '24px',
+    padding: isMobile ? '20px' : '28px',
+    maxWidth: isMobile ? '95%' : '480px',
+    width: '100%',
+    maxHeight: '90vh',
+    overflowY: 'auto',
+    ...glassEffect,
+    animation: 'popIn 0.3s cubic-bezier(0.34, 1.2, 0.64, 1)'
+  }
+
+  const modalTitleStyle = {
+    marginTop: 0,
+    marginBottom: '20px',
+    color: textColor,
+    fontSize: isMobile ? '20px' : '24px',
+    fontWeight: 'bold',
+    textAlign: 'center'
+  }
+
+  const inputStyle = {
+    width: '100%',
+    padding: isMobile ? '10px 14px' : '12px 16px',
+    marginBottom: '12px',
+    borderRadius: '12px',
+    border: `1px solid ${inputBorder}`,
+    background: inputBg,
+    color: inputText,
+    fontSize: isMobile ? '14px' : '15px',
+    transition: 'all 0.2s',
+    boxSizing: 'border-box'
+  }
+
+  const buttonPrimaryStyle = {
+    flex: 1,
+    background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+    color: 'white',
+    padding: isMobile ? '12px' : '14px',
+    border: 'none',
+    borderRadius: '12px',
+    cursor: 'pointer',
+    fontWeight: 'bold',
+    fontSize: isMobile ? '14px' : '15px',
+    transition: 'all 0.2s'
+  }
+
+  const buttonSecondaryStyle = {
+    flex: 1,
+    background: '#64748b',
+    color: 'white',
+    padding: isMobile ? '12px' : '14px',
+    border: 'none',
+    borderRadius: '12px',
+    cursor: 'pointer',
+    fontSize: isMobile ? '14px' : '15px',
+    transition: 'all 0.2s'
+  }
+
+  // ============================================================
+  // CHECK MOBILE
+  // ============================================================
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  // ============================================================
+  // IMAGE RESIZE
+  // ============================================================
+  async function resizeAndCompressImage(file, maxWidth = 300, maxHeight = 300, quality = 0.8) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.readAsDataURL(file)
+      
+      reader.onload = (event) => {
+        const img = new Image()
+        img.src = event.target.result
+        
+        img.onload = () => {
+          const canvas = document.createElement('canvas')
+          const ctx = canvas.getContext('2d')
+          
+          let size = Math.min(img.width, img.height)
+          let sx = (img.width - size) / 2
+          let sy = (img.height - size) / 2
+          
+          canvas.width = maxWidth
+          canvas.height = maxHeight
+          
+          ctx.imageSmoothingEnabled = true
+          ctx.imageSmoothingQuality = 'high'
+          ctx.drawImage(img, sx, sy, size, size, 0, 0, maxWidth, maxHeight)
+          
+          const outputFormat = 'image/webp'
+          canvas.toBlob((blob) => {
+            if (!blob) {
+              reject(new Error('Failed to resize image'))
+              return
+            }
+            
+            const fileName = file.name.split('.')[0] + '.webp'
+            const resizedFile = new File([blob], fileName, {
+              type: outputFormat,
+              lastModified: Date.now()
+            })
+            
+            resolve(resizedFile)
+          }, outputFormat, quality)
+        }
+        
+        img.onerror = () => {
+          reject(new Error('Failed to load image'))
+        }
+      }
+      
+      reader.onerror = () => {
+        reject(new Error('Failed to read file'))
+      }
+    })
+  }
+
+  // ============================================================
+  // LOAD DATA
+  // ============================================================
+  useEffect(() => {
+    loadAllData()
+    loadSpecialMenu()
+    loadPromotions()
+    loadAvailableMenu()
+  }, [])
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [activeCategory, searchMenuTerm])
+
+  async function loadAllData() {
+    setLoading(true)
+    await loadCategories()
+    await loadMenu()
+    await loadDrinkOptions()
+    setLoading(false)
+  }
+
+  async function loadCategories() {
+    const { data } = await supabase
+      .from('categories')
+      .select('*')
+      .order('sort_order', { ascending: true })
+    setCategories(data || [])
+  }
+
+  async function loadMenu() {
+    const { data } = await supabase
+      .from('menu')
+      .select('*')
+      .order('sort_order', { ascending: true })
+    setMenu(data || [])
+  }
+
+  async function loadDrinkOptions() {
+    const { data } = await supabase.from('drink_options').select('*')
+    setDrinkOptions(data || [])
+    const edits = {}
+    data?.forEach(opt => { 
+      const key = `${opt.drink_name}_${opt.option_type}` 
+      edits[key] = opt.price 
+    })
+    setDrinkPriceEdits(edits)
+  }
+
+  async function loadSpecialMenu() {
+    try {
+      const { data: enabledData } = await supabase.from('settings').select('value').eq('key', 'special_menu_enabled').single()
+      if (enabledData) setSpecialMenuEnabled(enabledData.value === 'true')
+      
+      const { data: titleData } = await supabase.from('settings').select('value').eq('key', 'special_menu_title').single()
+      if (titleData) setSpecialMenuTitle(titleData.value)
+      
+      const { data: itemsData } = await supabase.from('settings').select('value').eq('key', 'special_menu_items').single()
+      if (itemsData) { 
+        try { setSpecialItems(JSON.parse(itemsData.value)) } 
+        catch (e) { setSpecialItems([]) } 
+      }
+    } catch (err) {
+      console.error('Error loading special menu:', err)
+    }
+  }
+
+  async function loadPromotions() {
+    const { data } = await supabase.from('promotions').select('*').order('id', { ascending: false })
+    setPromotions(data || [])
+  }
+
+  async function loadAvailableMenu() {
+    const { data } = await supabase.from('menu').select('id, name, price, category, has_options')
+    setAvailableMenuItems(data || [])
+  }
+
+  // ============================================================
+  // CATEGORY HELPERS
+  // ============================================================
+  const getCategoriesForFilter = () => {
+    const minumanMain = categories.find(c => c.name === 'Minuman' && c.parent_id === null)
+    
+    const subCats = categories
+      .filter(cat => {
+        if (cat.parent_id === null) return false
+        if (minumanMain && cat.parent_id === minumanMain.id) return false
+        return true
+      })
+      .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
+    
+    const result = ['all']
+    
+    if (minumanMain) {
+      result.push(minumanMain.name)
+    }
+    
+    subCats.forEach(cat => {
+      result.push(cat.name)
+    })
+    
+    return result
+  }
+
+  const getCategoryIcon = (catName) => {
+    if (catName === 'all') return '🍽️'
+    if (catName === 'Minuman') return '🥤'
+    const found = categories.find(c => c.name === catName)
+    return found?.icon || '📂'
+  }
+
+  // ============================================================
+  // DRAG & DROP - FIXED
+  // ============================================================
+  async function handleDragEnd(event) {
+    const { active, over } = event
+    
+    if (!over || active.id === over.id) {
+      setIsDragging(false)
+      return
+    }
+    
+    setIsDragging(true)
+    
+    // Use currentItems (what's displayed on current page)
+    const currentList = currentItems
+    
+    const oldIndex = currentList.findIndex(item => item.id === active.id)
+    const newIndex = currentList.findIndex(item => item.id === over.id)
+    
+    if (oldIndex === -1 || newIndex === -1) {
+      setIsDragging(false)
+      return
+    }
+    
+    // Reorder
+    const newOrder = arrayMove(currentList, oldIndex, newIndex)
+    
+    // Get all items in same category (for global sort_order)
+    const allInCategory = activeCategory === 'all' 
+      ? menu 
+      : menu.filter(item => item.category === activeCategory)
+    
+    // Calculate base offset
+    const firstItemId = currentList[0]?.id
+    const baseIndex = allInCategory.findIndex(item => item.id === firstItemId)
+    
+    // Update sort_order
+    const updates = newOrder.map((item, index) => ({
+      id: item.id,
+      sort_order: baseIndex + index
+    }))
+    
+    // Update local state
+    const updatedMenu = menu.map(item => {
+      const update = updates.find(u => u.id === item.id)
+      return update ? { ...item, sort_order: update.sort_order } : item
+    })
+    setMenu(updatedMenu)
+    
+    // Update database
+    try {
+      for (const update of updates) {
+        await supabase
+          .from('menu')
+          .update({ sort_order: update.sort_order })
+          .eq('id', update.id)
+      }
+      setMessage('✅ ' + translate('order_updated'))
+      setTimeout(() => setMessage(''), 2000)
+      await loadMenu()
+    } catch (error) {
+      console.error('Drag error:', error)
+      await loadMenu()
+    }
+    
+    setIsDragging(false)
+  }
+
+  // ============================================================
+  // UPLOAD IMAGE
+  // ============================================================
+  async function uploadImage(file, type = 'menu') {
+    if (!file) return null
+    setUploading(true)
+    
+    try {
+      const resizedFile = await resizeAndCompressImage(file, 300, 300, 0.8)
+      
+      const fileExt = resizedFile.name.split('.').pop()
+      const fileName = `${type}-${Date.now()}.${fileExt}`
+      
+      const { error: uploadError } = await supabase.storage
+        .from(STORAGE_BUCKET)
+        .upload(fileName, resizedFile)
+      
+      if (uploadError) {
+        setMessage('❌ ' + translate('upload_fail') + ': ' + uploadError.message)
+        setUploading(false)
+        return null
+      }
+      
+      const { data: urlData } = supabase.storage
+        .from(STORAGE_BUCKET)
+        .getPublicUrl(fileName)
+      
+      const sizeInKB = (resizedFile.size / 1024).toFixed(0)
+      setMessage('✅ ' + translate('upload_success') + ` (${sizeInKB}KB)`)
+      setUploading(false)
+      return urlData.publicUrl
+    } catch (err) {
+      setMessage('❌ ' + translate('upload_fail') + ': ' + err.message)
+      setUploading(false)
+      return null
+    }
+  }
+
+  async function deleteImageFromStorage(imageUrl) {
+    if (!imageUrl) return false
+    try {
+      const fileName = imageUrl.split('/').pop()
+      const { error } = await supabase.storage.from(STORAGE_BUCKET).remove([fileName])
+      if (error) return false
+      return true
+    } catch (err) {
+      return false
+    }
+  }
+
+  // ============================================================
+  // DRINK FUNCTIONS
+  // ============================================================
+  async function addDrinkWithOptions() {
+    if (!newDrinkName) { 
+      setMessage('⚠️ ' + translate('drink_name') + ' ' + translate('required'))
+      return 
+    }
+    const existing = menu.find(m => m.name.toLowerCase() === newDrinkName.toLowerCase())
+    if (existing) {
+      setMessage(`⚠️ "${newDrinkName}" ` + translate('already_exists'))
+      return
+    }
+    const { data: menuData, error: menuError } = await supabase
+      .from('menu')
+      .insert([{ 
+        name: newDrinkName, price: 0, category: 'Minuman',
+        stock: parseInt(newDrinkStock) || 0, image_url: null, has_options: false,
+        description: null,
+        sort_order: menu.length
+      }])
+      .select()
+    if (menuError) { 
+      setMessage('❌ ' + translate('error') + ': ' + menuError.message)
+      return 
+    }
+    const newMenuId = menuData[0].id
+    
+    if (newDrinkPanas && parseFloat(newDrinkPanas) > 0) {
+      await supabase.from('drink_options').insert([{ 
+        menu_id: newMenuId, 
+        drink_name: newDrinkName, 
+        option_type: 'Panas', 
+        price: parseFloat(newDrinkPanas) 
+      }])
+    }
+    
+    if (newDrinkSejuk && parseFloat(newDrinkSejuk) > 0) {
+      await supabase.from('drink_options').insert([{ 
+        menu_id: newMenuId, 
+        drink_name: newDrinkName, 
+        option_type: 'Sejuk', 
+        price: parseFloat(newDrinkSejuk) 
+      }])
+    }
+    
+    if (newDrinkBungkus && parseFloat(newDrinkBungkus) > 0) {
+      await supabase.from('drink_options').insert([{ 
+        menu_id: newMenuId, 
+        drink_name: newDrinkName, 
+        option_type: 'Bungkus', 
+        price: parseFloat(newDrinkBungkus) 
+      }])
+    }
+    
+    setMessage('✅ ' + translate('drink_added'))
+    setShowDrinkModal(false)
+    setNewDrinkName('')
+    setNewDrinkPanas('')
+    setNewDrinkSejuk('')
+    setNewDrinkBungkus('')
+    setNewDrinkStock(100)
+    loadMenu()
+    loadDrinkOptions()
+    loadAvailableMenu()
+    setTimeout(() => setMessage(''), 2000)
+  }
+
+  // ============================================================
+  // REGULAR MENU FUNCTIONS
+  // ============================================================
+  async function addRegularMenuItem() {
+    if (!formData.name || !formData.price) { 
+      setMessage('⚠️ ' + translate('name') + ' ' + translate('and') + ' ' + translate('price') + ' ' + translate('required'))
+      return 
+    }
+    const existing = menu.find(m => m.name.toLowerCase() === formData.name.toLowerCase())
+    if (existing) {
+      setMessage(`⚠️ "${formData.name}" ` + translate('already_exists'))
+      return
+    }
+    let imageUrl = formData.image_url
+    if (formData.image_file) {
+      const uploadedUrl = await uploadImage(formData.image_file, 'menu')
+      if (uploadedUrl) imageUrl = uploadedUrl
+    }
+    
+    const categoryName = formData.category || 'Makanan'
+    
+    const { error } = await supabase.from('menu').insert([{ 
+      name: formData.name, 
+      price: parseFloat(formData.price), 
+      category: categoryName,
+      stock: parseInt(formData.stock) || 0, 
+      image_url: imageUrl || null, 
+      has_options: false,
+      description: formData.description || null,
+      sort_order: menu.length
+    }])
+    if (error) { 
+      setMessage('❌ ' + translate('error') + ': ' + error.message) 
+    } else { 
+      setMessage('✅ ' + translate('menu_added'))
+      setShowAddModal(false)
+      setFormData({ name: '', price: '', category: '', stock: 0, image_url: '', image_file: null, description: '' })
+      loadMenu()
+      loadAvailableMenu() 
+    }
+    setTimeout(() => setMessage(''), 2000)
+  }
+
+  async function updateRegularMenuItem() {
+    if (!formData.name || !formData.price) { 
+      setMessage('⚠️ ' + translate('name') + ' ' + translate('and') + ' ' + translate('price') + ' ' + translate('required'))
+      return 
+    }
+    let imageUrl = formData.image_url
+    if (formData.image_file) {
+      const uploadedUrl = await uploadImage(formData.image_file, 'menu')
+      if (uploadedUrl) imageUrl = uploadedUrl
+    }
+    
+    const categoryName = formData.category || 'Makanan'
+    
+    const updateData = { 
+      name: formData.name, 
+      price: parseFloat(formData.price), 
+      category: categoryName, 
+      stock: parseInt(formData.stock) || 0,
+      description: formData.description || null
+    }
+    if (imageUrl !== undefined) updateData.image_url = imageUrl || null
+    const { error } = await supabase.from('menu').update(updateData).eq('id', selectedItem.id)
+    if (error) { 
+      setMessage('❌ ' + translate('error') + ': ' + error.message) 
+    } else { 
+      setMessage('✅ ' + translate('menu_updated'))
+      setShowEditModal(false)
+      setSelectedItem(null)
+      setFormData({ name: '', price: '', category: '', stock: 0, image_url: '', image_file: null, description: '' })
+      loadMenu()
+      loadAvailableMenu() 
+    }
+    setTimeout(() => setMessage(''), 2000)
+  }
+
+  // ============================================================
+  // DRINK PRICE UPDATE - FIXED MESSAGES
+  // ============================================================
+  async function updateDrinkPrice(drinkName, optionType, newPrice) {
+    const { error } = await supabase
+      .from('drink_options')
+      .update({ price: parseFloat(newPrice) })
+      .eq('drink_name', drinkName)
+      .eq('option_type', optionType)
+      
+    if (error) { 
+      setMessage('❌ ' + translate('error') + ': ' + error.message) 
+    } else { 
+      await loadDrinkOptions()
+      setMessage(`✅ ${drinkName} (${optionType}) ${translate('price_updated')}`) 
+    }
+    setTimeout(() => setMessage(''), 2000)
+  }
+
+  function handleDrinkPriceChange(drinkName, optionType, value) { 
+    const key = `${drinkName}_${optionType}` 
+    setDrinkPriceEdits(prev => ({ 
+      ...prev, 
+      [key]: value 
+    })) 
+  }
+  
+  function handleDrinkPriceSave(drinkName, optionType) { 
+    const key = `${drinkName}_${optionType}` 
+    const newPrice = drinkPriceEdits[key] 
+    
+    if (newPrice !== undefined && newPrice !== '' && !isNaN(newPrice) && parseFloat(newPrice) >= 0) {
+      updateDrinkPrice(drinkName, optionType, newPrice) 
+    } else {
+      setMessage('⚠️ ' + translate('invalid_price'))
+      setTimeout(() => setMessage(''), 2000)
+    }
+  }
+
+  // ============================================================
+  // DELETE FUNCTIONS - FIXED MESSAGES
+  // ============================================================
+  async function deleteMenuItem(id, name) {
+    if (window.confirm(`${translate('confirm_delete')} "${name}"?`)) {
+      await supabase.from('drink_options').delete().eq('drink_name', name)
+      await supabase.from('menu_options').delete().eq('menu_id', id)
+      const { error } = await supabase.from('menu').delete().eq('id', id)
+      if (error) { 
+        setMessage('❌ ' + translate('error') + ': ' + error.message) 
+      } else { 
+        setMessage(`🗑️ "${name}" ` + translate('deleted'))
+        await loadMenu()
+        await loadDrinkOptions()
+        await loadAvailableMenu() 
+      }
+      setTimeout(() => setMessage(''), 2000)
+    }
+  }
+
+  async function deleteImage(imageUrl, itemId) {
+    if (!imageUrl) return
+    if (!window.confirm(translate('confirm_delete_image'))) return
+    const deleted = await deleteImageFromStorage(imageUrl)
+    if (deleted) {
+      const { error } = await supabase.from('menu').update({ image_url: null }).eq('id', itemId)
+      if (error) setMessage('❌ ' + translate('error') + ': ' + error.message)
+      else setMessage('✅ ' + translate('image_deleted'))
+      await loadMenu()
+    } else {
+      setMessage('❌ ' + translate('image_delete_fail'))
+    }
+    setTimeout(() => setMessage(''), 2000)
+  }
+
+  // ============================================================
+  // SPECIAL MENU FUNCTIONS
+  // ============================================================
+  async function addSpecialItem() {
+    if (!specialFormData.name || !specialFormData.price) { 
+      setMessage('⚠️ ' + translate('name') + ' ' + translate('and') + ' ' + translate('price') + ' ' + translate('required'))
+      return 
+    }
+    let imageUrl = specialFormData.image_url
+    if (specialFormData.image_file) {
+      const uploadedUrl = await uploadImage(specialFormData.image_file, 'special')
+      if (uploadedUrl) imageUrl = uploadedUrl
+    }
+    const newItem = { 
+      id: Date.now(), name: specialFormData.name, price: parseFloat(specialFormData.price),
+      stock: parseInt(specialFormData.stock) || 0, image_url: imageUrl || null, description: specialFormData.description || '' 
+    }
+    const updatedItems = [...specialItems, newItem]
+    setSpecialItems(updatedItems)
+    const { error } = await supabase.from('settings').upsert({ key: 'special_menu_items', value: JSON.stringify(updatedItems) }, { onConflict: 'key' })
+    if (error) { 
+      setMessage('❌ ' + translate('error') + ': ' + error.message) 
+    } else { 
+      setMessage('✅ ' + translate('special_added'))
+      setShowAddSpecialModal(false)
+      setSpecialFormData({ name: '', price: '', stock: '', image_url: '', image_file: null, description: '' })
+      loadSpecialMenu() 
+    }
+    setTimeout(() => setMessage(''), 2000)
+  }
+
+  async function updateSpecialItem() {
+    if (!specialFormData.name || !specialFormData.price) { 
+      setMessage('⚠️ ' + translate('name') + ' ' + translate('and') + ' ' + translate('price') + ' ' + translate('required'))
+      return 
+    }
+    let imageUrl = specialFormData.image_url
+    if (specialFormData.image_file) {
+      const uploadedUrl = await uploadImage(specialFormData.image_file, 'special')
+      if (uploadedUrl) imageUrl = uploadedUrl
+    }
+    const updatedItems = specialItems.map(item => 
+      item.id === selectedSpecialItem.id 
+        ? { ...item, name: specialFormData.name, price: parseFloat(specialFormData.price),
+            stock: parseInt(specialFormData.stock) || 0, image_url: imageUrl, description: specialFormData.description } 
+        : item
+    )
+    setSpecialItems(updatedItems)
+    const { error } = await supabase.from('settings').upsert({ key: 'special_menu_items', value: JSON.stringify(updatedItems) }, { onConflict: 'key' })
+    if (error) { 
+      setMessage('❌ ' + translate('error') + ': ' + error.message) 
+    } else { 
+      setMessage('✅ ' + translate('special_updated'))
+      setShowEditSpecialModal(false)
+      setSelectedSpecialItem(null)
+      setSpecialFormData({ name: '', price: '', stock: '', image_url: '', image_file: null, description: '' })
+      loadSpecialMenu() 
+    }
+    setTimeout(() => setMessage(''), 2000)
+  }
+
+  async function deleteSpecialItem(id, name) {
+    if (window.confirm(`${translate('confirm_delete')} "${name}"?`)) {
+      const updatedItems = specialItems.filter(item => item.id !== id)
+      setSpecialItems(updatedItems)
+      const { error } = await supabase.from('settings').upsert({ key: 'special_menu_items', value: JSON.stringify(updatedItems) }, { onConflict: 'key' })
+      if (error) { 
+        setMessage('❌ ' + translate('error') + ': ' + error.message) 
+      } else { 
+        setMessage(`🗑️ "${name}" ` + translate('deleted'))
+        loadSpecialMenu() 
+      }
+      setTimeout(() => setMessage(''), 2000)
+    }
+  }
+
+  // ============================================================
+  // PROMOTIONS FUNCTIONS
+  // ============================================================
+  async function addPromotion() {
+    if (!promoFormData.name) { 
+      setMessage('⚠️ ' + translate('promo_name') + ' ' + translate('required'))
+      return 
+    }
+    let imageUrl = promoFormData.image_url
+    if (promoFormData.image_file) {
+      const uploadedUrl = await uploadImage(promoFormData.image_file, 'promo')
+      if (uploadedUrl) imageUrl = uploadedUrl
+    }
+    let promoData = {}
+    if (promoFormData.type === 'bogo') {
+      const triggerItem = availableMenuItems.find(i => i.id === promoFormData.trigger_item_id)
+      const freeItem = availableMenuItems.find(i => i.id === promoFormData.free_item_id)
+      promoData = {
+        name: promoFormData.name, type: 'bogo',
+        trigger_items: [{ id: triggerItem?.id, name: triggerItem?.name, price: triggerItem?.price, category: triggerItem?.category }],
+        free_items: [{ id: freeItem?.id, name: freeItem?.name, price: freeItem?.price, category: freeItem?.category }],
+        start_date: promoFormData.start_date || null, end_date: promoFormData.end_date || null,
+        is_active: promoFormData.is_active, image_url: imageUrl || null
+      }
+    } else {
+      const bundleItems = promoFormData.selected_bundle_items.map(itemId => {
+        const item = availableMenuItems.find(i => i.id === itemId)
+        return { id: item?.id, name: item?.name, price: item?.price, category: item?.category }
+      })
+      promoData = {
+        name: promoFormData.name, type: promoFormData.type,
+        bundle_items: bundleItems, bundle_price: parseFloat(promoFormData.bundle_price) || 0,
+        start_date: promoFormData.start_date || null, end_date: promoFormData.end_date || null,
+        is_active: promoFormData.is_active, image_url: imageUrl || null
+      }
+    }
+    const { error } = await supabase.from('promotions').insert([promoData])
+    if (error) { 
+      setMessage('❌ ' + translate('error') + ': ' + error.message) 
+    } else { 
+      setMessage('✅ ' + translate('promo_added'))
+      setShowAddPromoModal(false)
+      resetPromoForm()
+      loadPromotions() 
+    }
+    setTimeout(() => setMessage(''), 2000)
+  }
+
+  async function updatePromotion() {
+    if (!promoFormData.name) { 
+      setMessage('⚠️ ' + translate('promo_name') + ' ' + translate('required'))
+      return 
+    }
+    let imageUrl = promoFormData.image_url
+    if (promoFormData.image_file) {
+      const uploadedUrl = await uploadImage(promoFormData.image_file, 'promo')
+      if (uploadedUrl) imageUrl = uploadedUrl
+    }
+    let promoData = {}
+    if (promoFormData.type === 'bogo') {
+      const triggerItem = availableMenuItems.find(i => i.id === promoFormData.trigger_item_id)
+      const freeItem = availableMenuItems.find(i => i.id === promoFormData.free_item_id)
+      promoData = {
+        name: promoFormData.name, type: 'bogo',
+        trigger_items: [{ id: triggerItem?.id, name: triggerItem?.name, price: triggerItem?.price, category: triggerItem?.category }],
+        free_items: [{ id: freeItem?.id, name: freeItem?.name, price: freeItem?.price, category: freeItem?.category }],
+        start_date: promoFormData.start_date || null, end_date: promoFormData.end_date || null,
+        is_active: promoFormData.is_active, image_url: imageUrl || null
+      }
+    } else {
+      const bundleItems = promoFormData.selected_bundle_items.map(itemId => {
+        const item = availableMenuItems.find(i => i.id === itemId)
+        return { id: item?.id, name: item?.name, price: item?.price, category: item?.category }
+      })
+      promoData = {
+        name: promoFormData.name, type: promoFormData.type,
+        bundle_items: bundleItems, bundle_price: parseFloat(promoFormData.bundle_price) || 0,
+        start_date: promoFormData.start_date || null, end_date: promoFormData.end_date || null,
+        is_active: promoFormData.is_active, image_url: imageUrl || null
+      }
+    }
+    const { error } = await supabase.from('promotions').update(promoData).eq('id', selectedPromo.id)
+    if (error) { 
+      setMessage('❌ ' + translate('error') + ': ' + error.message) 
+    } else { 
+      setMessage('✅ ' + translate('promo_updated'))
+      setShowEditPromoModal(false)
+      setSelectedPromo(null)
+      resetPromoForm()
+      loadPromotions() 
+    }
+    setTimeout(() => setMessage(''), 2000)
+  }
+
+  async function deletePromotion(id, name) {
+    if (window.confirm(`${translate('confirm_delete')} "${name}"?`)) {
+      const { error } = await supabase.from('promotions').delete().eq('id', id)
+      if (error) { 
+        setMessage('❌ ' + translate('error') + ': ' + error.message) 
+      } else { 
+        setMessage(`🗑️ "${name}" ` + translate('deleted'))
+        loadPromotions() 
+      }
+      setTimeout(() => setMessage(''), 2000)
+    }
+  }
+
+  async function togglePromoStatus(id, currentStatus) {
+    const { error } = await supabase.from('promotions').update({ is_active: !currentStatus }).eq('id', id)
+    if (error) { 
+      setMessage('❌ ' + translate('error') + ': ' + error.message) 
+    } else { 
+      setMessage(currentStatus ? '✅ ' + translate('promo_disabled') : '✅ ' + translate('promo_enabled'))
+      loadPromotions() 
+    }
+    setTimeout(() => setMessage(''), 2000)
+  }
+
+  const resetPromoForm = () => {
+    setPromoFormData({
+      name: '', type: 'set_menu', trigger_item_id: null, free_item_id: null,
+      selected_bundle_items: [], bundle_price: 0, start_date: '', end_date: '',
+      is_active: true, image_url: '', image_file: null
+    })
+  }
+
+  const openEditPromoModal = (promo) => {
+    let selectedBundleItems = []
+    let triggerItemId = null, freeItemId = null
+    if (promo.type === 'bogo') {
+      triggerItemId = promo.trigger_items?.[0]?.id || null
+      freeItemId = promo.free_items?.[0]?.id || null
+    } else if (promo.bundle_items) {
+      selectedBundleItems = promo.bundle_items.map(item => {
+        const found = availableMenuItems.find(i => i.name === item.name)
+        return found ? found.id : null
+      }).filter(id => id !== null)
+    }
+    setSelectedPromo(promo)
+    setPromoFormData({
+      name: promo.name, type: promo.type, trigger_item_id: triggerItemId, free_item_id: freeItemId,
+      selected_bundle_items: selectedBundleItems, bundle_price: promo.bundle_price || 0,
+      start_date: promo.start_date || '', end_date: promo.end_date || '',
+      is_active: promo.is_active, image_url: promo.image_url || '', image_file: null
+    })
+    setShowEditPromoModal(true)
+  }
+
+  // ============================================================
+  // MENU OPTIONS (SIZE)
+  // ============================================================
+  async function loadMenuOptions(menuId) {
+    const { data } = await supabase
+      .from('menu_options')
+      .select('*')
+      .eq('menu_id', menuId)
+      .order('sort_order')
+    setMenuOptions(data || [])
+  }
+
+  async function addMenuOption() {
+    if (!optionForm.option_name || !optionForm.price_adjustment) {
+      setMessage('⚠️ ' + translate('size_name') + ' ' + translate('and') + ' ' + translate('price') + ' ' + translate('required'))
+      setTimeout(() => setMessage(''), 2000)
+      return
+    }
+
+    const { error } = await supabase
+      .from('menu_options')
+      .insert([{
+        menu_id: selectedMenuForOptions.id,
+        option_name: optionForm.option_name,
+        price_adjustment: parseFloat(optionForm.price_adjustment),
+        is_absolute_price: optionForm.is_absolute_price,
+        sort_order: parseInt(optionForm.sort_order) || 0,
+        available: true
+      }])
+
+    if (error) {
+      setMessage('❌ ' + translate('error') + ': ' + error.message)
+    } else {
+      setMessage('✅ ' + translate('option_added'))
+      await loadMenuOptions(selectedMenuForOptions.id)
+      setOptionForm({ option_name: '', price_adjustment: '', is_absolute_price: true, sort_order: 0 })
+      await supabase.from('menu').update({ has_options: true }).eq('id', selectedMenuForOptions.id)
+      await loadAvailableMenu()
+    }
+    setTimeout(() => setMessage(''), 2000)
+  }
+
+  async function updateMenuOption() {
+    if (!optionForm.option_name || !optionForm.price_adjustment) {
+      setMessage('⚠️ ' + translate('size_name') + ' ' + translate('and') + ' ' + translate('price') + ' ' + translate('required'))
+      setTimeout(() => setMessage(''), 2000)
+      return
+    }
+
+    const { error } = await supabase
+      .from('menu_options')
+      .update({
+        option_name: optionForm.option_name,
+        price_adjustment: parseFloat(optionForm.price_adjustment),
+        is_absolute_price: optionForm.is_absolute_price,
+        sort_order: parseInt(optionForm.sort_order) || 0
+      })
+      .eq('id', editingOption.id)
+
+    if (error) {
+      setMessage('❌ ' + translate('error') + ': ' + error.message)
+    } else {
+      setMessage('✅ ' + translate('option_updated'))
+      await loadMenuOptions(selectedMenuForOptions.id)
+      setEditingOption(null)
+      setOptionForm({ option_name: '', price_adjustment: '', is_absolute_price: true, sort_order: 0 })
+    }
+    setTimeout(() => setMessage(''), 2000)
+  }
+
+  async function deleteMenuOption(optionId) {
+    if (!window.confirm(translate('confirm_delete'))) return
+
+    const { error } = await supabase
+      .from('menu_options')
+      .delete()
+      .eq('id', optionId)
+
+    if (error) {
+      setMessage('❌ ' + translate('error') + ': ' + error.message)
+    } else {
+      setMessage('✅ ' + translate('option_deleted'))
+      await loadMenuOptions(selectedMenuForOptions.id)
+      
+      const { count } = await supabase
+        .from('menu_options')
+        .select('*', { count: 'exact', head: true })
+        .eq('menu_id', selectedMenuForOptions.id)
+      
+      if (count === 0) {
+        await supabase.from('menu').update({ has_options: false }).eq('id', selectedMenuForOptions.id)
+        await loadAvailableMenu()
+      }
+    }
+    setTimeout(() => setMessage(''), 2000)
+  }
+
+  const openEditOption = (option) => {
+    setEditingOption(option)
+    setOptionForm({
+      option_name: option.option_name,
+      price_adjustment: option.price_adjustment,
+      is_absolute_price: option.is_absolute_price,
+      sort_order: option.sort_order
+    })
+  }
+
+  const openEditModal = (item) => { 
+    setSelectedItem(item)
+    setFormData({ 
+      name: item.name, 
+      price: item.price, 
+      category: item.category || '', 
+      stock: item.stock || 0, 
+      image_url: item.image_url || '', 
+      image_file: null,
+      description: item.description || ''
+    })
+    setShowEditModal(true) 
+  }
+  
+  const openEditSpecialModal = (item) => { 
+    setSelectedSpecialItem(item)
+    setSpecialFormData({ name: item.name, price: item.price, stock: item.stock || '', image_url: item.image_url || '', image_file: null, description: item.description || '' })
+    setShowEditSpecialModal(true) 
+  }
+  
+  const getDrinkOptionsForItem = (itemName) => {
+    return drinkOptions.filter(opt => opt.drink_name === itemName)
+  }
+
+  async function quickEditStock(item) {
+    const newStock = prompt(`${translate('stock')} "${item.name}"`, item.stock || 0)
+    if (newStock !== null && !isNaN(newStock) && newStock >= 0) {
+      const { error } = await supabase.from('menu').update({ stock: parseInt(newStock) }).eq('id', item.id)
+      if (error) { 
+        setMessage('❌ ' + translate('error') + ': ' + error.message) 
+      } else { 
+        setMessage(`✅ ${item.name} ${translate('stock_updated_to')} ${newStock}`)
+        await loadMenu()
+        await loadAvailableMenu() 
+      }
+      setTimeout(() => setMessage(''), 2000)
+    }
+  }
+
+  // ============================================================
+  // FILTERS & PAGINATION
+  // ============================================================
+  const categoriesForFilter = getCategoriesForFilter()
+  
+  const filteredMenu = activeCategory === 'all' 
+    ? menu.filter(item => item.name.toLowerCase().includes(searchMenuTerm.toLowerCase()))
+    : menu.filter(item => item.category === activeCategory && item.name.toLowerCase().includes(searchMenuTerm.toLowerCase()))
+  
+  const totalItems = filteredMenu.length
+  const totalPages = Math.ceil(totalItems / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const currentItems = filteredMenu.slice(startIndex, endIndex)
+
+  const getStockColor = (stock) => {
+    if (stock <= 0) return '#ef4444'
+    if (stock <= 10) return '#f59e0b'
+    return '#22c55e'
+  }
+
+  const getStockText = (stock) => {
+    if (stock <= 0) return translate('out_of_stock')
+    if (stock <= 10) return translate('low_stock')
+    return translate('ok')
+  }
+
+  // ============================================================
+  // PAGINATION COMPONENT
+  // ============================================================
+  const PaginationComponent = () => {
+    if (totalPages <= 1) return null
+    const pageNumbers = []
+    for (let i = 1; i <= Math.min(totalPages, 5); i++) pageNumbers.push(i)
+    if (totalPages > 5) pageNumbers.push('...', totalPages)
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        gap: isMobile ? '4px' : '8px', 
+        marginTop: '30px', 
+        flexWrap: 'wrap' 
+      }}>
+        <button 
+          onClick={() => setCurrentPage(1)} 
+          disabled={currentPage === 1} 
+          style={{ 
+            padding: isMobile ? '6px 12px' : '8px 16px', 
+            background: currentPage === 1 ? secondaryBg : '#3b82f6', 
+            color: currentPage === 1 ? textMuted : 'white', 
+            border: 'none', 
+            borderRadius: '8px', 
+            cursor: currentPage === 1 ? 'not-allowed' : 'pointer', 
+            fontWeight: 'bold', 
+            fontSize: isMobile ? '12px' : '14px',
+            transition: 'all 0.2s'
+          }}
+        >
+          «
+        </button>
+        <button 
+          onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))} 
+          disabled={currentPage === 1} 
+          style={{ 
+            padding: isMobile ? '6px 12px' : '8px 16px', 
+            background: currentPage === 1 ? secondaryBg : '#3b82f6', 
+            color: currentPage === 1 ? textMuted : 'white', 
+            border: 'none', 
+            borderRadius: '8px', 
+            cursor: currentPage === 1 ? 'not-allowed' : 'pointer', 
+            fontWeight: 'bold', 
+            fontSize: isMobile ? '12px' : '14px',
+            transition: 'all 0.2s'
+          }}
+        >
+          ‹
+        </button>
+        {pageNumbers.map((num, idx) => typeof num === 'number' ? (
+          <button 
+            key={idx} 
+            onClick={() => setCurrentPage(num)} 
+            style={{ 
+              minWidth: isMobile ? '34px' : '40px', 
+              padding: isMobile ? '6px 10px' : '8px 14px', 
+              background: currentPage === num ? '#22c55e' : cardBg, 
+              color: currentPage === num ? 'white' : textColor, 
+              border: `1px solid ${borderColor}`, 
+              borderRadius: '8px', 
+              cursor: 'pointer', 
+              fontWeight: currentPage === num ? 'bold' : '500', 
+              fontSize: isMobile ? '12px' : '14px',
+              transition: 'all 0.2s'
+            }}
+          >
+            {num}
+          </button>
+        ) : (
+          <span key={idx} style={{ padding: '8px 8px', color: textMuted }}>...</span>
+        ))}
+        <button 
+          onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))} 
+          disabled={currentPage === totalPages} 
+          style={{ 
+            padding: isMobile ? '6px 12px' : '8px 16px', 
+            background: currentPage === totalPages ? secondaryBg : '#3b82f6', 
+            color: currentPage === totalPages ? textMuted : 'white', 
+            border: 'none', 
+            borderRadius: '8px', 
+            cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', 
+            fontWeight: 'bold', 
+            fontSize: isMobile ? '12px' : '14px',
+            transition: 'all 0.2s'
+          }}
+        >
+          ›
+        </button>
+        <button 
+          onClick={() => setCurrentPage(totalPages)} 
+          disabled={currentPage === totalPages} 
+          style={{ 
+            padding: isMobile ? '6px 12px' : '8px 16px', 
+            background: currentPage === totalPages ? secondaryBg : '#3b82f6', 
+            color: currentPage === totalPages ? textMuted : 'white', 
+            border: 'none', 
+            borderRadius: '8px', 
+            cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', 
+            fontWeight: 'bold', 
+            fontSize: isMobile ? '12px' : '14px',
+            transition: 'all 0.2s'
+          }}
+        >
+          »
+        </button>
+      </div>
+    )
+  }
+
+  const menuGridCols = isMobile ? '1fr' : 'repeat(auto-fill, minmax(340px, 1fr))'
+
+  // ============================================================
+  // LOADING STATE
+  // ============================================================
+  if (loading) {
+    return (
+      <Sidebar>
+        <div style={{ 
+          padding: '20px', 
+          maxWidth: '1280px', 
+          margin: '0 auto', 
+          background: bgColor, 
+          minHeight: '100vh', 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center' 
+        }}>
+          <div className="spinner"></div>
+        </div>
+      </Sidebar>
+    )
+  }
+
+  // ============================================================
+  // RENDER
+  // ============================================================
+  return (
+    <Sidebar>
+      <div style={{ 
+        padding: isMobile ? '12px' : '24px', 
+        maxWidth: '1280px', 
+        margin: '0 auto', 
+        background: bgColor, 
+        minHeight: '100vh' 
+      }}>
+        
+        {/* HEADER */}
+        <div style={{ marginBottom: '24px' }}>
+          <h1 style={{ 
+            color: textColor, 
+            margin: 0, 
+            fontSize: isMobile ? '24px' : '30px', 
+            fontWeight: 'bold' 
+          }}>
+            {translate('manage_menu')}
+          </h1>
+          <p style={{ 
+            color: textMuted, 
+            marginTop: '4px', 
+            fontSize: isMobile ? '13px' : '15px' 
+          }}>
+            {translate('manage_menu_sub')}
+            <span style={{ 
+              marginLeft: '8px', 
+              background: '#3b82f6', 
+              color: 'white', 
+              padding: '2px 8px', 
+              borderRadius: '12px', 
+              fontSize: '10px' 
+            }}>
+              ⠿ Drag to reorder
+            </span>
+          </p>
+        </div>
+
+        {/* TABS */}
+        <div style={{ 
+          display: 'flex', 
+          gap: '6px', 
+          marginBottom: '24px', 
+          background: darkMode ? 'rgba(45, 45, 68, 0.4)' : 'rgba(0,0,0,0.03)', 
+          borderRadius: '50px', 
+          padding: '4px', 
+          flexWrap: 'wrap' 
+        }}>
+          <button 
+            onClick={() => setActiveTab('regular')} 
+            style={{ 
+              padding: isMobile ? '10px 18px' : '12px 28px', 
+              background: activeTab === 'regular' ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : 'transparent', 
+              color: activeTab === 'regular' ? 'white' : textColor, 
+              border: 'none', 
+              borderRadius: '50px', 
+              cursor: 'pointer', 
+              fontWeight: activeTab === 'regular' ? 'bold' : '500', 
+              fontSize: isMobile ? '13px' : '15px',
+              transition: 'all 0.2s',
+              flex: isMobile ? '1' : 'auto'
+            }}
+          >
+            {translate('regular_menu')}
+          </button>
+          <button 
+            onClick={() => setActiveTab('special')} 
+            style={{ 
+              padding: isMobile ? '10px 18px' : '12px 28px', 
+              background: activeTab === 'special' ? 'linear-gradient(135deg, #f59e0b, #d97706)' : 'transparent', 
+              color: activeTab === 'special' ? 'white' : textColor, 
+              border: 'none', 
+              borderRadius: '50px', 
+              cursor: 'pointer', 
+              fontWeight: activeTab === 'special' ? 'bold' : '500', 
+              fontSize: isMobile ? '13px' : '15px',
+              transition: 'all 0.2s',
+              flex: isMobile ? '1' : 'auto'
+            }}
+          >
+            {translate('special_menu')}
+          </button>
+          <button 
+            onClick={() => setActiveTab('promotions')} 
+            style={{ 
+              padding: isMobile ? '10px 18px' : '12px 28px', 
+              background: activeTab === 'promotions' ? 'linear-gradient(135deg, #8b5cf6, #7c3aed)' : 'transparent', 
+              color: activeTab === 'promotions' ? 'white' : textColor, 
+              border: 'none', 
+              borderRadius: '50px', 
+              cursor: 'pointer', 
+              fontWeight: activeTab === 'promotions' ? 'bold' : '500', 
+              fontSize: isMobile ? '13px' : '15px',
+              transition: 'all 0.2s',
+              flex: isMobile ? '1' : 'auto'
+            }}
+          >
+            {translate('promotions')}
+          </button>
+        </div>
+
+        {/* ========================================================== */}
+        {/* REGULAR TAB - WITH DRAG & DROP */}
+        {/* ========================================================== */}
+        {activeTab === 'regular' && (
+          <>
+            {/* Action Buttons */}
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'flex-end', 
+              gap: '10px', 
+              marginBottom: '20px', 
+              flexWrap: 'wrap' 
+            }}>
+              <button 
+                onClick={() => setShowAddModal(true)} 
+                style={{ 
+                  background: 'linear-gradient(135deg, #22c55e, #16a34a)', 
+                  color: 'white', 
+                  padding: isMobile ? '10px 18px' : '12px 24px', 
+                  border: 'none', 
+                  borderRadius: '40px', 
+                  cursor: 'pointer', 
+                  fontWeight: 'bold', 
+                  fontSize: isMobile ? '13px' : '14px', 
+                  boxShadow: '0 4px 15px rgba(34,197,94,0.3)',
+                  transition: 'all 0.2s'
+                }}
+              >
+                {translate('add_menu')}
+              </button>
+              <button 
+                onClick={() => setShowDrinkModal(true)} 
+                style={{ 
+                  background: 'linear-gradient(135deg, #06b6d4, #0891b2)', 
+                  color: 'white', 
+                  padding: isMobile ? '10px 18px' : '12px 24px', 
+                  border: 'none', 
+                  borderRadius: '40px', 
+                  cursor: 'pointer', 
+                  fontWeight: 'bold', 
+                  fontSize: isMobile ? '13px' : '14px', 
+                  boxShadow: '0 4px 15px rgba(6,182,212,0.3)',
+                  transition: 'all 0.2s'
+                }}
+              >
+                {translate('add_drink')}
+              </button>
+            </div>
+
+            {/* Message */}
+            {message && (
+              <div style={{ 
+                background: message.includes('✅') 
+                  ? (darkMode ? 'rgba(34,197,94,0.15)' : '#dcfce7') 
+                  : (darkMode ? 'rgba(239,68,68,0.15)' : '#fee2e2'), 
+                color: message.includes('✅') 
+                  ? (darkMode ? '#4ade80' : '#166534') 
+                  : (darkMode ? '#f87171' : '#991b1b'), 
+                padding: '12px 20px', 
+                borderRadius: '40px', 
+                marginBottom: '20px', 
+                textAlign: 'center', 
+                fontSize: isMobile ? '13px' : '14px', 
+                border: `1px solid ${message.includes('✅') ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'}`,
+                fontWeight: '500'
+              }}>
+                {message}
+              </div>
+            )}
+
+            {/* Search Bar */}
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{ 
+                ...glassEffect, 
+                borderRadius: '50px', 
+                padding: '4px 20px', 
+                display: 'flex', 
+                alignItems: 'center',
+                background: darkMode ? 'rgba(25,25,45,0.6)' : 'rgba(255,255,255,0.8)'
+              }}>
+                <span style={{ fontSize: isMobile ? '16px' : '20px', marginRight: '12px', color: textMuted }}>🔍</span>
+                <input 
+                  type="text" 
+                  placeholder={translate('search_menu')} 
+                  value={searchMenuTerm} 
+                  onChange={(e) => setSearchMenuTerm(e.target.value)} 
+                  style={{ 
+                    width: '100%', 
+                    padding: isMobile ? '12px 0' : '14px 0', 
+                    border: 'none', 
+                    background: 'transparent', 
+                    color: textColor, 
+                    fontSize: isMobile ? '14px' : '15px', 
+                    outline: 'none',
+                    fontWeight: '500'
+                  }} 
+                />
+                {searchMenuTerm && (
+                  <button 
+                    onClick={() => setSearchMenuTerm('')} 
+                    style={{ 
+                      background: 'transparent', 
+                      border: 'none', 
+                      color: textMuted, 
+                      cursor: 'pointer',
+                      fontSize: '18px',
+                      padding: '4px',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Category Filters */}
+            <div style={{ 
+              display: 'flex', 
+              gap: '8px', 
+              flexWrap: 'wrap', 
+              marginBottom: '20px',
+              padding: '4px'
+            }}>
+              <button 
+                onClick={() => setActiveCategory('all')} 
+                style={{ 
+                  padding: isMobile ? '8px 18px' : '10px 24px', 
+                  background: activeCategory === 'all' ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : 'transparent', 
+                  color: activeCategory === 'all' ? 'white' : textColor, 
+                  border: activeCategory === 'all' ? 'none' : `1px solid ${borderColor}`, 
+                  borderRadius: '50px', 
+                  cursor: 'pointer', 
+                  fontSize: isMobile ? '12px' : '14px',
+                  fontWeight: activeCategory === 'all' ? 'bold' : '500',
+                  transition: 'all 0.2s'
+                }}
+              >
+                🍽️ {translate('all')}
+              </button>
+              
+              {categoriesForFilter.filter(cat => cat !== 'all').map(catName => {
+                const icon = getCategoryIcon(catName)
+                return (
+                  <button 
+                    key={catName} 
+                    onClick={() => setActiveCategory(catName)} 
+                    style={{ 
+                      padding: isMobile ? '8px 18px' : '10px 24px', 
+                      background: activeCategory === catName ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : 'transparent', 
+                      color: activeCategory === catName ? 'white' : textColor, 
+                      border: activeCategory === catName ? 'none' : `1px solid ${borderColor}`, 
+                      borderRadius: '50px', 
+                      cursor: 'pointer', 
+                      fontSize: isMobile ? '12px' : '14px',
+                      fontWeight: activeCategory === catName ? 'bold' : '500',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    {icon} {catName}
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Menu Grid - WITH DRAG & DROP */}
+            {filteredMenu.length === 0 ? (
+              <div style={{ 
+                textAlign: 'center', 
+                padding: isMobile ? '40px 20px' : '80px 20px', 
+                ...glassEffect, 
+                borderRadius: '28px' 
+              }}>
+                <span style={{ fontSize: isMobile ? '48px' : '64px', opacity: 0.5 }}>🍽️</span>
+                <p style={{ color: textMuted, marginTop: '12px', fontSize: isMobile ? '14px' : '16px' }}>
+                  {translate('no_menu')}
+                </p>
+              </div>
+            ) : (
+              <>
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
+                >
+                  <SortableContext
+                    items={currentItems.map(item => item.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div style={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: menuGridCols, 
+                      gap: isMobile ? '14px' : '20px' 
+                    }}>
+                      {currentItems.map(item => {
+                        const drinkOpts = getDrinkOptionsForItem(item.name)
+                        const hasDrinkOptions = drinkOpts.length > 0
+                        const panasPrice = drinkOpts.find(o => o.option_type === 'Panas')?.price
+                        const sejukPrice = drinkOpts.find(o => o.option_type === 'Sejuk')?.price
+                        const bungkusPrice = drinkOpts.find(o => o.option_type === 'Bungkus')?.price
+                        const stockColor = getStockColor(item.stock || 0)
+                        const stockStatus = getStockText(item.stock || 0)
+                        const hasImage = item.image_url && item.image_url !== null && item.image_url !== ''
+                        const hasDescription = item.description && item.description.trim() !== ''
+                        
+                        return (
+                          <SortableMenuItem key={item.id} item={item}>
+                            <div 
+                              className="card-hover"
+                              style={{ 
+                                ...glassEffect, 
+                                borderRadius: '16px', 
+                                padding: isMobile ? '14px' : '20px',
+                                transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                                cursor: 'grab',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '10px',
+                                position: 'relative'
+                              }}
+                            >
+                              {/* Drag Handle */}
+                              <div style={{
+                                position: 'absolute',
+                                top: '4px',
+                                right: '8px',
+                                fontSize: '14px',
+                                color: textMuted,
+                                opacity: 0.3,
+                                cursor: 'grab'
+                              }}>
+                                ⠿
+                              </div>
+                              
+                              {/* Row 1: Image + Info */}
+                              <div style={{ 
+                                display: 'flex', 
+                                gap: '14px', 
+                                alignItems: 'center',
+                                flexDirection: isMobile ? 'column' : 'row'
+                              }}>
+                                {/* Image */}
+                                <div style={{ flexShrink: 0 }}>
+                                  {hasImage ? (
+                                    <div style={{ position: 'relative' }}>
+                                      <img 
+                                        src={item.image_url} 
+                                        alt={item.name} 
+                                        style={{ 
+                                          width: isMobile ? '64px' : '72px', 
+                                          height: isMobile ? '64px' : '72px', 
+                                          objectFit: 'cover', 
+                                          borderRadius: '12px',
+                                          border: `1px solid ${borderColor}`
+                                        }} 
+                                      />
+                                      <button 
+                                        onClick={() => deleteImage(item.image_url, item.id)} 
+                                        style={{ 
+                                          position: 'absolute', 
+                                          top: '-6px', 
+                                          right: '-6px', 
+                                          background: '#ef4444', 
+                                          color: 'white', 
+                                          borderRadius: '50%', 
+                                          width: '20px', 
+                                          height: '20px', 
+                                          fontSize: '10px', 
+                                          cursor: 'pointer', 
+                                          border: 'none',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
+                                          transition: 'all 0.2s'
+                                        }}
+                                      >
+                                        ✕
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <div style={{ 
+                                      width: isMobile ? '64px' : '72px', 
+                                      height: isMobile ? '64px' : '72px', 
+                                      background: secondaryBg, 
+                                      borderRadius: '12px', 
+                                      display: 'flex', 
+                                      alignItems: 'center', 
+                                      justifyContent: 'center', 
+                                      fontSize: isMobile ? '30px' : '34px',
+                                      border: `1px solid ${borderColor}`
+                                    }}>
+                                      {item.category === 'Makanan' ? '🍚' : '🥤'}
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Info */}
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <div style={{ 
+                                    fontWeight: 'bold', 
+                                    fontSize: isMobile ? '15px' : '17px', 
+                                    color: textColor,
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis'
+                                  }}>
+                                    {item.name}
+                                  </div>
+                                  <div style={{ 
+                                    color: '#22c55e', 
+                                    fontWeight: 'bold', 
+                                    fontSize: isMobile ? '15px' : '17px' 
+                                  }}>
+                                    RM {item.price}
+                                  </div>
+                                  <div style={{ 
+                                    fontSize: isMobile ? '11px' : '12px', 
+                                    color: textMuted,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    flexWrap: 'wrap'
+                                  }}>
+                                    <span>{item.category}</span>
+                                    {item.has_options && (
+                                      <span style={{ 
+                                        background: '#8b5cf6', 
+                                        color: 'white', 
+                                        padding: '2px 10px', 
+                                        borderRadius: '12px', 
+                                        fontSize: '9px',
+                                        fontWeight: 'bold'
+                                      }}>
+                                        ⚙️ Size
+                                      </span>
+                                    )}
+                                  </div>
+                                  {hasDescription && (
+                                    <div style={{ 
+                                      fontSize: isMobile ? '11px' : '12px', 
+                                      color: textMuted,
+                                      marginTop: '4px',
+                                      fontStyle: 'italic',
+                                      background: secondaryBg,
+                                      padding: '4px 10px',
+                                      borderRadius: '8px',
+                                      border: `1px solid ${borderColor}`
+                                    }}>
+                                      📝 {item.description}
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Stock + Actions */}
+                                <div style={{ 
+                                  display: 'flex', 
+                                  flexDirection: 'column', 
+                                  alignItems: 'center',
+                                  gap: '6px',
+                                  flexShrink: 0
+                                }}>
+                                  <div style={{ 
+                                    background: stockColor, 
+                                    color: 'white', 
+                                    padding: '4px 10px', 
+                                    borderRadius: '20px', 
+                                    fontSize: isMobile ? '10px' : '11px',
+                                    textAlign: 'center',
+                                    fontWeight: 'bold',
+                                    minWidth: '60px'
+                                  }}>
+                                    {translate('stock')}: {item.stock || 0}
+                                    <span style={{ 
+                                      background: 'rgba(255,255,255,0.25)', 
+                                      padding: '1px 6px', 
+                                      borderRadius: '12px', 
+                                      marginLeft: '4px',
+                                      fontSize: '8px'
+                                    }}>
+                                      {stockStatus}
+                                    </span>
+                                  </div>
+                                  
+                                  <div style={{ 
+                                    display: 'flex', 
+                                    gap: '4px', 
+                                    flexWrap: 'wrap',
+                                    justifyContent: 'center'
+                                  }}>
+                                    <button 
+                                      onClick={() => quickEditStock(item)} 
+                                      style={{ 
+                                        background: '#06b6d4', 
+                                        color: 'white', 
+                                        padding: '4px 8px', 
+                                        border: 'none', 
+                                        borderRadius: '16px', 
+                                        cursor: 'pointer', 
+                                        fontSize: isMobile ? '9px' : '10px',
+                                        fontWeight: 'bold',
+                                        transition: 'all 0.2s'
+                                      }}
+                                    >
+                                      📦
+                                    </button>
+                                    <button 
+                                      onClick={() => openEditModal(item)} 
+                                      style={{ 
+                                        background: '#f59e0b', 
+                                        color: 'white', 
+                                        padding: '4px 8px', 
+                                        border: 'none', 
+                                        borderRadius: '16px', 
+                                        cursor: 'pointer', 
+                                        fontSize: isMobile ? '9px' : '10px',
+                                        fontWeight: 'bold',
+                                        transition: 'all 0.2s'
+                                      }}
+                                    >
+                                      ✏️
+                                    </button>
+                                    <button 
+                                      onClick={() => { 
+                                        setSelectedMenuForOptions(item); 
+                                        loadMenuOptions(item.id); 
+                                        setShowOptionsModal(true); 
+                                      }} 
+                                      style={{ 
+                                        background: '#8b5cf6', 
+                                        color: 'white', 
+                                        padding: '4px 8px', 
+                                        border: 'none', 
+                                        borderRadius: '16px', 
+                                        cursor: 'pointer', 
+                                        fontSize: isMobile ? '9px' : '10px',
+                                        fontWeight: 'bold',
+                                        transition: 'all 0.2s'
+                                      }}
+                                    >
+                                      ⚙️
+                                    </button>
+                                    <button 
+                                      onClick={() => deleteMenuItem(item.id, item.name)} 
+                                      style={{ 
+                                        background: '#ef4444', 
+                                        color: 'white', 
+                                        padding: '4px 8px', 
+                                        border: 'none', 
+                                        borderRadius: '16px', 
+                                        cursor: 'pointer', 
+                                        fontSize: isMobile ? '9px' : '10px',
+                                        fontWeight: 'bold',
+                                        transition: 'all 0.2s'
+                                      }}
+                                    >
+                                      🗑️
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Drink Options */}
+                              {hasDrinkOptions && (
+                                <div style={{ 
+                                  marginTop: '4px', 
+                                  paddingTop: '12px', 
+                                  borderTop: `1px solid ${borderColor}`,
+                                  display: 'flex',
+                                  justifyContent: 'center',
+                                  gap: isMobile ? '10px' : '16px',
+                                  flexWrap: 'wrap',
+                                  background: secondaryBg,
+                                  borderRadius: '12px',
+                                  padding: '10px'
+                                }}>
+                                  {/* Panas */}
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    <span style={{ fontSize: isMobile ? '11px' : '12px', color: '#f97316', fontWeight: 'bold' }}>🔥</span>
+                                    <input 
+                                      type="number" 
+                                      step="0.01" 
+                                      value={drinkPriceEdits[`${item.name}_Panas`] !== undefined ? drinkPriceEdits[`${item.name}_Panas`] : (panasPrice || '')} 
+                                      onChange={(e) => handleDrinkPriceChange(item.name, 'Panas', e.target.value)} 
+                                      style={{ 
+                                        width: isMobile ? '55px' : '65px', 
+                                        padding: '4px 6px', 
+                                        borderRadius: '8px', 
+                                        border: `1px solid ${borderColor}`, 
+                                        background: inputBg, 
+                                        color: inputText, 
+                                        fontSize: isMobile ? '11px' : '12px',
+                                        textAlign: 'center'
+                                      }} 
+                                    />
+                                    <button 
+                                      onClick={() => handleDrinkPriceSave(item.name, 'Panas')} 
+                                      style={{ 
+                                        background: '#22c55e', 
+                                        color: 'white', 
+                                        padding: '2px 8px', 
+                                        border: 'none', 
+                                        borderRadius: '12px', 
+                                        cursor: 'pointer', 
+                                        fontSize: isMobile ? '9px' : '10px',
+                                        fontWeight: 'bold',
+                                        transition: 'all 0.2s'
+                                      }}
+                                    >
+                                      ✓
+                                    </button>
+                                  </div>
+
+                                  {/* Sejuk */}
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    <span style={{ fontSize: isMobile ? '11px' : '12px', color: '#06b6d4', fontWeight: 'bold' }}>🧊</span>
+                                    <input 
+                                      type="number" 
+                                      step="0.01" 
+                                      value={drinkPriceEdits[`${item.name}_Sejuk`] !== undefined ? drinkPriceEdits[`${item.name}_Sejuk`] : (sejukPrice || '')} 
+                                      onChange={(e) => handleDrinkPriceChange(item.name, 'Sejuk', e.target.value)} 
+                                      style={{ 
+                                        width: isMobile ? '55px' : '65px', 
+                                        padding: '4px 6px', 
+                                        borderRadius: '8px', 
+                                        border: `1px solid ${borderColor}`, 
+                                        background: inputBg, 
+                                        color: inputText, 
+                                        fontSize: isMobile ? '11px' : '12px',
+                                        textAlign: 'center'
+                                      }} 
+                                    />
+                                    <button 
+                                      onClick={() => handleDrinkPriceSave(item.name, 'Sejuk')} 
+                                      style={{ 
+                                        background: '#22c55e', 
+                                        color: 'white', 
+                                        padding: '2px 8px', 
+                                        border: 'none', 
+                                        borderRadius: '12px', 
+                                        cursor: 'pointer', 
+                                        fontSize: isMobile ? '9px' : '10px',
+                                        fontWeight: 'bold',
+                                        transition: 'all 0.2s'
+                                      }}
+                                    >
+                                      ✓
+                                    </button>
+                                  </div>
+
+                                  {/* Bungkus */}
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    <span style={{ fontSize: isMobile ? '11px' : '12px', color: '#8b5cf6', fontWeight: 'bold' }}>📦</span>
+                                    <input 
+                                      type="number" 
+                                      step="0.01" 
+                                      value={drinkPriceEdits[`${item.name}_Bungkus`] !== undefined ? drinkPriceEdits[`${item.name}_Bungkus`] : (bungkusPrice || '')} 
+                                      onChange={(e) => handleDrinkPriceChange(item.name, 'Bungkus', e.target.value)} 
+                                      style={{ 
+                                        width: isMobile ? '55px' : '65px', 
+                                        padding: '4px 6px', 
+                                        borderRadius: '8px', 
+                                        border: `1px solid ${borderColor}`, 
+                                        background: inputBg, 
+                                        color: inputText, 
+                                        fontSize: isMobile ? '11px' : '12px',
+                                        textAlign: 'center'
+                                      }} 
+                                    />
+                                    <button 
+                                      onClick={() => handleDrinkPriceSave(item.name, 'Bungkus')} 
+                                      style={{ 
+                                        background: '#22c55e', 
+                                        color: 'white', 
+                                        padding: '2px 8px', 
+                                        border: 'none', 
+                                        borderRadius: '12px', 
+                                        cursor: 'pointer', 
+                                        fontSize: isMobile ? '9px' : '10px',
+                                        fontWeight: 'bold',
+                                        transition: 'all 0.2s'
+                                      }}
+                                    >
+                                      ✓
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </SortableMenuItem>
+                        )
+                      })}
+                    </div>
+                  </SortableContext>
+                </DndContext>
+                
+                <PaginationComponent />
+                
+                <div style={{ 
+                  textAlign: 'center', 
+                  marginTop: '16px', 
+                  fontSize: isMobile ? '12px' : '13px', 
+                  color: textMuted 
+                }}>
+                  {translate('showing')} {startIndex + 1}-{Math.min(endIndex, totalItems)} {translate('of')} {totalItems} {translate('items')}
+                </div>
+              </>
+            )}
+          </>
+        )}
+
+        {/* ========================================================== */}
+        {/* SPECIAL TAB */}
+        {/* ========================================================== */}
+        {activeTab === 'special' && (
+          <>
+            <div style={{ 
+              ...glassEffect, 
+              borderRadius: '20px', 
+              padding: isMobile ? '16px' : '24px', 
+              marginBottom: '20px', 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center', 
+              flexWrap: 'wrap', 
+              gap: '12px' 
+            }}>
+              <div>
+                <h3 style={{ margin: 0, color: textColor, fontSize: isMobile ? '15px' : '17px' }}>
+                  {translate('activate_special')}
+                </h3>
+                <p style={{ margin: '4px 0 0 0', fontSize: isMobile ? '11px' : '13px', color: textMuted }}>
+                  {translate('activate_special_desc')}
+                </p>
+              </div>
+              <label style={{ position: 'relative', display: 'inline-block', width: '52px', height: '26px' }}>
+                <input 
+                  type="checkbox" 
+                  checked={specialMenuEnabled} 
+                  onChange={async (e) => { 
+                    setSpecialMenuEnabled(e.target.checked); 
+                    await supabase.from('settings').upsert({ key: 'special_menu_enabled', value: e.target.checked.toString() }, { onConflict: 'key' }) 
+                  }} 
+                  style={{ opacity: 0, width: 0, height: 0 }} 
+                />
+                <span style={{ 
+                  position: 'absolute', 
+                  cursor: 'pointer', 
+                  top: 0, 
+                  left: 0, 
+                  right: 0, 
+                  bottom: 0, 
+                  backgroundColor: specialMenuEnabled ? '#22c55e' : '#64748b', 
+                  transition: '.3s', 
+                  borderRadius: '34px' 
+                }}>
+                  <span style={{ 
+                    position: 'absolute', 
+                    height: '20px', 
+                    width: '20px', 
+                    left: '3px', 
+                    bottom: '3px', 
+                    backgroundColor: 'white', 
+                    transition: '.3s', 
+                    borderRadius: '50%', 
+                    transform: specialMenuEnabled ? 'translateX(26px)' : 'none' 
+                  }} />
+                </span>
+              </label>
+            </div>
+
+            {specialMenuEnabled && (
+              <>
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={{ 
+                    display: 'block', 
+                    fontWeight: 'bold', 
+                    marginBottom: '8px', 
+                    color: textColor, 
+                    fontSize: isMobile ? '13px' : '14px' 
+                  }}>
+                    {translate('special_title')}
+                  </label>
+                  <input 
+                    type="text" 
+                    value={specialMenuTitle} 
+                    onChange={async (e) => { 
+                      setSpecialMenuTitle(e.target.value); 
+                      await supabase.from('settings').upsert({ key: 'special_menu_title', value: e.target.value }, { onConflict: 'key' }) 
+                    }} 
+                    style={inputStyle} 
+                  />
+                </div>
+
+                <div style={{ ...glassEffect, borderRadius: '20px', padding: isMobile ? '16px' : '24px' }}>
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center', 
+                    marginBottom: '16px', 
+                    flexWrap: 'wrap', 
+                    gap: '10px' 
+                  }}>
+                    <h3 style={{ margin: 0, color: textColor, fontSize: isMobile ? '15px' : '17px' }}>
+                      {translate('special_items')}
+                    </h3>
+                    <button 
+                      onClick={() => setShowAddSpecialModal(true)} 
+                      style={{ 
+                        background: '#22c55e', 
+                        color: 'white', 
+                        padding: isMobile ? '8px 18px' : '10px 24px', 
+                        border: 'none', 
+                        borderRadius: '30px', 
+                        cursor: 'pointer', 
+                        fontWeight: 'bold', 
+                        fontSize: isMobile ? '13px' : '14px', 
+                        boxShadow: '0 4px 15px rgba(34,197,94,0.3)',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      + {translate('add')}
+                    </button>
+                  </div>
+                  
+                  {specialItems.length === 0 ? (
+                    <p style={{ textAlign: 'center', padding: '30px', color: textMuted, fontSize: isMobile ? '13px' : '14px' }}>
+                      {translate('no_special_items')}
+                    </p>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {specialItems.map(item => (
+                        <div key={item.id} style={{ 
+                          display: 'flex', 
+                          justifyContent: 'space-between', 
+                          alignItems: 'center', 
+                          padding: '12px', 
+                          background: secondaryBg, 
+                          borderRadius: '12px', 
+                          flexWrap: 'wrap', 
+                          gap: '10px' 
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            {item.image_url && (
+                              <img 
+                                src={item.image_url} 
+                                alt={item.name} 
+                                style={{ 
+                                  width: isMobile ? '36px' : '44px', 
+                                  height: isMobile ? '36px' : '44px', 
+                                  borderRadius: '8px', 
+                                  objectFit: 'cover' 
+                                }} 
+                              />
+                            )}
+                            <div>
+                              <strong style={{ color: textColor, fontSize: isMobile ? '14px' : '15px' }}>{item.name}</strong>
+                              <div style={{ fontSize: isMobile ? '12px' : '13px', color: '#22c55e', fontWeight: 'bold' }}>
+                                RM {item.price}
+                              </div>
+                              {item.description && (
+                                <div style={{ fontSize: '10px', color: textMuted, fontStyle: 'italic' }}>
+                                  📝 {item.description}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            <button 
+                              onClick={() => openEditSpecialModal(item)} 
+                              style={{ 
+                                background: '#f59e0b', 
+                                color: 'white', 
+                                padding: '4px 14px', 
+                                border: 'none', 
+                                borderRadius: '20px', 
+                                cursor: 'pointer', 
+                                fontSize: isMobile ? '12px' : '13px',
+                                fontWeight: 'bold',
+                                transition: 'all 0.2s'
+                              }}
+                            >
+                              {translate('edit')}
+                            </button>
+                            <button 
+                              onClick={() => deleteSpecialItem(item.id, item.name)} 
+                              style={{ 
+                                background: '#ef4444', 
+                                color: 'white', 
+                                padding: '4px 14px', 
+                                border: 'none', 
+                                borderRadius: '20px', 
+                                cursor: 'pointer', 
+                                fontSize: isMobile ? '12px' : '13px',
+                                fontWeight: 'bold',
+                                transition: 'all 0.2s'
+                              }}
+                            >
+                              {translate('delete')}
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </>
+        )}
+
+        {/* ========================================================== */}
+        {/* PROMOTIONS TAB */}
+        {/* ========================================================== */}
+        {activeTab === 'promotions' && (
+          <>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
+              <button 
+                onClick={() => { resetPromoForm(); setShowAddPromoModal(true) }} 
+                style={{ 
+                  background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)', 
+                  color: 'white', 
+                  padding: isMobile ? '10px 18px' : '12px 24px', 
+                  border: 'none', 
+                  borderRadius: '40px', 
+                  cursor: 'pointer', 
+                  fontWeight: 'bold', 
+                  fontSize: isMobile ? '13px' : '14px', 
+                  boxShadow: '0 4px 15px rgba(139,92,246,0.3)',
+                  transition: 'all 0.2s'
+                }}
+              >
+                + {translate('add_promotion')}
+              </button>
+            </div>
+            
+            {promotions.length === 0 ? (
+              <div style={{ 
+                textAlign: 'center', 
+                padding: isMobile ? '40px 20px' : '80px 20px', 
+                ...glassEffect, 
+                borderRadius: '28px' 
+              }}>
+                <span style={{ fontSize: isMobile ? '48px' : '64px', opacity: 0.5 }}>🏷️</span>
+                <p style={{ color: textMuted, marginTop: '12px', fontSize: isMobile ? '14px' : '16px' }}>
+                  {translate('no_promotions')}
+                </p>
+              </div>
+            ) : (
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(350px, 1fr))', 
+                gap: '16px' 
+              }}>
+                {promotions.map(promo => (
+                  <div key={promo.id} style={{ 
+                    ...glassEffect, 
+                    borderRadius: '20px', 
+                    padding: isMobile ? '16px' : '20px', 
+                    borderLeft: `4px solid ${promo.is_active ? '#22c55e' : '#ef4444'}` 
+                  }}>
+                    <div style={{ 
+                      display: 'flex', 
+                      gap: '12px', 
+                      alignItems: 'center', 
+                      marginBottom: '12px', 
+                      flexWrap: 'wrap' 
+                    }}>
+                      {promo.image_url ? (
+                        <img 
+                          src={promo.image_url} 
+                          alt={promo.name} 
+                          style={{ 
+                            width: isMobile ? '44px' : '56px', 
+                            height: isMobile ? '44px' : '56px', 
+                            borderRadius: '10px', 
+                            objectFit: 'cover' 
+                          }} 
+                        />
+                      ) : (
+                        <div style={{ 
+                          width: isMobile ? '44px' : '56px', 
+                          height: isMobile ? '44px' : '56px', 
+                          background: secondaryBg, 
+                          borderRadius: '10px', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center', 
+                          fontSize: isMobile ? '24px' : '28px' 
+                        }}>
+                          🏷️
+                        </div>
+                      )}
+                      <div style={{ flex: 1 }}>
+                        <h3 style={{ 
+                          margin: 0, 
+                          fontSize: isMobile ? '15px' : '17px', 
+                          fontWeight: 'bold', 
+                          color: textColor 
+                        }}>
+                          {promo.name}
+                        </h3>
+                        <span style={{ 
+                          background: promo.is_active ? '#22c55e' : '#ef4444', 
+                          color: 'white', 
+                          padding: '2px 10px', 
+                          borderRadius: '20px', 
+                          fontSize: isMobile ? '10px' : '11px',
+                          fontWeight: 'bold'
+                        }}>
+                          {promo.is_active ? translate('active') : translate('inactive')}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div style={{ 
+                      display: 'flex', 
+                      gap: '8px', 
+                      justifyContent: 'flex-end', 
+                      marginTop: '12px', 
+                      paddingTop: '12px', 
+                      borderTop: `1px solid ${borderColor}`, 
+                      flexWrap: 'wrap' 
+                    }}>
+                      <button 
+                        onClick={() => togglePromoStatus(promo.id, promo.is_active)} 
+                        style={{ 
+                          background: promo.is_active ? '#ef4444' : '#22c55e', 
+                          color: 'white', 
+                          padding: '6px 14px', 
+                          border: 'none', 
+                          borderRadius: '20px', 
+                          cursor: 'pointer', 
+                          fontSize: isMobile ? '11px' : '12px',
+                          fontWeight: 'bold',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        {promo.is_active ? translate('disable') : translate('enable')}
+                      </button>
+                      <button 
+                        onClick={() => openEditPromoModal(promo)} 
+                        style={{ 
+                          background: '#f59e0b', 
+                          color: 'white', 
+                          padding: '6px 14px', 
+                          border: 'none', 
+                          borderRadius: '20px', 
+                          cursor: 'pointer', 
+                          fontSize: isMobile ? '11px' : '12px',
+                          fontWeight: 'bold',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        ✏️ {translate('edit')}
+                      </button>
+                      <button 
+                        onClick={() => deletePromotion(promo.id, promo.name)} 
+                        style={{ 
+                          background: '#ef4444', 
+                          color: 'white', 
+                          padding: '6px 14px', 
+                          border: 'none', 
+                          borderRadius: '20px', 
+                          cursor: 'pointer', 
+                          fontSize: isMobile ? '11px' : '12px',
+                          fontWeight: 'bold',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        🗑️ {translate('delete')}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* ========================================================== */}
+        {/* CSS STYLES */}
+        {/* ========================================================== */}
+        <style>
+          {`
+            .spinner { 
+              width: 48px; 
+              height: 48px; 
+              border: 4px solid rgba(59,130,246,0.15); 
+              border-top-color: #3b82f6; 
+              border-radius: 50%; 
+              animation: spin 1s linear infinite; 
+              margin: 0 auto; 
+            }
+            
+            .spinner-small {
+              width: 20px;
+              height: 20px;
+              border: 2px solid rgba(59,130,246,0.15);
+              border-top-color: #3b82f6;
+              border-radius: 50%;
+              animation: spin 1s linear infinite;
+              flex-shrink: 0;
+            }
+            
+            @keyframes spin { 
+              to { transform: rotate(360deg); } 
+            }
+            
+            @keyframes fadeIn { 
+              from { opacity: 0; } 
+              to { opacity: 1; } 
+            }
+            
+            @keyframes popIn { 
+              0% { opacity: 0; transform: scale(0.95) translateY(10px); } 
+              100% { opacity: 1; transform: scale(1) translateY(0); } 
+            }
+            
+            .card-hover {
+              transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            
+            .card-hover:hover {
+              transform: translateY(-3px);
+              box-shadow: ${darkMode 
+                ? '0 12px 40px rgba(0,0,0,0.5)' 
+                : '0 12px 40px rgba(0,0,0,0.1)'};
+            }
+            
+            ::-webkit-scrollbar { 
+              width: 6px; 
+              height: 6px;
+            }
+            
+            ::-webkit-scrollbar-track { 
+              background: ${darkMode ? '#1a1a2e' : '#e2e8f0'}; 
+              border-radius: 10px; 
+            }
+            
+            ::-webkit-scrollbar-thumb { 
+              background: ${darkMode ? '#3d3d5c' : '#94a3b8'}; 
+              border-radius: 10px; 
+            }
+            
+            input, select, textarea { 
+              transition: border-color 0.2s, box-shadow 0.2s; 
+            }
+            
+            input:focus, select:focus, textarea:focus { 
+              outline: none; 
+              border-color: #3b82f6;
+              box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+            }
+            
+            button { 
+              transition: all 0.2s; 
+            }
+            
+            button:hover { 
+              opacity: 0.88; 
+              transform: scale(0.97); 
+            }
+            
+            button:active {
+              transform: scale(0.93);
+            }
+            
+            .sortable-item {
+              transition: all 0.2s ease;
+            }
+            
+            .sortable-item:active {
+              cursor: grabbing;
+            }
+          `}
+        </style>
+      </div>
+    </Sidebar>
+  )
+}
+
+export default ManageMenu
