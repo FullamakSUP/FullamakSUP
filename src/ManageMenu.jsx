@@ -424,6 +424,31 @@ function ManageMenu() {
     boxSizing: 'border-box'
   }
 
+  const buttonPrimaryStyle = {
+    flex: 1,
+    background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+    color: 'white',
+    padding: isMobile ? '12px' : '14px',
+    border: 'none',
+    borderRadius: '12px',
+    cursor: 'pointer',
+    fontWeight: 'bold',
+    fontSize: isMobile ? '14px' : '15px',
+    transition: 'all 0.2s'
+  }
+
+  const buttonSecondaryStyle = {
+    flex: 1,
+    background: '#64748b',
+    color: 'white',
+    padding: isMobile ? '12px' : '14px',
+    border: 'none',
+    borderRadius: '12px',
+    cursor: 'pointer',
+    fontSize: isMobile ? '14px' : '15px',
+    transition: 'all 0.2s'
+  }
+
   // ============================================================
   // CHECK MOBILE
   // ============================================================
@@ -2598,6 +2623,278 @@ function ManageMenu() {
               </div>
             )}
           </>
+        )}
+
+        {/* ========================================================== */}
+        {/* MODALS - ADD MENU */}
+        {/* ========================================================== */}
+        
+        {/* ADD MENU MODAL */}
+        {showAddModal && (
+          <div style={modalOverlayStyle}>
+            <div style={modalContentStyle}>
+              <h3 style={modalTitleStyle}>{translate('add_menu')}</h3>
+              <input
+                type="text"
+                placeholder={translate('name')}
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                style={inputStyle}
+              />
+              <input
+                type="number"
+                placeholder={translate('price')}
+                value={formData.price}
+                onChange={(e) => setFormData({...formData, price: e.target.value})}
+                style={inputStyle}
+              />
+              <input
+                type="text"
+                placeholder={translate('description')}
+                value={formData.description}
+                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                style={inputStyle}
+              />
+              <input
+                type="number"
+                placeholder={translate('stock_qty')}
+                value={formData.stock}
+                onChange={(e) => setFormData({...formData, stock: parseInt(e.target.value) || 0})}
+                style={inputStyle}
+              />
+              <select
+                value={formData.category}
+                onChange={(e) => setFormData({...formData, category: e.target.value})}
+                style={inputStyle}
+              >
+                <option value="">{translate('select_category')}</option>
+                {categories.map(cat => (
+                  <option key={cat.id} value={cat.name}>{cat.icon} {cat.name}</option>
+                ))}
+              </select>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setFormData({...formData, image_file: e.target.files[0]})}
+                style={inputStyle}
+              />
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button onClick={() => setShowAddModal(false)} style={buttonSecondaryStyle}>
+                  {translate('cancel')}
+                </button>
+                <button onClick={addRegularMenuItem} style={buttonPrimaryStyle}>
+                  {translate('add')}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* EDIT MENU MODAL */}
+        {showEditModal && selectedItem && (
+          <div style={modalOverlayStyle}>
+            <div style={modalContentStyle}>
+              <h3 style={modalTitleStyle}>{translate('edit_menu')}</h3>
+              <input
+                type="text"
+                placeholder={translate('name')}
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                style={inputStyle}
+              />
+              <input
+                type="number"
+                placeholder={translate('price')}
+                value={formData.price}
+                onChange={(e) => setFormData({...formData, price: e.target.value})}
+                style={inputStyle}
+              />
+              <input
+                type="text"
+                placeholder={translate('description')}
+                value={formData.description}
+                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                style={inputStyle}
+              />
+              <input
+                type="number"
+                placeholder={translate('stock_qty')}
+                value={formData.stock}
+                onChange={(e) => setFormData({...formData, stock: parseInt(e.target.value) || 0})}
+                style={inputStyle}
+              />
+              <select
+                value={formData.category}
+                onChange={(e) => setFormData({...formData, category: e.target.value})}
+                style={inputStyle}
+              >
+                <option value="">{translate('select_category')}</option>
+                {categories.map(cat => (
+                  <option key={cat.id} value={cat.name}>{cat.icon} {cat.name}</option>
+                ))}
+              </select>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setFormData({...formData, image_file: e.target.files[0]})}
+                style={inputStyle}
+              />
+              {formData.image_url && (
+                <div style={{ marginBottom: '12px' }}>
+                  <img src={formData.image_url} alt="Preview" style={{ width: '100px', borderRadius: '8px' }} />
+                </div>
+              )}
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button onClick={() => setShowEditModal(false)} style={buttonSecondaryStyle}>
+                  {translate('cancel')}
+                </button>
+                <button onClick={updateRegularMenuItem} style={buttonPrimaryStyle}>
+                  {translate('save')}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ADD DRINK MODAL */}
+        {showDrinkModal && (
+          <div style={modalOverlayStyle}>
+            <div style={modalContentStyle}>
+              <h3 style={modalTitleStyle}>{translate('add_drink_title')}</h3>
+              <input
+                type="text"
+                placeholder={translate('drink_name')}
+                value={newDrinkName}
+                onChange={(e) => setNewDrinkName(e.target.value)}
+                style={inputStyle}
+              />
+              <input
+                type="number"
+                step="0.01"
+                placeholder={translate('hot_price')}
+                value={newDrinkPanas}
+                onChange={(e) => setNewDrinkPanas(e.target.value)}
+                style={inputStyle}
+              />
+              <input
+                type="number"
+                step="0.01"
+                placeholder={translate('cold_price')}
+                value={newDrinkSejuk}
+                onChange={(e) => setNewDrinkSejuk(e.target.value)}
+                style={inputStyle}
+              />
+              <input
+                type="number"
+                step="0.01"
+                placeholder={translate('takeaway_price')}
+                value={newDrinkBungkus}
+                onChange={(e) => setNewDrinkBungkus(e.target.value)}
+                style={inputStyle}
+              />
+              <input
+                type="number"
+                placeholder={translate('stock_qty')}
+                value={newDrinkStock}
+                onChange={(e) => setNewDrinkStock(e.target.value)}
+                style={inputStyle}
+              />
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button onClick={() => setShowDrinkModal(false)} style={buttonSecondaryStyle}>
+                  {translate('cancel')}
+                </button>
+                <button onClick={addDrinkWithOptions} style={buttonPrimaryStyle}>
+                  {translate('add')}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* SIZE OPTIONS MODAL */}
+        {showOptionsModal && selectedMenuForOptions && (
+          <div style={modalOverlayStyle}>
+            <div style={modalContentStyle}>
+              <h3 style={modalTitleStyle}>⚙️ {translate('size_options')} - {selectedMenuForOptions.name}</h3>
+              
+              <div style={{ marginBottom: '16px' }}>
+                <h4 style={{ color: textColor, marginBottom: '8px' }}>{translate('add_size')}</h4>
+                <input
+                  type="text"
+                  placeholder={translate('size_name')}
+                  value={optionForm.option_name}
+                  onChange={(e) => setOptionForm({...optionForm, option_name: e.target.value})}
+                  style={inputStyle}
+                />
+                <input
+                  type="number"
+                  step="0.01"
+                  placeholder={translate('size_price')}
+                  value={optionForm.price_adjustment}
+                  onChange={(e) => setOptionForm({...optionForm, price_adjustment: e.target.value})}
+                  style={inputStyle}
+                />
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '12px' }}>
+                  <label style={{ color: textColor }}>
+                    <input
+                      type="checkbox"
+                      checked={optionForm.is_absolute_price}
+                      onChange={(e) => setOptionForm({...optionForm, is_absolute_price: e.target.checked})}
+                    />
+                    {translate('absolute_price')}
+                  </label>
+                </div>
+                <button onClick={editingOption ? updateMenuOption : addMenuOption} style={buttonPrimaryStyle}>
+                  {editingOption ? translate('save') : translate('add')}
+                </button>
+              </div>
+
+              <div>
+                <h4 style={{ color: textColor, marginBottom: '8px' }}>{translate('size_list')}</h4>
+                {menuOptions.length === 0 ? (
+                  <p style={{ color: textMuted }}>{translate('no_sizes')}</p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {menuOptions.map(opt => (
+                      <div key={opt.id} style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center',
+                        padding: '8px 12px',
+                        background: secondaryBg,
+                        borderRadius: '8px',
+                        border: `1px solid ${borderColor}`
+                      }}>
+                        <span style={{ color: textColor }}>
+                          {opt.option_name} - RM {opt.price_adjustment} {opt.is_absolute_price ? '(Absolute)' : '(Adjustment)'}
+                        </span>
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                          <button 
+                            onClick={() => openEditOption(opt)} 
+                            style={{ background: '#f59e0b', color: 'white', padding: '2px 10px', border: 'none', borderRadius: '12px', cursor: 'pointer', fontSize: '11px' }}
+                          >
+                            ✏️
+                          </button>
+                          <button 
+                            onClick={() => deleteMenuOption(opt.id)} 
+                            style={{ background: '#ef4444', color: 'white', padding: '2px 10px', border: 'none', borderRadius: '12px', cursor: 'pointer', fontSize: '11px' }}
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div style={{ marginTop: '16px' }}>
+                <button onClick={() => setShowOptionsModal(false)} style={buttonSecondaryStyle}>
+                  {translate('close')}
+                </button>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* ========================================================== */}
