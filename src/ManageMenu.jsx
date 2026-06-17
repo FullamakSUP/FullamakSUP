@@ -329,7 +329,7 @@ function ManageMenu() {
   }
 
   // ============================================================
-  // THEME COLORS - FIXED DARKMODE
+  // THEME COLORS
   // ============================================================
   const bgColor = darkMode ? '#0f172a' : '#f1f5f9'
   const cardBg = darkMode ? 'rgba(30, 41, 59, 0.95)' : 'rgba(255, 255, 255, 0.95)'
@@ -402,31 +402,6 @@ function ManageMenu() {
     fontSize: isMobile ? '14px' : '15px',
     transition: 'all 0.2s',
     boxSizing: 'border-box'
-  }
-
-  const buttonPrimaryStyle = {
-    flex: 1,
-    background: 'linear-gradient(135deg, #22c55e, #16a34a)',
-    color: 'white',
-    padding: isMobile ? '12px' : '14px',
-    border: 'none',
-    borderRadius: '12px',
-    cursor: 'pointer',
-    fontWeight: 'bold',
-    fontSize: isMobile ? '14px' : '15px',
-    transition: 'all 0.2s'
-  }
-
-  const buttonSecondaryStyle = {
-    flex: 1,
-    background: '#64748b',
-    color: 'white',
-    padding: isMobile ? '12px' : '14px',
-    border: 'none',
-    borderRadius: '12px',
-    cursor: 'pointer',
-    fontSize: isMobile ? '14px' : '15px',
-    transition: 'all 0.2s'
   }
 
   // ============================================================
@@ -608,7 +583,7 @@ function ManageMenu() {
   }
 
   // ============================================================
-  // CATEGORY DRAG & DROP HANDLER - FIXED
+  // CATEGORY DRAG & DROP HANDLER
   // ============================================================
   async function handleCategoryDragEnd(event) {
     const { active, over } = event
@@ -620,7 +595,6 @@ function ManageMenu() {
     
     setIsCategoryDragging(true)
     
-    // Get current category list (excluding 'all')
     const categoryList = getCategoriesForFilter().filter(cat => cat !== 'all')
     
     const oldIndex = categoryList.findIndex(cat => cat === active.id)
@@ -633,13 +607,11 @@ function ManageMenu() {
     
     const newOrder = arrayMove(categoryList, oldIndex, newIndex)
     
-    // Update sort_order for all categories
     const updates = newOrder.map((catName, index) => ({
       name: catName,
       sort_order: index
     }))
     
-    // Update local state
     const updatedCategories = categories.map(cat => {
       const update = updates.find(u => u.name === cat.name)
       if (update) {
@@ -650,7 +622,6 @@ function ManageMenu() {
     setCategories(updatedCategories)
     
     try {
-      // Save to Supabase
       for (const update of updates) {
         await supabase
           .from('categories')
@@ -669,7 +640,7 @@ function ManageMenu() {
   }
 
   // ============================================================
-  // MENU DRAG & DROP HANDLER - FIXED!
+  // MENU DRAG & DROP HANDLER
   // ============================================================
   async function handleMenuDragEnd(event) {
     const { active, over } = event
@@ -681,12 +652,10 @@ function ManageMenu() {
     
     setIsDragging(true)
     
-    // Get ALL items in the current category (not paginated)
     const allInCategory = activeCategory === 'all' 
       ? [...menu] 
       : menu.filter(item => item.category === activeCategory)
     
-    // Find old and new indices
     const oldIndex = allInCategory.findIndex(item => item.id === active.id)
     const newIndex = allInCategory.findIndex(item => item.id === over.id)
     
@@ -695,16 +664,13 @@ function ManageMenu() {
       return
     }
     
-    // Reorder the array
     const newOrder = arrayMove(allInCategory, oldIndex, newIndex)
     
-    // Update sort_order based on new position (0-based index)
     const updates = newOrder.map((item, index) => ({
       id: item.id,
       sort_order: index
     }))
     
-    // Update local state
     const updatedMenu = menu.map(item => {
       const update = updates.find(u => u.id === item.id)
       return update ? { ...item, sort_order: update.sort_order } : item
@@ -712,7 +678,6 @@ function ManageMenu() {
     setMenu(updatedMenu)
     
     try {
-      // Save to Supabase
       for (const update of updates) {
         await supabase
           .from('menu')
@@ -721,7 +686,6 @@ function ManageMenu() {
       }
       setMessage('✅ ' + translate('order_updated'))
       setTimeout(() => setMessage(''), 2000)
-      // Reload to sync with database
       await loadMenu()
     } catch (error) {
       console.error('Drag error:', error)
@@ -870,7 +834,6 @@ function ManageMenu() {
     
     const categoryName = formData.category || 'Makanan'
     
-    // Get max sort_order for this category
     const itemsInCategory = menu.filter(item => item.category === categoryName)
     const maxSortOrder = itemsInCategory.length
     
@@ -1907,8 +1870,13 @@ function ManageMenu() {
                                           border: `1px solid ${borderColor}`
                                         }} 
                                       />
+                                      {/* DELETE IMAGE BUTTON - FIXED */}
                                       <button 
-                                        onClick={() => deleteImage(item.image_url, item.id)} 
+                                        onClick={(e) => { 
+                                          e.stopPropagation(); 
+                                          e.preventDefault();
+                                          deleteImage(item.image_url, item.id); 
+                                        }} 
                                         style={{ 
                                           position: 'absolute', 
                                           top: '-6px', 
@@ -2040,8 +2008,13 @@ function ManageMenu() {
                                     flexWrap: 'wrap',
                                     justifyContent: 'center'
                                   }}>
+                                    {/* STOCK BUTTON - FIXED */}
                                     <button 
-                                      onClick={() => quickEditStock(item)} 
+                                      onClick={(e) => { 
+                                        e.stopPropagation(); 
+                                        e.preventDefault();
+                                        quickEditStock(item); 
+                                      }} 
                                       style={{ 
                                         background: '#06b6d4', 
                                         color: 'white', 
@@ -2056,8 +2029,13 @@ function ManageMenu() {
                                     >
                                       📦
                                     </button>
+                                    {/* EDIT BUTTON - FIXED */}
                                     <button 
-                                      onClick={() => openEditModal(item)} 
+                                      onClick={(e) => { 
+                                        e.stopPropagation(); 
+                                        e.preventDefault();
+                                        openEditModal(item); 
+                                      }} 
                                       style={{ 
                                         background: '#f59e0b', 
                                         color: 'white', 
@@ -2072,8 +2050,11 @@ function ManageMenu() {
                                     >
                                       ✏️
                                     </button>
+                                    {/* OPTIONS BUTTON - FIXED */}
                                     <button 
-                                      onClick={() => { 
+                                      onClick={(e) => { 
+                                        e.stopPropagation(); 
+                                        e.preventDefault();
                                         setSelectedMenuForOptions(item); 
                                         loadMenuOptions(item.id); 
                                         setShowOptionsModal(true); 
@@ -2092,8 +2073,13 @@ function ManageMenu() {
                                     >
                                       ⚙️
                                     </button>
+                                    {/* DELETE BUTTON - FIXED */}
                                     <button 
-                                      onClick={() => deleteMenuItem(item.id, item.name)} 
+                                      onClick={(e) => { 
+                                        e.stopPropagation(); 
+                                        e.preventDefault();
+                                        deleteMenuItem(item.id, item.name); 
+                                      }} 
                                       style={{ 
                                         background: '#ef4444', 
                                         color: 'white', 
