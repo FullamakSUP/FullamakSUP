@@ -192,7 +192,7 @@ function ManageMenu() {
   const menuSensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: 5,
       },
     }),
     useSensor(KeyboardSensor, {
@@ -608,7 +608,7 @@ function ManageMenu() {
   }
 
   // ============================================================
-  // CATEGORY DRAG & DROP HANDLER
+  // CATEGORY DRAG & DROP HANDLER - FIXED
   // ============================================================
   async function handleCategoryDragEnd(event) {
     const { active, over } = event
@@ -620,6 +620,7 @@ function ManageMenu() {
     
     setIsCategoryDragging(true)
     
+    // Get current category list (excluding 'all')
     const categoryList = getCategoriesForFilter().filter(cat => cat !== 'all')
     
     const oldIndex = categoryList.findIndex(cat => cat === active.id)
@@ -632,11 +633,13 @@ function ManageMenu() {
     
     const newOrder = arrayMove(categoryList, oldIndex, newIndex)
     
+    // Update sort_order for all categories
     const updates = newOrder.map((catName, index) => ({
       name: catName,
       sort_order: index
     }))
     
+    // Update local state
     const updatedCategories = categories.map(cat => {
       const update = updates.find(u => u.name === cat.name)
       if (update) {
@@ -647,6 +650,7 @@ function ManageMenu() {
     setCategories(updatedCategories)
     
     try {
+      // Save to Supabase
       for (const update of updates) {
         await supabase
           .from('categories')
@@ -665,7 +669,7 @@ function ManageMenu() {
   }
 
   // ============================================================
-  // MENU DRAG & DROP HANDLER
+  // MENU DRAG & DROP HANDLER - FIXED!
   // ============================================================
   async function handleMenuDragEnd(event) {
     const { active, over } = event
@@ -677,30 +681,30 @@ function ManageMenu() {
     
     setIsDragging(true)
     
-    const currentList = currentItems
+    // Get ALL items in the current category (not paginated)
+    const allInCategory = activeCategory === 'all' 
+      ? [...menu] 
+      : menu.filter(item => item.category === activeCategory)
     
-    const oldIndex = currentList.findIndex(item => item.id === active.id)
-    const newIndex = currentList.findIndex(item => item.id === over.id)
+    // Find old and new indices
+    const oldIndex = allInCategory.findIndex(item => item.id === active.id)
+    const newIndex = allInCategory.findIndex(item => item.id === over.id)
     
     if (oldIndex === -1 || newIndex === -1) {
       setIsDragging(false)
       return
     }
     
-    const newOrder = arrayMove(currentList, oldIndex, newIndex)
+    // Reorder the array
+    const newOrder = arrayMove(allInCategory, oldIndex, newIndex)
     
-    const allInCategory = activeCategory === 'all' 
-      ? menu 
-      : menu.filter(item => item.category === activeCategory)
-    
-    const firstItemId = currentList[0]?.id
-    const baseIndex = allInCategory.findIndex(item => item.id === firstItemId)
-    
+    // Update sort_order based on new position (0-based index)
     const updates = newOrder.map((item, index) => ({
       id: item.id,
-      sort_order: baseIndex + index
+      sort_order: index
     }))
     
+    // Update local state
     const updatedMenu = menu.map(item => {
       const update = updates.find(u => u.id === item.id)
       return update ? { ...item, sort_order: update.sort_order } : item
@@ -708,6 +712,7 @@ function ManageMenu() {
     setMenu(updatedMenu)
     
     try {
+      // Save to Supabase
       for (const update of updates) {
         await supabase
           .from('menu')
@@ -716,6 +721,7 @@ function ManageMenu() {
       }
       setMessage('✅ ' + translate('order_updated'))
       setTimeout(() => setMessage(''), 2000)
+      // Reload to sync with database
       await loadMenu()
     } catch (error) {
       console.error('Drag error:', error)
@@ -864,6 +870,10 @@ function ManageMenu() {
     
     const categoryName = formData.category || 'Makanan'
     
+    // Get max sort_order for this category
+    const itemsInCategory = menu.filter(item => item.category === categoryName)
+    const maxSortOrder = itemsInCategory.length
+    
     const { error } = await supabase.from('menu').insert([{ 
       name: formData.name, 
       price: parseFloat(formData.price), 
@@ -872,7 +882,7 @@ function ManageMenu() {
       image_url: imageUrl || null, 
       has_options: false,
       description: formData.description || null,
-      sort_order: menu.length
+      sort_order: maxSortOrder
     }])
     if (error) { 
       setMessage('❌ ' + translate('error') + ': ' + error.message) 
