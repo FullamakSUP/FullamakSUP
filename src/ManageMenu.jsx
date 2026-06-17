@@ -22,7 +22,7 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 
 // ============================================================
-// SORTABLE MENU ITEM
+// SORTABLE MENU ITEM - FIXED (Drag handle separated from buttons)
 // ============================================================
 function SortableMenuItem({ item, children }) {
   const {
@@ -38,12 +38,32 @@ function SortableMenuItem({ item, children }) {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
-    cursor: 'grab',
+    cursor: 'default',
     touchAction: 'none',
+    position: 'relative',
   }
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+    <div ref={setNodeRef} style={style} {...attributes}>
+      {/* Drag Handle - ONLY this is draggable */}
+      <div 
+        {...listeners} 
+        style={{ 
+          position: 'absolute',
+          top: '8px',
+          right: '8px',
+          cursor: 'grab',
+          fontSize: '16px',
+          color: '#94a3b8',
+          opacity: 0.4,
+          padding: '4px',
+          zIndex: 10,
+          userSelect: 'none'
+        }}
+        title="Drag to reorder"
+      >
+        ⠿
+      </div>
       {children}
     </div>
   )
@@ -1828,26 +1848,13 @@ function ManageMenu() {
                                 borderRadius: '16px', 
                                 padding: isMobile ? '14px' : '20px',
                                 transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                                cursor: 'grab',
+                                cursor: 'default',
                                 display: 'flex',
                                 flexDirection: 'column',
                                 gap: '10px',
                                 position: 'relative'
                               }}
                             >
-                              {/* Drag Handle */}
-                              <div style={{
-                                position: 'absolute',
-                                top: '4px',
-                                right: '8px',
-                                fontSize: '14px',
-                                color: textMuted,
-                                opacity: 0.3,
-                                cursor: 'grab'
-                              }}>
-                                ⠿
-                              </div>
-                              
                               {/* Row 1: Image + Info */}
                               <div style={{ 
                                 display: 'flex', 
@@ -1870,13 +1877,8 @@ function ManageMenu() {
                                           border: `1px solid ${borderColor}`
                                         }} 
                                       />
-                                      {/* DELETE IMAGE BUTTON - FIXED */}
                                       <button 
-                                        onClick={(e) => { 
-                                          e.stopPropagation(); 
-                                          e.preventDefault();
-                                          deleteImage(item.image_url, item.id); 
-                                        }} 
+                                        onClick={() => deleteImage(item.image_url, item.id)} 
                                         style={{ 
                                           position: 'absolute', 
                                           top: '-6px', 
@@ -2008,13 +2010,8 @@ function ManageMenu() {
                                     flexWrap: 'wrap',
                                     justifyContent: 'center'
                                   }}>
-                                    {/* STOCK BUTTON - FIXED */}
                                     <button 
-                                      onClick={(e) => { 
-                                        e.stopPropagation(); 
-                                        e.preventDefault();
-                                        quickEditStock(item); 
-                                      }} 
+                                      onClick={() => quickEditStock(item)} 
                                       style={{ 
                                         background: '#06b6d4', 
                                         color: 'white', 
@@ -2029,13 +2026,8 @@ function ManageMenu() {
                                     >
                                       📦
                                     </button>
-                                    {/* EDIT BUTTON - FIXED */}
                                     <button 
-                                      onClick={(e) => { 
-                                        e.stopPropagation(); 
-                                        e.preventDefault();
-                                        openEditModal(item); 
-                                      }} 
+                                      onClick={() => openEditModal(item)} 
                                       style={{ 
                                         background: '#f59e0b', 
                                         color: 'white', 
@@ -2050,11 +2042,8 @@ function ManageMenu() {
                                     >
                                       ✏️
                                     </button>
-                                    {/* OPTIONS BUTTON - FIXED */}
                                     <button 
-                                      onClick={(e) => { 
-                                        e.stopPropagation(); 
-                                        e.preventDefault();
+                                      onClick={() => { 
                                         setSelectedMenuForOptions(item); 
                                         loadMenuOptions(item.id); 
                                         setShowOptionsModal(true); 
@@ -2073,13 +2062,8 @@ function ManageMenu() {
                                     >
                                       ⚙️
                                     </button>
-                                    {/* DELETE BUTTON - FIXED */}
                                     <button 
-                                      onClick={(e) => { 
-                                        e.stopPropagation(); 
-                                        e.preventDefault();
-                                        deleteMenuItem(item.id, item.name); 
-                                      }} 
+                                      onClick={() => deleteMenuItem(item.id, item.name)} 
                                       style={{ 
                                         background: '#ef4444', 
                                         color: 'white', 
@@ -2673,12 +2657,12 @@ function ManageMenu() {
             
             ::-webkit-scrollbar-track { 
               background: ${darkMode ? '#1a1a2e' : '#e2e8f0'}; 
-              border-radius: 10px; 
+              borderRadius: 10px; 
             }
             
             ::-webkit-scrollbar-thumb { 
               background: ${darkMode ? '#3d3d5c' : '#94a3b8'}; 
-              border-radius: 10px; 
+              borderRadius: 10px; 
             }
             
             input, select, textarea { 
