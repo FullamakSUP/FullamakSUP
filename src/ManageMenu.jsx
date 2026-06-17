@@ -2626,7 +2626,7 @@ function ManageMenu() {
         )}
 
         {/* ========================================================== */}
-        {/* MODALS - ADD MENU */}
+        {/* MODALS */}
         {/* ========================================================== */}
         
         {/* ADD MENU MODAL */}
@@ -2643,6 +2643,7 @@ function ManageMenu() {
               />
               <input
                 type="number"
+                step="0.01"
                 placeholder={translate('price')}
                 value={formData.price}
                 onChange={(e) => setFormData({...formData, price: e.target.value})}
@@ -2704,6 +2705,7 @@ function ManageMenu() {
               />
               <input
                 type="number"
+                step="0.01"
                 placeholder={translate('price')}
                 value={formData.price}
                 onChange={(e) => setFormData({...formData, price: e.target.value})}
@@ -2891,6 +2893,330 @@ function ManageMenu() {
               <div style={{ marginTop: '16px' }}>
                 <button onClick={() => setShowOptionsModal(false)} style={buttonSecondaryStyle}>
                   {translate('close')}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ADD SPECIAL MODAL */}
+        {showAddSpecialModal && (
+          <div style={modalOverlayStyle}>
+            <div style={modalContentStyle}>
+              <h3 style={modalTitleStyle}>{translate('add_special')}</h3>
+              <input
+                type="text"
+                placeholder={translate('name')}
+                value={specialFormData.name}
+                onChange={(e) => setSpecialFormData({...specialFormData, name: e.target.value})}
+                style={inputStyle}
+              />
+              <input
+                type="number"
+                step="0.01"
+                placeholder={translate('price')}
+                value={specialFormData.price}
+                onChange={(e) => setSpecialFormData({...specialFormData, price: e.target.value})}
+                style={inputStyle}
+              />
+              <input
+                type="text"
+                placeholder={translate('description')}
+                value={specialFormData.description}
+                onChange={(e) => setSpecialFormData({...specialFormData, description: e.target.value})}
+                style={inputStyle}
+              />
+              <input
+                type="number"
+                placeholder={translate('stock_qty')}
+                value={specialFormData.stock}
+                onChange={(e) => setSpecialFormData({...specialFormData, stock: e.target.value})}
+                style={inputStyle}
+              />
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setSpecialFormData({...specialFormData, image_file: e.target.files[0]})}
+                style={inputStyle}
+              />
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button onClick={() => setShowAddSpecialModal(false)} style={buttonSecondaryStyle}>
+                  {translate('cancel')}
+                </button>
+                <button onClick={addSpecialItem} style={buttonPrimaryStyle}>
+                  {translate('add')}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* EDIT SPECIAL MODAL */}
+        {showEditSpecialModal && selectedSpecialItem && (
+          <div style={modalOverlayStyle}>
+            <div style={modalContentStyle}>
+              <h3 style={modalTitleStyle}>{translate('edit_special')}</h3>
+              <input
+                type="text"
+                placeholder={translate('name')}
+                value={specialFormData.name}
+                onChange={(e) => setSpecialFormData({...specialFormData, name: e.target.value})}
+                style={inputStyle}
+              />
+              <input
+                type="number"
+                step="0.01"
+                placeholder={translate('price')}
+                value={specialFormData.price}
+                onChange={(e) => setSpecialFormData({...specialFormData, price: e.target.value})}
+                style={inputStyle}
+              />
+              <input
+                type="text"
+                placeholder={translate('description')}
+                value={specialFormData.description}
+                onChange={(e) => setSpecialFormData({...specialFormData, description: e.target.value})}
+                style={inputStyle}
+              />
+              <input
+                type="number"
+                placeholder={translate('stock_qty')}
+                value={specialFormData.stock}
+                onChange={(e) => setSpecialFormData({...specialFormData, stock: e.target.value})}
+                style={inputStyle}
+              />
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setSpecialFormData({...specialFormData, image_file: e.target.files[0]})}
+                style={inputStyle}
+              />
+              {specialFormData.image_url && (
+                <div style={{ marginBottom: '12px' }}>
+                  <img src={specialFormData.image_url} alt="Preview" style={{ width: '100px', borderRadius: '8px' }} />
+                </div>
+              )}
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button onClick={() => setShowEditSpecialModal(false)} style={buttonSecondaryStyle}>
+                  {translate('cancel')}
+                </button>
+                <button onClick={updateSpecialItem} style={buttonPrimaryStyle}>
+                  {translate('save')}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ADD PROMOTION MODAL */}
+        {showAddPromoModal && (
+          <div style={modalOverlayStyle}>
+            <div style={modalContentStyle}>
+              <h3 style={modalTitleStyle}>{translate('add_promotion')}</h3>
+              <input
+                type="text"
+                placeholder={translate('promo_name')}
+                value={promoFormData.name}
+                onChange={(e) => setPromoFormData({...promoFormData, name: e.target.value})}
+                style={inputStyle}
+              />
+              <select
+                value={promoFormData.type}
+                onChange={(e) => setPromoFormData({...promoFormData, type: e.target.value})}
+                style={inputStyle}
+              >
+                <option value="set_menu">{translate('set_menu')}</option>
+                <option value="bundle">{translate('bundle')}</option>
+                <option value="bogo">{translate('bogo')}</option>
+              </select>
+
+              {promoFormData.type === 'bogo' && (
+                <>
+                  <select
+                    value={promoFormData.trigger_item_id || ''}
+                    onChange={(e) => setPromoFormData({...promoFormData, trigger_item_id: parseInt(e.target.value)})}
+                    style={inputStyle}
+                  >
+                    <option value="">{translate('trigger_item')}</option>
+                    {availableMenuItems.map(item => (
+                      <option key={item.id} value={item.id}>{item.name} (RM {item.price})</option>
+                    ))}
+                  </select>
+                  <select
+                    value={promoFormData.free_item_id || ''}
+                    onChange={(e) => setPromoFormData({...promoFormData, free_item_id: parseInt(e.target.value)})}
+                    style={inputStyle}
+                  >
+                    <option value="">{translate('free_item')}</option>
+                    {availableMenuItems.map(item => (
+                      <option key={item.id} value={item.id}>{item.name} (RM {item.price})</option>
+                    ))}
+                  </select>
+                </>
+              )}
+
+              {(promoFormData.type === 'set_menu' || promoFormData.type === 'bundle') && (
+                <>
+                  <select
+                    multiple
+                    value={promoFormData.selected_bundle_items}
+                    onChange={(e) => {
+                      const selected = Array.from(e.target.selectedOptions, option => parseInt(option.value))
+                      setPromoFormData({...promoFormData, selected_bundle_items: selected})
+                    }}
+                    style={{...inputStyle, height: '100px'}}
+                  >
+                    {availableMenuItems.map(item => (
+                      <option key={item.id} value={item.id}>{item.name} (RM {item.price})</option>
+                    ))}
+                  </select>
+                  <input
+                    type="number"
+                    step="0.01"
+                    placeholder={translate('promo_price')}
+                    value={promoFormData.bundle_price}
+                    onChange={(e) => setPromoFormData({...promoFormData, bundle_price: e.target.value})}
+                    style={inputStyle}
+                  />
+                </>
+              )}
+
+              <input
+                type="date"
+                placeholder={translate('start_date')}
+                value={promoFormData.start_date}
+                onChange={(e) => setPromoFormData({...promoFormData, start_date: e.target.value})}
+                style={inputStyle}
+              />
+              <input
+                type="date"
+                placeholder={translate('end_date')}
+                value={promoFormData.end_date}
+                onChange={(e) => setPromoFormData({...promoFormData, end_date: e.target.value})}
+                style={inputStyle}
+              />
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setPromoFormData({...promoFormData, image_file: e.target.files[0]})}
+                style={inputStyle}
+              />
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button onClick={() => setShowAddPromoModal(false)} style={buttonSecondaryStyle}>
+                  {translate('cancel')}
+                </button>
+                <button onClick={addPromotion} style={buttonPrimaryStyle}>
+                  {translate('add')}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* EDIT PROMOTION MODAL */}
+        {showEditPromoModal && selectedPromo && (
+          <div style={modalOverlayStyle}>
+            <div style={modalContentStyle}>
+              <h3 style={modalTitleStyle}>{translate('edit_promotion')}</h3>
+              <input
+                type="text"
+                placeholder={translate('promo_name')}
+                value={promoFormData.name}
+                onChange={(e) => setPromoFormData({...promoFormData, name: e.target.value})}
+                style={inputStyle}
+              />
+              <select
+                value={promoFormData.type}
+                onChange={(e) => setPromoFormData({...promoFormData, type: e.target.value})}
+                style={inputStyle}
+              >
+                <option value="set_menu">{translate('set_menu')}</option>
+                <option value="bundle">{translate('bundle')}</option>
+                <option value="bogo">{translate('bogo')}</option>
+              </select>
+
+              {promoFormData.type === 'bogo' && (
+                <>
+                  <select
+                    value={promoFormData.trigger_item_id || ''}
+                    onChange={(e) => setPromoFormData({...promoFormData, trigger_item_id: parseInt(e.target.value)})}
+                    style={inputStyle}
+                  >
+                    <option value="">{translate('trigger_item')}</option>
+                    {availableMenuItems.map(item => (
+                      <option key={item.id} value={item.id}>{item.name} (RM {item.price})</option>
+                    ))}
+                  </select>
+                  <select
+                    value={promoFormData.free_item_id || ''}
+                    onChange={(e) => setPromoFormData({...promoFormData, free_item_id: parseInt(e.target.value)})}
+                    style={inputStyle}
+                  >
+                    <option value="">{translate('free_item')}</option>
+                    {availableMenuItems.map(item => (
+                      <option key={item.id} value={item.id}>{item.name} (RM {item.price})</option>
+                    ))}
+                  </select>
+                </>
+              )}
+
+              {(promoFormData.type === 'set_menu' || promoFormData.type === 'bundle') && (
+                <>
+                  <select
+                    multiple
+                    value={promoFormData.selected_bundle_items}
+                    onChange={(e) => {
+                      const selected = Array.from(e.target.selectedOptions, option => parseInt(option.value))
+                      setPromoFormData({...promoFormData, selected_bundle_items: selected})
+                    }}
+                    style={{...inputStyle, height: '100px'}}
+                  >
+                    {availableMenuItems.map(item => (
+                      <option key={item.id} value={item.id}>{item.name} (RM {item.price})</option>
+                    ))}
+                  </select>
+                  <input
+                    type="number"
+                    step="0.01"
+                    placeholder={translate('promo_price')}
+                    value={promoFormData.bundle_price}
+                    onChange={(e) => setPromoFormData({...promoFormData, bundle_price: e.target.value})}
+                    style={inputStyle}
+                  />
+                </>
+              )}
+
+              <input
+                type="date"
+                placeholder={translate('start_date')}
+                value={promoFormData.start_date}
+                onChange={(e) => setPromoFormData({...promoFormData, start_date: e.target.value})}
+                style={inputStyle}
+              />
+              <input
+                type="date"
+                placeholder={translate('end_date')}
+                value={promoFormData.end_date}
+                onChange={(e) => setPromoFormData({...promoFormData, end_date: e.target.value})}
+                style={inputStyle}
+              />
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setPromoFormData({...promoFormData, image_file: e.target.files[0]})}
+                style={inputStyle}
+              />
+              {promoFormData.image_url && (
+                <div style={{ marginBottom: '12px' }}>
+                  <img src={promoFormData.image_url} alt="Preview" style={{ width: '100px', borderRadius: '8px' }} />
+                </div>
+              )}
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button onClick={() => setShowEditPromoModal(false)} style={buttonSecondaryStyle}>
+                  {translate('cancel')}
+                </button>
+                <button onClick={updatePromotion} style={buttonPrimaryStyle}>
+                  {translate('save')}
                 </button>
               </div>
             </div>
