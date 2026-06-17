@@ -108,7 +108,11 @@ function CustomerMenu() {
     hot_price: { en: 'Hot', ms: 'Panas' },
     cold_price: { en: 'Cold', ms: 'Sejuk' },
     takeaway_price: { en: 'Takeaway', ms: 'Bungkus' },
-    all: { en: 'All', ms: 'Semua' }
+    all: { en: 'All', ms: 'Semua' },
+    // New translations for real-time
+    menu_updated: { en: '🔄 Menu updated!', ms: '🔄 Menu dikemaskini!' },
+    category_updated: { en: '🔄 Categories updated!', ms: '🔄 Kategori dikemaskini!' },
+    promo_updated: { en: '🔄 Promotions updated!', ms: '🔄 Promosi dikemaskini!' },
   }
 
   const translate = (key) => {
@@ -135,14 +139,165 @@ function CustomerMenu() {
   const inputBg = darkMode ? '#1e1e2e' : '#ffffff'
   const secondaryBg = darkMode ? 'rgba(30, 30, 46, 0.8)' : '#fef3c7'
 
+  // ============================================================
+  // LOAD DATA + REAL-TIME SUBSCRIPTIONS
+  // ============================================================
   useEffect(() => {
+    // Load initial data
     loadAllData()
+    loadSettings()
+    loadPromotions()
+    
+    // Get table number from URL
     const params = new URLSearchParams(window.location.search)
     const table = params.get('table')
     if (table) setTableNumber(table)
-    loadSettings()
-    loadPromotions()
+
+    // ===== REAL-TIME SUBSCRIPTION FOR MENU =====
+    const menuSubscription = supabase
+      .channel('customer-menu-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // INSERT, UPDATE, DELETE
+          schema: 'public',
+          table: 'menu'
+        },
+        (payload) => {
+          console.log('🔄 Menu changed:', payload)
+          loadMenu()
+          toast.success(translate('menu_updated'), { duration: 1500 })
+        }
+      )
+      .subscribe()
+
+    // ===== REAL-TIME SUBSCRIPTION FOR CATEGORIES =====
+    const categorySubscription = supabase
+      .channel('customer-category-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'categories'
+        },
+        (payload) => {
+          console.log('🔄 Categories changed:', payload)
+          loadCategories()
+          toast.success(translate('category_updated'), { duration: 1500 })
+        }
+      )
+      .subscribe()
+
+    // ===== REAL-TIME SUBSCRIPTION FOR DRINK OPTIONS =====
+    const drinkSubscription = supabase
+      .channel('customer-drink-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'drink_options'
+        },
+        (payload) => {
+          console.log('🔄 Drink options changed:', payload)
+          loadDrinkOptions()
+        }
+      )
+      .subscribe()
+
+    // ===== REAL-TIME SUBSCRIPTION FOR PROMOTIONS =====
+    const promoSubscription = supabase
+      .channel('customer-promo-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'promotions'
+        },
+        (payload) => {
+          console.log('🔄 Promotions changed:', payload)
+          loadPromotions()
+          toast.success(translate('promo_updated'), { duration: 1500 })
+        }
+      )
+      .subscribe()
+
+    // ===== REAL-TIME SUBSCRIPTION FOR SPECIAL MENU (Settings) =====
+    const settingsSubscription = supabase
+      .channel('customer-settings-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'settings'
+        },
+        (payload) => {
+          console.log('🔄 Settings changed:', payload)
+          loadSpecialMenu()
+          loadRestaurantInfo()
+        }
+      )
+      .subscribe()
+
+    // ===== CLEANUP =====
+    return () => {
+      menuSubscription.unsubscribe()
+      categorySubscription.unsubscribe()
+      drinkSubscription.unsubscribe()
+      promoSubscription.unsubscribe()
+      settingsSubscription.unsubscribe()
+    }
   }, [])
+
+  async function loadAllData() {
+    setLoading(true)
+    await loadRestaurantInfo()
+    await loadCategories()
+    await loadMenu()
+    await loadDrinkOptions()
+    await loadSpecialMenu()
+    setLoading(false)
+  }
+
+  async function loadRestaurantInfo() {
+    try {
+      const { data: nameData } = await supabase.from('settings').select('value').eq('key', 'restaurant_name').single()
+      if (nameData) setRestaurantName(nameData.value)
+      const { data: logoData } = await supabase.from('settings').select('value').eq('key', 'logo_url').single()
+      if (logoData) setRestaurantLogo(logoData.value)
+    } catch (err) {
+      console.error('Error loading restaurant info:', err)
+    }
+  }
+
+  async function loadCategories() {
+    const { data } = await supabase
+      .from('categories')
+      .select('*')
+      .order('sort_order', { ascending: true })
+    setCategories(data || [])
+  }
+
+  async function loadMenu() {
+    const { data } = await supabase
+      .from('menu')
+      .select('*')
+      .order('sort_order', { ascending: true })
+    setMenu(data || [])
+  }
+
+  async function loadDrinkOptions() {
+    const { data } = await supabase.from('drink_options').select('*')
+    const optionsMap = {}
+    data?.forEach(opt => {
+      if (!optionsMap[opt.drink_name]) optionsMap[opt.drink_name] = []
+      optionsMap[opt.drink_name].push({ type: opt.option_type, price: opt.price })
+    })
+    setDrinkOptions(optionsMap)
+  }
 
   async function loadSettings() {
     try {
@@ -158,9 +313,32 @@ function CustomerMenu() {
     }
   }
 
+  async function loadSpecialMenu() {
+    try {
+      const { data: enabledData } = await supabase.from('settings').select('value').eq('key', 'special_menu_enabled').single()
+      if (enabledData) setSpecialMenuEnabled(enabledData.value === 'true')
+      
+      const { data: titleData } = await supabase.from('settings').select('value').eq('key', 'special_menu_title').single()
+      if (titleData) setSpecialMenuTitle(titleData.value)
+      
+      const { data: itemsData } = await supabase.from('settings').select('value').eq('key', 'special_menu_items').single()
+      if (itemsData) {
+        try { setSpecialMenuItems(JSON.parse(itemsData.value)) } 
+        catch (e) { setSpecialMenuItems([]) }
+      }
+    } catch (err) {
+      console.error('Error loading special menu:', err)
+    }
+  }
+
   async function loadPromotions() {
     try {
-      const { data } = await supabase.from('promotions').select('*').eq('is_active', true)
+      const { data } = await supabase
+        .from('promotions')
+        .select('*')
+        .eq('is_active', true)
+        .order('id', { ascending: false })
+      
       const today = new Date().toISOString().split('T')[0]
       const active = (data || []).filter(promo => {
         if (promo.start_date && promo.start_date > today) return false
@@ -220,35 +398,6 @@ function CustomerMenu() {
     }
   }
 
-  async function loadAllData() {
-    setLoading(true)
-    await loadRestaurantInfo()
-    await loadCategories()
-    await loadMenu()
-    await loadDrinkOptions()
-    await loadSpecialMenu()
-    setLoading(false)
-  }
-
-  async function loadRestaurantInfo() {
-    try {
-      const { data: nameData } = await supabase.from('settings').select('value').eq('key', 'restaurant_name').single()
-      if (nameData) setRestaurantName(nameData.value)
-      const { data: logoData } = await supabase.from('settings').select('value').eq('key', 'logo_url').single()
-      if (logoData) setRestaurantLogo(logoData.value)
-    } catch (err) {
-      console.error('Error loading restaurant info:', err)
-    }
-  }
-
-  async function loadCategories() {
-    const { data } = await supabase
-      .from('categories')
-      .select('*')
-      .order('sort_order', { ascending: true })
-    setCategories(data || [])
-  }
-
   // Get sub categories for menu filtering - SORTED BY sort_order
   const getSubCategoriesForMenu = () => {
     const minumanMain = categories.find(c => c.name === 'Minuman' && c.parent_id === null)
@@ -260,37 +409,6 @@ function CustomerMenu() {
         return true
       })
       .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
-  }
-
-  async function loadMenu() {
-    const { data } = await supabase.from('menu').select('*')
-    setMenu(data || [])
-  }
-
-  async function loadDrinkOptions() {
-    const { data } = await supabase.from('drink_options').select('*')
-    const optionsMap = {}
-    data?.forEach(opt => {
-      if (!optionsMap[opt.drink_name]) optionsMap[opt.drink_name] = []
-      optionsMap[opt.drink_name].push({ type: opt.option_type, price: opt.price })
-    })
-    setDrinkOptions(optionsMap)
-  }
-
-  async function loadSpecialMenu() {
-    try {
-      const { data: enabledData } = await supabase.from('settings').select('value').eq('key', 'special_menu_enabled').single()
-      if (enabledData) setSpecialMenuEnabled(enabledData.value === 'true')
-      const { data: titleData } = await supabase.from('settings').select('value').eq('key', 'special_menu_title').single()
-      if (titleData) setSpecialMenuTitle(titleData.value)
-      const { data: itemsData } = await supabase.from('settings').select('value').eq('key', 'special_menu_items').single()
-      if (itemsData) {
-        try { setSpecialMenuItems(JSON.parse(itemsData.value)) } 
-        catch (e) { setSpecialMenuItems([]) }
-      }
-    } catch (err) {
-      console.error('Error loading special menu:', err)
-    }
   }
 
   // Menu Options Functions
@@ -617,6 +735,9 @@ function CustomerMenu() {
 
   const menuGridCols = isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(170px, 1fr))'
 
+  // ============================================================
+  // RETURN RENDER
+  // ============================================================
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', background: bgColor }}>
@@ -676,6 +797,18 @@ function CustomerMenu() {
           </div>
           {!tableNumber && <p style={{ marginTop: '10px', fontSize: isMobile ? '10px' : '12px', opacity: 0.9, background: 'rgba(0,0,0,0.2)', display: 'inline-block', padding: '4px 12px', borderRadius: '30px' }}>⚠️ {translate('enter_table')}</p>}
         </div>
+      </div>
+
+      {/* REAL-TIME STATUS INDICATOR */}
+      <div style={{ 
+        maxWidth: '1280px', 
+        margin: '8px auto 0 auto', 
+        padding: isMobile ? '0 12px' : '0 20px',
+        textAlign: 'right',
+        fontSize: '10px',
+        color: '#22c55e'
+      }}>
+        <span>🔄 Live</span>
       </div>
 
       {/* Promo Banner */}

@@ -16,12 +16,13 @@ import {
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
+  horizontalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 
 // ============================================================
-// SORTABLE MENU ITEM - FIXED
+// SORTABLE MENU ITEM
 // ============================================================
 function SortableMenuItem({ item, children }) {
   const {
@@ -49,6 +50,53 @@ function SortableMenuItem({ item, children }) {
 }
 
 // ============================================================
+// SORTABLE CATEGORY BUTTON
+// ============================================================
+function SortableCategoryButton({ category, icon, isActive, onClick, children, isMobile, textColor, borderColor }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: category })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    cursor: 'grab',
+    touchAction: 'none',
+  }
+
+  return (
+    <button
+      ref={setNodeRef}
+      style={{
+        ...style,
+        padding: isMobile ? '8px 18px' : '10px 24px',
+        background: isActive ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : 'transparent',
+        color: isActive ? 'white' : textColor,
+        border: isActive ? 'none' : `1px solid ${borderColor}`,
+        borderRadius: '50px',
+        cursor: 'pointer',
+        fontSize: isMobile ? '12px' : '14px',
+        fontWeight: isActive ? 'bold' : '500',
+        transition: 'all 0.2s',
+        touchAction: 'none',
+        userSelect: 'none',
+      }}
+      onClick={onClick}
+      {...attributes}
+      {...listeners}
+    >
+      {icon} {children}
+    </button>
+  )
+}
+
+// ============================================================
 // MAIN COMPONENT
 // ============================================================
 function ManageMenu() {
@@ -67,6 +115,7 @@ function ManageMenu() {
   const [searchMenuTerm, setSearchMenuTerm] = useState('')
   const [isMobile, setIsMobile] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
+  const [isCategoryDragging, setIsCategoryDragging] = useState(false)
   
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 12
@@ -139,11 +188,22 @@ function ManageMenu() {
 
   const STORAGE_BUCKET = 'restaurant-logos'
 
-  // ===== DND SENSORS - FIXED =====
-  const sensors = useSensors(
+  // ===== DND SENSORS =====
+  const menuSensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8, // Better for mobile
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
+
+  const categorySensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
       },
     }),
     useSensor(KeyboardSensor, {
@@ -152,29 +212,20 @@ function ManageMenu() {
   )
 
   // ============================================================
-  // TRANSLATIONS - FULLY COMPLETE
+  // TRANSLATIONS
   // ============================================================
   const translations = {
-    // HEADER
     manage_menu: { en: '📋 Manage Menu', ms: '📋 Urus Menu' },
     manage_menu_sub: { en: 'Drag & drop to reorder menu items', ms: 'Seret & lepas untuk susun menu' },
-    
-    // TABS
     regular_menu: { en: '🍽️ Regular Menu', ms: '🍽️ Menu Biasa' },
     special_menu: { en: '⭐ Special Menu', ms: '⭐ Menu Istimewa' },
     promotions: { en: '🏷️ Promotions', ms: '🏷️ Promosi' },
-    
-    // BUTTONS
     add_menu: { en: '+ Add Menu', ms: '+ Tambah Menu' },
     add_drink: { en: '+ Add Drink', ms: '+ Tambah Minuman' },
     add_promotion: { en: '+ Add Promotion', ms: '+ Tambah Promosi' },
     edit_promotion: { en: '✏️ Edit Promotion', ms: '✏️ Edit Promosi' },
-    
-    // SEARCH
     search_menu: { en: 'Search menu...', ms: 'Cari menu...' },
     all: { en: '🍽️ All', ms: '🍽️ Semua' },
-    
-    // STATUS
     no_menu: { en: 'No menu items', ms: 'Tiada menu' },
     stock: { en: 'Stock', ms: 'Stok' },
     edit: { en: 'Edit', ms: 'Edit' },
@@ -186,18 +237,12 @@ function ManageMenu() {
     out_of_stock: { en: 'OUT', ms: 'HABIS' },
     low_stock: { en: 'LOW', ms: 'RENDAH' },
     ok: { en: 'OK', ms: 'OK' },
-    
-    // DRINK TYPES
     hot: { en: '🔥 Hot', ms: '🔥 Panas' },
     cold: { en: '🧊 Cold', ms: '🧊 Sejuk' },
     takeaway: { en: '📦 Takeaway', ms: '📦 Bungkus' },
-    
-    // PAGINATION
     showing: { en: 'Showing', ms: 'Menunjukkan' },
     of: { en: 'of', ms: 'daripada' },
     items: { en: 'items', ms: 'item' },
-    
-    // SPECIAL MENU
     activate_special: { en: '⭐ Activate Special Menu', ms: '⭐ Aktifkan Menu Istimewa' },
     activate_special_desc: { en: 'Display special menu on homepage', ms: 'Paparkan menu istimewa di laman utama' },
     special_title: { en: '⭐ Special Menu Title', ms: '⭐ Tajuk Menu Istimewa' },
@@ -205,8 +250,6 @@ function ManageMenu() {
     no_special_items: { en: 'No special items. Click "Add" to start.', ms: 'Tiada item istimewa. Klik "Tambah" untuk mula.' },
     add_special: { en: '➕ Add Special Item', ms: '➕ Tambah Item Istimewa' },
     edit_special: { en: '✏️ Edit Special Item', ms: '✏️ Edit Item Istimewa' },
-    
-    // PROMOTIONS
     no_promotions: { en: 'No promotions. Click "Add Promotion" to start.', ms: 'Tiada promosi. Klik "Tambah Promosi" untuk mula.' },
     active: { en: 'ACTIVE', ms: 'AKTIF' },
     inactive: { en: 'INACTIVE', ms: 'TIDAK AKTIF' },
@@ -226,8 +269,6 @@ function ManageMenu() {
     end_date: { en: '📅 End Date', ms: '📅 Tarikh Akhir' },
     promo_image: { en: '🖼️ Promotion Image', ms: '🖼️ Gambar Promosi' },
     activate_promo: { en: '✅ Activate Promotion', ms: '✅ Aktifkan Promosi' },
-    
-    // SIZE OPTIONS
     size_options: { en: '⚙️ Size Options', ms: '⚙️ Pilihan Saiz' },
     add_size: { en: '➕ Add New Size', ms: '➕ Tambah Saiz Baru' },
     edit_size: { en: '✏️ Edit Size', ms: '✏️ Edit Saiz' },
@@ -237,8 +278,6 @@ function ManageMenu() {
     sort_order: { en: 'Sort Order', ms: 'Urutan' },
     size_list: { en: '📋 Size List', ms: '📋 Senarai Saiz' },
     no_sizes: { en: 'No size options available.', ms: 'Tiada pilihan saiz.' },
-    
-    // MODALS
     add_drink_title: { en: '🥤 Add Drink (Hot/Cold/Takeaway)', ms: '🥤 Tambah Minuman (Panas/Sejuk/Bungkus)' },
     drink_name: { en: 'Drink Name', ms: 'Nama Minuman' },
     hot_price: { en: '🔥 Hot Price', ms: '🔥 Harga Panas' },
@@ -249,16 +288,13 @@ function ManageMenu() {
     preview: { en: 'Preview', ms: 'Pratonton' },
     stock_qty: { en: 'Stock Quantity', ms: 'Kuantiti Stok' },
     has_size_options: { en: '⚙️ Has size options', ms: '⚙️ Ada pilihan saiz' },
-    
-    // FORM FIELDS
     name: { en: 'Name', ms: 'Nama' },
     price: { en: 'Price', ms: 'Harga' },
     description: { en: 'Description', ms: 'Keterangan' },
     image: { en: 'Image', ms: 'Gambar' },
     category: { en: 'Category', ms: 'Kategori' },
-    
-    // MESSAGES - ALL TRANSLATED
     order_updated: { en: 'Menu order updated!', ms: 'Urutan menu dikemaskini!' },
+    category_order_updated: { en: 'Category order updated!', ms: 'Urutan kategori dikemaskini!' },
     already_exists: { en: 'already exists!', ms: 'sudah wujud!' },
     confirm_delete: { en: 'Are you sure you want to delete', ms: 'Adakah anda pasti mahu padam' },
     confirm_delete_image: { en: 'Are you sure you want to delete this image?', ms: 'Adakah anda pasti mahu padam gambar ini?' },
@@ -293,7 +329,7 @@ function ManageMenu() {
   }
 
   // ============================================================
-  // THEME COLORS - FIXED DARKMODE (MORE READABLE)
+  // THEME COLORS - FIXED DARKMODE
   // ============================================================
   const bgColor = darkMode ? '#0f172a' : '#f1f5f9'
   const cardBg = darkMode ? 'rgba(30, 41, 59, 0.95)' : 'rgba(255, 255, 255, 0.95)'
@@ -572,9 +608,66 @@ function ManageMenu() {
   }
 
   // ============================================================
-  // DRAG & DROP - FIXED
+  // CATEGORY DRAG & DROP HANDLER
   // ============================================================
-  async function handleDragEnd(event) {
+  async function handleCategoryDragEnd(event) {
+    const { active, over } = event
+    
+    if (!over || active.id === over.id) {
+      setIsCategoryDragging(false)
+      return
+    }
+    
+    setIsCategoryDragging(true)
+    
+    const categoryList = getCategoriesForFilter().filter(cat => cat !== 'all')
+    
+    const oldIndex = categoryList.findIndex(cat => cat === active.id)
+    const newIndex = categoryList.findIndex(cat => cat === over.id)
+    
+    if (oldIndex === -1 || newIndex === -1) {
+      setIsCategoryDragging(false)
+      return
+    }
+    
+    const newOrder = arrayMove(categoryList, oldIndex, newIndex)
+    
+    const updates = newOrder.map((catName, index) => ({
+      name: catName,
+      sort_order: index
+    }))
+    
+    const updatedCategories = categories.map(cat => {
+      const update = updates.find(u => u.name === cat.name)
+      if (update) {
+        return { ...cat, sort_order: update.sort_order }
+      }
+      return cat
+    })
+    setCategories(updatedCategories)
+    
+    try {
+      for (const update of updates) {
+        await supabase
+          .from('categories')
+          .update({ sort_order: update.sort_order })
+          .eq('name', update.name)
+      }
+      setMessage('✅ ' + translate('category_order_updated'))
+      setTimeout(() => setMessage(''), 2000)
+      await loadCategories()
+    } catch (error) {
+      console.error('Error updating category order:', error)
+      await loadCategories()
+    }
+    
+    setIsCategoryDragging(false)
+  }
+
+  // ============================================================
+  // MENU DRAG & DROP HANDLER
+  // ============================================================
+  async function handleMenuDragEnd(event) {
     const { active, over } = event
     
     if (!over || active.id === over.id) {
@@ -584,7 +677,6 @@ function ManageMenu() {
     
     setIsDragging(true)
     
-    // Use currentItems (what's displayed on current page)
     const currentList = currentItems
     
     const oldIndex = currentList.findIndex(item => item.id === active.id)
@@ -595,32 +687,26 @@ function ManageMenu() {
       return
     }
     
-    // Reorder
     const newOrder = arrayMove(currentList, oldIndex, newIndex)
     
-    // Get all items in same category (for global sort_order)
     const allInCategory = activeCategory === 'all' 
       ? menu 
       : menu.filter(item => item.category === activeCategory)
     
-    // Calculate base offset
     const firstItemId = currentList[0]?.id
     const baseIndex = allInCategory.findIndex(item => item.id === firstItemId)
     
-    // Update sort_order
     const updates = newOrder.map((item, index) => ({
       id: item.id,
       sort_order: baseIndex + index
     }))
     
-    // Update local state
     const updatedMenu = menu.map(item => {
       const update = updates.find(u => u.id === item.id)
       return update ? { ...item, sort_order: update.sort_order } : item
     })
     setMenu(updatedMenu)
     
-    // Update database
     try {
       for (const update of updates) {
         await supabase
@@ -836,7 +922,7 @@ function ManageMenu() {
   }
 
   // ============================================================
-  // DRINK PRICE UPDATE - FIXED MESSAGES
+  // DRINK PRICE UPDATE
   // ============================================================
   async function updateDrinkPrice(drinkName, optionType, newPrice) {
     const { error } = await supabase
@@ -875,7 +961,7 @@ function ManageMenu() {
   }
 
   // ============================================================
-  // DELETE FUNCTIONS - FIXED MESSAGES
+  // DELETE FUNCTIONS
   // ============================================================
   async function deleteMenuItem(id, name) {
     if (window.confirm(`${translate('confirm_delete')} "${name}"?`)) {
@@ -1662,14 +1748,16 @@ function ManageMenu() {
               </div>
             </div>
 
-            {/* Category Filters */}
+            {/* Category Filters - WITH DRAG & DROP */}
             <div style={{ 
               display: 'flex', 
               gap: '8px', 
               flexWrap: 'wrap', 
               marginBottom: '20px',
-              padding: '4px'
+              padding: '4px',
+              alignItems: 'center'
             }}>
+              {/* All button - NOT draggable */}
               <button 
                 onClick={() => setActiveCategory('all')} 
                 style={{ 
@@ -1687,28 +1775,35 @@ function ManageMenu() {
                 🍽️ {translate('all')}
               </button>
               
-              {categoriesForFilter.filter(cat => cat !== 'all').map(catName => {
-                const icon = getCategoryIcon(catName)
-                return (
-                  <button 
-                    key={catName} 
-                    onClick={() => setActiveCategory(catName)} 
-                    style={{ 
-                      padding: isMobile ? '8px 18px' : '10px 24px', 
-                      background: activeCategory === catName ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : 'transparent', 
-                      color: activeCategory === catName ? 'white' : textColor, 
-                      border: activeCategory === catName ? 'none' : `1px solid ${borderColor}`, 
-                      borderRadius: '50px', 
-                      cursor: 'pointer', 
-                      fontSize: isMobile ? '12px' : '14px',
-                      fontWeight: activeCategory === catName ? 'bold' : '500',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    {icon} {catName}
-                  </button>
-                )
-              })}
+              {/* Draggable category buttons */}
+              <DndContext
+                sensors={categorySensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleCategoryDragEnd}
+              >
+                <SortableContext
+                  items={categoriesForFilter.filter(cat => cat !== 'all')}
+                  strategy={horizontalListSortingStrategy}
+                >
+                  {categoriesForFilter.filter(cat => cat !== 'all').map(catName => {
+                    const icon = getCategoryIcon(catName)
+                    return (
+                      <SortableCategoryButton
+                        key={catName}
+                        category={catName}
+                        icon={icon}
+                        isActive={activeCategory === catName}
+                        onClick={() => setActiveCategory(catName)}
+                        isMobile={isMobile}
+                        textColor={textColor}
+                        borderColor={borderColor}
+                      >
+                        {catName}
+                      </SortableCategoryButton>
+                    )
+                  })}
+                </SortableContext>
+              </DndContext>
             </div>
 
             {/* Menu Grid - WITH DRAG & DROP */}
@@ -1727,9 +1822,9 @@ function ManageMenu() {
             ) : (
               <>
                 <DndContext
-                  sensors={sensors}
+                  sensors={menuSensors}
                   collisionDetection={closestCenter}
-                  onDragEnd={handleDragEnd}
+                  onDragEnd={handleMenuDragEnd}
                 >
                   <SortableContext
                     items={currentItems.map(item => item.id)}
