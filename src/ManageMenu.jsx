@@ -517,13 +517,13 @@ function ManageMenu() {
   }
 
   // ============================================================
-  // LOAD DATA
+  // LOAD DATA - FIXED with better error handling
   // ============================================================
   useEffect(() => {
     loadAllData()
     loadSpecialMenu()
     loadPromotions()
-    loadAvailableMenu()
+    loadAvailableMenu() // <-- Ensure this is called
   }, [])
 
   useEffect(() => {
@@ -588,9 +588,28 @@ function ManageMenu() {
     setPromotions(data || [])
   }
 
+  // ============================================================
+  // LOAD AVAILABLE MENU - FIXED with better error handling and logging
+  // ============================================================
   async function loadAvailableMenu() {
-    const { data } = await supabase.from('menu').select('id, name, price, category, has_options')
-    setAvailableMenuItems(data || [])
+    try {
+      const { data, error } = await supabase
+        .from('menu')
+        .select('id, name, price, category, has_options')
+        .order('name', { ascending: true })
+      
+      if (error) {
+        console.error('❌ Error loading available menu:', error)
+        setAvailableMenuItems([])
+        return
+      }
+      
+      console.log('✅ Available menu items loaded:', data?.length || 0, 'items')
+      setAvailableMenuItems(data || [])
+    } catch (err) {
+      console.error('❌ Error in loadAvailableMenu:', err)
+      setAvailableMenuItems([])
+    }
   }
 
   // ============================================================
@@ -3008,7 +3027,7 @@ function ManageMenu() {
           </div>
         )}
 
-        {/* ADD PROMOTION MODAL */}
+        {/* ADD PROMOTION MODAL - FIXED with better item selection */}
         {showAddPromoModal && (
           <div style={modalOverlayStyle}>
             <div style={modalContentStyle}>
@@ -3038,9 +3057,13 @@ function ManageMenu() {
                     style={inputStyle}
                   >
                     <option value="">{translate('trigger_item')}</option>
-                    {availableMenuItems.map(item => (
-                      <option key={item.id} value={item.id}>{item.name} (RM {item.price})</option>
-                    ))}
+                    {availableMenuItems.length === 0 ? (
+                      <option value="" disabled>No items available</option>
+                    ) : (
+                      availableMenuItems.map(item => (
+                        <option key={item.id} value={item.id}>{item.name} (RM {item.price})</option>
+                      ))
+                    )}
                   </select>
                   <select
                     value={promoFormData.free_item_id || ''}
@@ -3048,9 +3071,13 @@ function ManageMenu() {
                     style={inputStyle}
                   >
                     <option value="">{translate('free_item')}</option>
-                    {availableMenuItems.map(item => (
-                      <option key={item.id} value={item.id}>{item.name} (RM {item.price})</option>
-                    ))}
+                    {availableMenuItems.length === 0 ? (
+                      <option value="" disabled>No items available</option>
+                    ) : (
+                      availableMenuItems.map(item => (
+                        <option key={item.id} value={item.id}>{item.name} (RM {item.price})</option>
+                      ))
+                    )}
                   </select>
                 </>
               )}
@@ -3066,9 +3093,13 @@ function ManageMenu() {
                     }}
                     style={{...inputStyle, height: '100px'}}
                   >
-                    {availableMenuItems.map(item => (
-                      <option key={item.id} value={item.id}>{item.name} (RM {item.price})</option>
-                    ))}
+                    {availableMenuItems.length === 0 ? (
+                      <option value="" disabled>No items available</option>
+                    ) : (
+                      availableMenuItems.map(item => (
+                        <option key={item.id} value={item.id}>{item.name} (RM {item.price})</option>
+                      ))
+                    )}
                   </select>
                   <input
                     type="number"
@@ -3113,7 +3144,7 @@ function ManageMenu() {
           </div>
         )}
 
-        {/* EDIT PROMOTION MODAL */}
+        {/* EDIT PROMOTION MODAL - FIXED with better item selection */}
         {showEditPromoModal && selectedPromo && (
           <div style={modalOverlayStyle}>
             <div style={modalContentStyle}>
@@ -3143,9 +3174,13 @@ function ManageMenu() {
                     style={inputStyle}
                   >
                     <option value="">{translate('trigger_item')}</option>
-                    {availableMenuItems.map(item => (
-                      <option key={item.id} value={item.id}>{item.name} (RM {item.price})</option>
-                    ))}
+                    {availableMenuItems.length === 0 ? (
+                      <option value="" disabled>No items available</option>
+                    ) : (
+                      availableMenuItems.map(item => (
+                        <option key={item.id} value={item.id}>{item.name} (RM {item.price})</option>
+                      ))
+                    )}
                   </select>
                   <select
                     value={promoFormData.free_item_id || ''}
@@ -3153,9 +3188,13 @@ function ManageMenu() {
                     style={inputStyle}
                   >
                     <option value="">{translate('free_item')}</option>
-                    {availableMenuItems.map(item => (
-                      <option key={item.id} value={item.id}>{item.name} (RM {item.price})</option>
-                    ))}
+                    {availableMenuItems.length === 0 ? (
+                      <option value="" disabled>No items available</option>
+                    ) : (
+                      availableMenuItems.map(item => (
+                        <option key={item.id} value={item.id}>{item.name} (RM {item.price})</option>
+                      ))
+                    )}
                   </select>
                 </>
               )}
@@ -3171,9 +3210,13 @@ function ManageMenu() {
                     }}
                     style={{...inputStyle, height: '100px'}}
                   >
-                    {availableMenuItems.map(item => (
-                      <option key={item.id} value={item.id}>{item.name} (RM {item.price})</option>
-                    ))}
+                    {availableMenuItems.length === 0 ? (
+                      <option value="" disabled>No items available</option>
+                    ) : (
+                      availableMenuItems.map(item => (
+                        <option key={item.id} value={item.id}>{item.name} (RM {item.price})</option>
+                      ))
+                    )}
                   </select>
                   <input
                     type="number"
