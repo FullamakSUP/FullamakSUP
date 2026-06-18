@@ -22,7 +22,7 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 
 // ============================================================
-// SORTABLE MENU ITEM - FIXED (Drag handle separated from buttons)
+// SORTABLE MENU ITEM
 // ============================================================
 function SortableMenuItem({ item, children }) {
   const {
@@ -45,7 +45,6 @@ function SortableMenuItem({ item, children }) {
 
   return (
     <div ref={setNodeRef} style={style} {...attributes}>
-      {/* Drag Handle - ONLY this is draggable */}
       <div 
         {...listeners} 
         style={{ 
@@ -211,9 +210,7 @@ function ManageMenu() {
   // ===== DND SENSORS =====
   const menuSensors = useSensors(
     useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 5,
-      },
+      activationConstraint: { distance: 5 },
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
@@ -222,9 +219,7 @@ function ManageMenu() {
 
   const categorySensors = useSensors(
     useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 5,
-      },
+      activationConstraint: { distance: 5 },
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
@@ -232,21 +227,33 @@ function ManageMenu() {
   )
 
   // ============================================================
-  // TRANSLATIONS
+  // COMPLETE TRANSLATIONS
   // ============================================================
   const translations = {
+    // Header
     manage_menu: { en: '📋 Manage Menu', ms: '📋 Urus Menu' },
     manage_menu_sub: { en: 'Drag & drop to reorder menu items', ms: 'Seret & lepas untuk susun menu' },
+    drag_hint: { en: '⠿ Drag to reorder', ms: '⠿ Seret untuk susun' },
+    
+    // Tabs
     regular_menu: { en: '🍽️ Regular Menu', ms: '🍽️ Menu Biasa' },
     special_menu: { en: '⭐ Special Menu', ms: '⭐ Menu Istimewa' },
     promotions: { en: '🏷️ Promotions', ms: '🏷️ Promosi' },
-    add_menu: { en: '+ Add Menu', ms: '+ Tambah Menu' },
-    add_drink: { en: '+ Add Drink', ms: '+ Tambah Minuman' },
-    add_promotion: { en: '+ Add Promotion', ms: '+ Tambah Promosi' },
+    
+    // Buttons
+    add_menu: { en: '➕ Add Menu', ms: '➕ Tambah Menu' },
+    add_drink: { en: '🥤 Add Drink', ms: '🥤 Tambah Minuman' },
+    add_promotion: { en: '➕ Add Promotion', ms: '➕ Tambah Promosi' },
     edit_promotion: { en: '✏️ Edit Promotion', ms: '✏️ Edit Promosi' },
-    search_menu: { en: 'Search menu...', ms: 'Cari menu...' },
-    all: { en: '🍽️ All', ms: '🍽️ Semua' },
-    no_menu: { en: 'No menu items', ms: 'Tiada menu' },
+    add_special: { en: '➕ Add Special Item', ms: '➕ Tambah Item Istimewa' },
+    edit_special: { en: '✏️ Edit Special Item', ms: '✏️ Edit Item Istimewa' },
+    
+    // Search & Filter
+    search_menu: { en: '🔍 Search menu...', ms: '🔍 Cari menu...' },
+    all: { en: 'All', ms: 'Semua' },
+    no_menu: { en: 'No menu items found', ms: 'Tiada item menu dijumpai' },
+    
+    // Labels
     stock: { en: 'Stock', ms: 'Stok' },
     edit: { en: 'Edit', ms: 'Edit' },
     delete: { en: 'Delete', ms: 'Hapus' },
@@ -257,29 +264,35 @@ function ManageMenu() {
     out_of_stock: { en: 'OUT', ms: 'HABIS' },
     low_stock: { en: 'LOW', ms: 'RENDAH' },
     ok: { en: 'OK', ms: 'OK' },
-    hot: { en: '🔥 Hot', ms: '🔥 Panas' },
-    cold: { en: '🧊 Cold', ms: '🧊 Sejuk' },
-    takeaway: { en: '📦 Takeaway', ms: '📦 Bungkus' },
     showing: { en: 'Showing', ms: 'Menunjukkan' },
     of: { en: 'of', ms: 'daripada' },
     items: { en: 'items', ms: 'item' },
+    
+    // Drink Options
+    hot: { en: 'Hot', ms: 'Panas' },
+    cold: { en: 'Cold', ms: 'Sejuk' },
+    takeaway: { en: 'Takeaway', ms: 'Bungkus' },
+    
+    // Special Menu
     activate_special: { en: '⭐ Activate Special Menu', ms: '⭐ Aktifkan Menu Istimewa' },
     activate_special_desc: { en: 'Display special menu on homepage', ms: 'Paparkan menu istimewa di laman utama' },
     special_title: { en: '⭐ Special Menu Title', ms: '⭐ Tajuk Menu Istimewa' },
     special_items: { en: '📋 Special Items', ms: '📋 Item Istimewa' },
     no_special_items: { en: 'No special items. Click "Add" to start.', ms: 'Tiada item istimewa. Klik "Tambah" untuk mula.' },
-    add_special: { en: '➕ Add Special Item', ms: '➕ Tambah Item Istimewa' },
-    edit_special: { en: '✏️ Edit Special Item', ms: '✏️ Edit Item Istimewa' },
+    
+    // Promotions
     no_promotions: { en: 'No promotions. Click "Add Promotion" to start.', ms: 'Tiada promosi. Klik "Tambah Promosi" untuk mula.' },
     active: { en: 'ACTIVE', ms: 'AKTIF' },
     inactive: { en: 'INACTIVE', ms: 'TIDAK AKTIF' },
     disable: { en: '❌ Disable', ms: '❌ Lumpuhkan' },
     enable: { en: '✅ Enable', ms: '✅ Aktifkan' },
+    
+    // Promotion Form
     promo_name: { en: 'Promotion Name *', ms: 'Nama Promosi *' },
     promo_type: { en: 'Promotion Type', ms: 'Jenis Promosi' },
-    set_menu: { en: '🍽️ Set Menu', ms: '🍽️ Set Menu' },
-    bundle: { en: '📦 Bundle', ms: '📦 Bundle' },
-    bogo: { en: '🎁 Buy 1 Free 1', ms: '🎁 Beli 1 Percuma 1' },
+    set_menu: { en: 'Set Menu', ms: 'Set Menu' },
+    bundle: { en: 'Bundle', ms: 'Bundle' },
+    bogo: { en: 'Buy 1 Free 1', ms: 'Beli 1 Percuma 1' },
     trigger_item: { en: '🎁 Purchased Item', ms: '🎁 Item yang Dibeli' },
     free_item: { en: '🎁 Free Item', ms: '🎁 Item Percuma' },
     select_item: { en: '-- Select Item --', ms: '-- Pilih Item --' },
@@ -289,6 +302,10 @@ function ManageMenu() {
     end_date: { en: '📅 End Date', ms: '📅 Tarikh Akhir' },
     promo_image: { en: '🖼️ Promotion Image', ms: '🖼️ Gambar Promosi' },
     activate_promo: { en: '✅ Activate Promotion', ms: '✅ Aktifkan Promosi' },
+    no_items_available: { en: 'No items available - add menu items first', ms: 'Tiada item - tambah menu terlebih dahulu' },
+    items_available: { en: 'items available. Tap checkbox to select.', ms: 'item tersedia. Ketik kotak untuk pilih.' },
+    
+    // Size Options
     size_options: { en: '⚙️ Size Options', ms: '⚙️ Pilihan Saiz' },
     add_size: { en: '➕ Add New Size', ms: '➕ Tambah Saiz Baru' },
     edit_size: { en: '✏️ Edit Size', ms: '✏️ Edit Saiz' },
@@ -298,11 +315,15 @@ function ManageMenu() {
     sort_order: { en: 'Sort Order', ms: 'Urutan' },
     size_list: { en: '📋 Size List', ms: '📋 Senarai Saiz' },
     no_sizes: { en: 'No size options available.', ms: 'Tiada pilihan saiz.' },
+    
+    // Add Drink
     add_drink_title: { en: '🥤 Add Drink (Hot/Cold/Takeaway)', ms: '🥤 Tambah Minuman (Panas/Sejuk/Bungkus)' },
     drink_name: { en: 'Drink Name', ms: 'Nama Minuman' },
     hot_price: { en: '🔥 Hot Price', ms: '🔥 Harga Panas' },
     cold_price: { en: '🧊 Cold Price', ms: '🧊 Harga Sejuk' },
     takeaway_price: { en: '📦 Takeaway Price', ms: '📦 Harga Bungkus' },
+    
+    // Edit Menu
     edit_menu: { en: '✏️ Edit Menu', ms: '✏️ Edit Menu' },
     select_category: { en: 'Select Category', ms: 'Pilih Kategori' },
     preview: { en: 'Preview', ms: 'Pratonton' },
@@ -313,34 +334,37 @@ function ManageMenu() {
     description: { en: 'Description', ms: 'Keterangan' },
     image: { en: 'Image', ms: 'Gambar' },
     category: { en: 'Category', ms: 'Kategori' },
-    order_updated: { en: 'Menu order updated!', ms: 'Urutan menu dikemaskini!' },
-    category_order_updated: { en: 'Category order updated!', ms: 'Urutan kategori dikemaskini!' },
+    
+    // Messages
+    order_updated: { en: '✅ Menu order updated!', ms: '✅ Urutan menu dikemaskini!' },
+    category_order_updated: { en: '✅ Category order updated!', ms: '✅ Urutan kategori dikemaskini!' },
     already_exists: { en: 'already exists!', ms: 'sudah wujud!' },
     confirm_delete: { en: 'Are you sure you want to delete', ms: 'Adakah anda pasti mahu padam' },
     confirm_delete_image: { en: 'Are you sure you want to delete this image?', ms: 'Adakah anda pasti mahu padam gambar ini?' },
     price_updated: { en: 'price updated!', ms: 'harga dikemaskini!' },
     stock_updated_to: { en: 'stock updated to', ms: 'stok dikemaskini kepada' },
-    option_added: { en: 'Size option added!', ms: 'Pilihan saiz ditambah!' },
-    option_updated: { en: 'Size option updated!', ms: 'Pilihan saiz dikemaskini!' },
-    option_deleted: { en: 'Size option deleted!', ms: 'Pilihan saiz dipadam!' },
-    menu_added: { en: 'Menu item added!', ms: 'Item menu ditambah!' },
-    menu_updated: { en: 'Menu item updated!', ms: 'Item menu dikemaskini!' },
-    special_added: { en: 'Special item added!', ms: 'Item istimewa ditambah!' },
-    special_updated: { en: 'Special item updated!', ms: 'Item istimewa dikemaskini!' },
-    promo_added: { en: 'Promotion added!', ms: 'Promosi ditambah!' },
-    promo_updated: { en: 'Promotion updated!', ms: 'Promosi dikemaskini!' },
-    promo_disabled: { en: 'Promotion disabled!', ms: 'Promosi dilumpuhkan!' },
-    promo_enabled: { en: 'Promotion enabled!', ms: 'Promosi diaktifkan!' },
+    option_added: { en: '✅ Size option added!', ms: '✅ Pilihan saiz ditambah!' },
+    option_updated: { en: '✅ Size option updated!', ms: '✅ Pilihan saiz dikemaskini!' },
+    option_deleted: { en: '✅ Size option deleted!', ms: '✅ Pilihan saiz dipadam!' },
+    menu_added: { en: '✅ Menu item added!', ms: '✅ Item menu ditambah!' },
+    menu_updated: { en: '✅ Menu item updated!', ms: '✅ Item menu dikemaskini!' },
+    special_added: { en: '✅ Special item added!', ms: '✅ Item istimewa ditambah!' },
+    special_updated: { en: '✅ Special item updated!', ms: '✅ Item istimewa dikemaskini!' },
+    promo_added: { en: '✅ Promotion added!', ms: '✅ Promosi ditambah!' },
+    promo_updated: { en: '✅ Promotion updated!', ms: '✅ Promosi dikemaskini!' },
+    promo_disabled: { en: '✅ Promotion disabled!', ms: '✅ Promosi dilumpuhkan!' },
+    promo_enabled: { en: '✅ Promotion enabled!', ms: '✅ Promosi diaktifkan!' },
     deleted: { en: 'deleted!', ms: 'dipadam!' },
-    image_deleted: { en: 'Image deleted!', ms: 'Gambar dipadam!' },
-    image_delete_fail: { en: 'Failed to delete image!', ms: 'Gagal padam gambar!' },
-    upload_fail: { en: 'Upload failed!', ms: 'Muat naik gagal!' },
-    upload_success: { en: 'Upload successful', ms: 'Muat naik berjaya' },
+    image_deleted: { en: '✅ Image deleted!', ms: '✅ Gambar dipadam!' },
+    image_delete_fail: { en: '❌ Failed to delete image!', ms: '❌ Gagal padam gambar!' },
+    upload_fail: { en: '❌ Upload failed!', ms: '❌ Muat naik gagal!' },
+    upload_success: { en: '✅ Upload successful', ms: '✅ Muat naik berjaya' },
     required: { en: 'is required!', ms: 'diperlukan!' },
     and: { en: 'and', ms: 'dan' },
     error: { en: 'Error', ms: 'Ralat' },
-    invalid_price: { en: 'Please enter a valid price!', ms: 'Sila masukkan harga yang sah!' },
-    drink_added: { en: 'Drink added successfully!', ms: 'Minuman berjaya ditambah!' },
+    invalid_price: { en: '⚠️ Please enter a valid price!', ms: '⚠️ Sila masukkan harga yang sah!' },
+    drink_added: { en: '✅ Drink added successfully!', ms: '✅ Minuman berjaya ditambah!' },
+    no_items_found: { en: 'No items found', ms: 'Tiada item dijumpai' },
   }
 
   const translate = (key) => {
@@ -372,7 +396,7 @@ function ManageMenu() {
   }
 
   // ============================================================
-  // MODAL STYLES
+  // MODAL STYLES - FIXED FOR DARK MODE READABILITY
   // ============================================================
   const modalOverlayStyle = {
     position: 'fixed',
@@ -399,7 +423,8 @@ function ManageMenu() {
     maxHeight: '90vh',
     overflowY: 'auto',
     ...glassEffect,
-    animation: 'popIn 0.3s cubic-bezier(0.34, 1.2, 0.64, 1)'
+    animation: 'popIn 0.3s cubic-bezier(0.34, 1.2, 0.64, 1)',
+    color: textColor,
   }
 
   const modalTitleStyle = {
@@ -424,6 +449,14 @@ function ManageMenu() {
     boxSizing: 'border-box'
   }
 
+  const labelStyle = {
+    display: 'block',
+    marginBottom: '6px',
+    fontWeight: '600',
+    color: textColor,
+    fontSize: isMobile ? '13px' : '14px',
+  }
+
   const buttonPrimaryStyle = {
     flex: 1,
     background: 'linear-gradient(135deg, #22c55e, #16a34a)',
@@ -434,19 +467,21 @@ function ManageMenu() {
     cursor: 'pointer',
     fontWeight: 'bold',
     fontSize: isMobile ? '14px' : '15px',
-    transition: 'all 0.2s'
+    transition: 'all 0.2s',
+    minWidth: '80px',
   }
 
   const buttonSecondaryStyle = {
     flex: 1,
-    background: '#64748b',
+    background: darkMode ? '#475569' : '#64748b',
     color: 'white',
     padding: isMobile ? '12px' : '14px',
     border: 'none',
     borderRadius: '12px',
     cursor: 'pointer',
     fontSize: isMobile ? '14px' : '15px',
-    transition: 'all 0.2s'
+    transition: 'all 0.2s',
+    minWidth: '80px',
   }
 
   // ============================================================
@@ -589,9 +624,6 @@ function ManageMenu() {
     setPromotions(data || [])
   }
 
-  // ============================================================
-  // LOAD AVAILABLE MENU
-  // ============================================================
   async function loadAvailableMenu() {
     try {
       console.log('🔄 Loading available menu items...')
@@ -607,7 +639,6 @@ function ManageMenu() {
       }
       
       console.log('✅ Available menu items loaded:', data?.length || 0, 'items')
-      console.log('📋 Sample items:', data?.slice(0, 3))
       setAvailableMenuItems(data || [])
     } catch (err) {
       console.error('❌ Error in loadAvailableMenu:', err)
@@ -695,7 +726,7 @@ function ManageMenu() {
           .update({ sort_order: update.sort_order })
           .eq('name', update.name)
       }
-      setMessage('✅ ' + translate('category_order_updated'))
+      setMessage(translate('category_order_updated'))
       setTimeout(() => setMessage(''), 2000)
       await loadCategories()
     } catch (error) {
@@ -751,7 +782,7 @@ function ManageMenu() {
           .update({ sort_order: update.sort_order })
           .eq('id', update.id)
       }
-      setMessage('✅ ' + translate('order_updated'))
+      setMessage(translate('order_updated'))
       setTimeout(() => setMessage(''), 2000)
       await loadMenu()
     } catch (error) {
@@ -780,7 +811,7 @@ function ManageMenu() {
         .upload(fileName, resizedFile)
       
       if (uploadError) {
-        setMessage('❌ ' + translate('upload_fail') + ': ' + uploadError.message)
+        setMessage(`❌ ${translate('upload_fail')}: ${uploadError.message}`)
         setUploading(false)
         return null
       }
@@ -790,11 +821,11 @@ function ManageMenu() {
         .getPublicUrl(fileName)
       
       const sizeInKB = (resizedFile.size / 1024).toFixed(0)
-      setMessage('✅ ' + translate('upload_success') + ` (${sizeInKB}KB)`)
+      setMessage(`✅ ${translate('upload_success')} (${sizeInKB}KB)`)
       setUploading(false)
       return urlData.publicUrl
     } catch (err) {
-      setMessage('❌ ' + translate('upload_fail') + ': ' + err.message)
+      setMessage(`❌ ${translate('upload_fail')}: ${err.message}`)
       setUploading(false)
       return null
     }
@@ -817,12 +848,12 @@ function ManageMenu() {
   // ============================================================
   async function addDrinkWithOptions() {
     if (!newDrinkName) { 
-      setMessage('⚠️ ' + translate('drink_name') + ' ' + translate('required'))
+      setMessage(`⚠️ ${translate('drink_name')} ${translate('required')}`)
       return 
     }
     const existing = menu.find(m => m.name.toLowerCase() === newDrinkName.toLowerCase())
     if (existing) {
-      setMessage(`⚠️ "${newDrinkName}" ` + translate('already_exists'))
+      setMessage(`⚠️ "${newDrinkName}" ${translate('already_exists')}`)
       return
     }
     const { data: menuData, error: menuError } = await supabase
@@ -835,7 +866,7 @@ function ManageMenu() {
       }])
       .select()
     if (menuError) { 
-      setMessage('❌ ' + translate('error') + ': ' + menuError.message)
+      setMessage(`❌ ${translate('error')}: ${menuError.message}`)
       return 
     }
     const newMenuId = menuData[0].id
@@ -867,7 +898,7 @@ function ManageMenu() {
       }])
     }
     
-    setMessage('✅ ' + translate('drink_added'))
+    setMessage(translate('drink_added'))
     setShowDrinkModal(false)
     setNewDrinkName('')
     setNewDrinkPanas('')
@@ -885,12 +916,12 @@ function ManageMenu() {
   // ============================================================
   async function addRegularMenuItem() {
     if (!formData.name || !formData.price) { 
-      setMessage('⚠️ ' + translate('name') + ' ' + translate('and') + ' ' + translate('price') + ' ' + translate('required'))
+      setMessage(`⚠️ ${translate('name')} ${translate('and')} ${translate('price')} ${translate('required')}`)
       return 
     }
     const existing = menu.find(m => m.name.toLowerCase() === formData.name.toLowerCase())
     if (existing) {
-      setMessage(`⚠️ "${formData.name}" ` + translate('already_exists'))
+      setMessage(`⚠️ "${formData.name}" ${translate('already_exists')}`)
       return
     }
     let imageUrl = formData.image_url
@@ -915,9 +946,9 @@ function ManageMenu() {
       sort_order: maxSortOrder
     }])
     if (error) { 
-      setMessage('❌ ' + translate('error') + ': ' + error.message) 
+      setMessage(`❌ ${translate('error')}: ${error.message}`) 
     } else { 
-      setMessage('✅ ' + translate('menu_added'))
+      setMessage(translate('menu_added'))
       setShowAddModal(false)
       setFormData({ name: '', price: '', category: '', stock: 0, image_url: '', image_file: null, description: '' })
       loadMenu()
@@ -928,7 +959,7 @@ function ManageMenu() {
 
   async function updateRegularMenuItem() {
     if (!formData.name || !formData.price) { 
-      setMessage('⚠️ ' + translate('name') + ' ' + translate('and') + ' ' + translate('price') + ' ' + translate('required'))
+      setMessage(`⚠️ ${translate('name')} ${translate('and')} ${translate('price')} ${translate('required')}`)
       return 
     }
     let imageUrl = formData.image_url
@@ -949,9 +980,9 @@ function ManageMenu() {
     if (imageUrl !== undefined) updateData.image_url = imageUrl || null
     const { error } = await supabase.from('menu').update(updateData).eq('id', selectedItem.id)
     if (error) { 
-      setMessage('❌ ' + translate('error') + ': ' + error.message) 
+      setMessage(`❌ ${translate('error')}: ${error.message}`) 
     } else { 
-      setMessage('✅ ' + translate('menu_updated'))
+      setMessage(translate('menu_updated'))
       setShowEditModal(false)
       setSelectedItem(null)
       setFormData({ name: '', price: '', category: '', stock: 0, image_url: '', image_file: null, description: '' })
@@ -972,7 +1003,7 @@ function ManageMenu() {
       .eq('option_type', optionType)
       
     if (error) { 
-      setMessage('❌ ' + translate('error') + ': ' + error.message) 
+      setMessage(`❌ ${translate('error')}: ${error.message}`) 
     } else { 
       await loadDrinkOptions()
       setMessage(`✅ ${drinkName} (${optionType}) ${translate('price_updated')}`) 
@@ -995,7 +1026,7 @@ function ManageMenu() {
     if (newPrice !== undefined && newPrice !== '' && !isNaN(newPrice) && parseFloat(newPrice) >= 0) {
       updateDrinkPrice(drinkName, optionType, newPrice) 
     } else {
-      setMessage('⚠️ ' + translate('invalid_price'))
+      setMessage(translate('invalid_price'))
       setTimeout(() => setMessage(''), 2000)
     }
   }
@@ -1009,9 +1040,9 @@ function ManageMenu() {
       await supabase.from('menu_options').delete().eq('menu_id', id)
       const { error } = await supabase.from('menu').delete().eq('id', id)
       if (error) { 
-        setMessage('❌ ' + translate('error') + ': ' + error.message) 
+        setMessage(`❌ ${translate('error')}: ${error.message}`) 
       } else { 
-        setMessage(`🗑️ "${name}" ` + translate('deleted'))
+        setMessage(`🗑️ "${name}" ${translate('deleted')}`)
         await loadMenu()
         await loadDrinkOptions()
         await loadAvailableMenu() 
@@ -1026,11 +1057,11 @@ function ManageMenu() {
     const deleted = await deleteImageFromStorage(imageUrl)
     if (deleted) {
       const { error } = await supabase.from('menu').update({ image_url: null }).eq('id', itemId)
-      if (error) setMessage('❌ ' + translate('error') + ': ' + error.message)
-      else setMessage('✅ ' + translate('image_deleted'))
+      if (error) setMessage(`❌ ${translate('error')}: ${error.message}`)
+      else setMessage(translate('image_deleted'))
       await loadMenu()
     } else {
-      setMessage('❌ ' + translate('image_delete_fail'))
+      setMessage(translate('image_delete_fail'))
     }
     setTimeout(() => setMessage(''), 2000)
   }
@@ -1040,7 +1071,7 @@ function ManageMenu() {
   // ============================================================
   async function addSpecialItem() {
     if (!specialFormData.name || !specialFormData.price) { 
-      setMessage('⚠️ ' + translate('name') + ' ' + translate('and') + ' ' + translate('price') + ' ' + translate('required'))
+      setMessage(`⚠️ ${translate('name')} ${translate('and')} ${translate('price')} ${translate('required')}`)
       return 
     }
     let imageUrl = specialFormData.image_url
@@ -1056,9 +1087,9 @@ function ManageMenu() {
     setSpecialItems(updatedItems)
     const { error } = await supabase.from('settings').upsert({ key: 'special_menu_items', value: JSON.stringify(updatedItems) }, { onConflict: 'key' })
     if (error) { 
-      setMessage('❌ ' + translate('error') + ': ' + error.message) 
+      setMessage(`❌ ${translate('error')}: ${error.message}`) 
     } else { 
-      setMessage('✅ ' + translate('special_added'))
+      setMessage(translate('special_added'))
       setShowAddSpecialModal(false)
       setSpecialFormData({ name: '', price: '', stock: '', image_url: '', image_file: null, description: '' })
       loadSpecialMenu() 
@@ -1068,7 +1099,7 @@ function ManageMenu() {
 
   async function updateSpecialItem() {
     if (!specialFormData.name || !specialFormData.price) { 
-      setMessage('⚠️ ' + translate('name') + ' ' + translate('and') + ' ' + translate('price') + ' ' + translate('required'))
+      setMessage(`⚠️ ${translate('name')} ${translate('and')} ${translate('price')} ${translate('required')}`)
       return 
     }
     let imageUrl = specialFormData.image_url
@@ -1085,9 +1116,9 @@ function ManageMenu() {
     setSpecialItems(updatedItems)
     const { error } = await supabase.from('settings').upsert({ key: 'special_menu_items', value: JSON.stringify(updatedItems) }, { onConflict: 'key' })
     if (error) { 
-      setMessage('❌ ' + translate('error') + ': ' + error.message) 
+      setMessage(`❌ ${translate('error')}: ${error.message}`) 
     } else { 
-      setMessage('✅ ' + translate('special_updated'))
+      setMessage(translate('special_updated'))
       setShowEditSpecialModal(false)
       setSelectedSpecialItem(null)
       setSpecialFormData({ name: '', price: '', stock: '', image_url: '', image_file: null, description: '' })
@@ -1102,9 +1133,9 @@ function ManageMenu() {
       setSpecialItems(updatedItems)
       const { error } = await supabase.from('settings').upsert({ key: 'special_menu_items', value: JSON.stringify(updatedItems) }, { onConflict: 'key' })
       if (error) { 
-        setMessage('❌ ' + translate('error') + ': ' + error.message) 
+        setMessage(`❌ ${translate('error')}: ${error.message}`) 
       } else { 
-        setMessage(`🗑️ "${name}" ` + translate('deleted'))
+        setMessage(`🗑️ "${name}" ${translate('deleted')}`)
         loadSpecialMenu() 
       }
       setTimeout(() => setMessage(''), 2000)
@@ -1116,7 +1147,7 @@ function ManageMenu() {
   // ============================================================
   async function addPromotion() {
     if (!promoFormData.name) { 
-      setMessage('⚠️ ' + translate('promo_name') + ' ' + translate('required'))
+      setMessage(`⚠️ ${translate('promo_name')} ${translate('required')}`)
       return 
     }
     let imageUrl = promoFormData.image_url
@@ -1149,9 +1180,9 @@ function ManageMenu() {
     }
     const { error } = await supabase.from('promotions').insert([promoData])
     if (error) { 
-      setMessage('❌ ' + translate('error') + ': ' + error.message) 
+      setMessage(`❌ ${translate('error')}: ${error.message}`) 
     } else { 
-      setMessage('✅ ' + translate('promo_added'))
+      setMessage(translate('promo_added'))
       setShowAddPromoModal(false)
       resetPromoForm()
       loadPromotions() 
@@ -1161,7 +1192,7 @@ function ManageMenu() {
 
   async function updatePromotion() {
     if (!promoFormData.name) { 
-      setMessage('⚠️ ' + translate('promo_name') + ' ' + translate('required'))
+      setMessage(`⚠️ ${translate('promo_name')} ${translate('required')}`)
       return 
     }
     let imageUrl = promoFormData.image_url
@@ -1194,9 +1225,9 @@ function ManageMenu() {
     }
     const { error } = await supabase.from('promotions').update(promoData).eq('id', selectedPromo.id)
     if (error) { 
-      setMessage('❌ ' + translate('error') + ': ' + error.message) 
+      setMessage(`❌ ${translate('error')}: ${error.message}`) 
     } else { 
-      setMessage('✅ ' + translate('promo_updated'))
+      setMessage(translate('promo_updated'))
       setShowEditPromoModal(false)
       setSelectedPromo(null)
       resetPromoForm()
@@ -1209,9 +1240,9 @@ function ManageMenu() {
     if (window.confirm(`${translate('confirm_delete')} "${name}"?`)) {
       const { error } = await supabase.from('promotions').delete().eq('id', id)
       if (error) { 
-        setMessage('❌ ' + translate('error') + ': ' + error.message) 
+        setMessage(`❌ ${translate('error')}: ${error.message}`) 
       } else { 
-        setMessage(`🗑️ "${name}" ` + translate('deleted'))
+        setMessage(`🗑️ "${name}" ${translate('deleted')}`)
         loadPromotions() 
       }
       setTimeout(() => setMessage(''), 2000)
@@ -1221,9 +1252,9 @@ function ManageMenu() {
   async function togglePromoStatus(id, currentStatus) {
     const { error } = await supabase.from('promotions').update({ is_active: !currentStatus }).eq('id', id)
     if (error) { 
-      setMessage('❌ ' + translate('error') + ': ' + error.message) 
+      setMessage(`❌ ${translate('error')}: ${error.message}`) 
     } else { 
-      setMessage(currentStatus ? '✅ ' + translate('promo_disabled') : '✅ ' + translate('promo_enabled'))
+      setMessage(currentStatus ? translate('promo_disabled') : translate('promo_enabled'))
       loadPromotions() 
     }
     setTimeout(() => setMessage(''), 2000)
@@ -1273,7 +1304,7 @@ function ManageMenu() {
 
   async function addMenuOption() {
     if (!optionForm.option_name || !optionForm.price_adjustment) {
-      setMessage('⚠️ ' + translate('size_name') + ' ' + translate('and') + ' ' + translate('price') + ' ' + translate('required'))
+      setMessage(`⚠️ ${translate('size_name')} ${translate('and')} ${translate('price')} ${translate('required')}`)
       setTimeout(() => setMessage(''), 2000)
       return
     }
@@ -1290,9 +1321,9 @@ function ManageMenu() {
       }])
 
     if (error) {
-      setMessage('❌ ' + translate('error') + ': ' + error.message)
+      setMessage(`❌ ${translate('error')}: ${error.message}`)
     } else {
-      setMessage('✅ ' + translate('option_added'))
+      setMessage(translate('option_added'))
       await loadMenuOptions(selectedMenuForOptions.id)
       setOptionForm({ option_name: '', price_adjustment: '', is_absolute_price: true, sort_order: 0 })
       await supabase.from('menu').update({ has_options: true }).eq('id', selectedMenuForOptions.id)
@@ -1303,7 +1334,7 @@ function ManageMenu() {
 
   async function updateMenuOption() {
     if (!optionForm.option_name || !optionForm.price_adjustment) {
-      setMessage('⚠️ ' + translate('size_name') + ' ' + translate('and') + ' ' + translate('price') + ' ' + translate('required'))
+      setMessage(`⚠️ ${translate('size_name')} ${translate('and')} ${translate('price')} ${translate('required')}`)
       setTimeout(() => setMessage(''), 2000)
       return
     }
@@ -1319,9 +1350,9 @@ function ManageMenu() {
       .eq('id', editingOption.id)
 
     if (error) {
-      setMessage('❌ ' + translate('error') + ': ' + error.message)
+      setMessage(`❌ ${translate('error')}: ${error.message}`)
     } else {
-      setMessage('✅ ' + translate('option_updated'))
+      setMessage(translate('option_updated'))
       await loadMenuOptions(selectedMenuForOptions.id)
       setEditingOption(null)
       setOptionForm({ option_name: '', price_adjustment: '', is_absolute_price: true, sort_order: 0 })
@@ -1338,9 +1369,9 @@ function ManageMenu() {
       .eq('id', optionId)
 
     if (error) {
-      setMessage('❌ ' + translate('error') + ': ' + error.message)
+      setMessage(`❌ ${translate('error')}: ${error.message}`)
     } else {
-      setMessage('✅ ' + translate('option_deleted'))
+      setMessage(translate('option_deleted'))
       await loadMenuOptions(selectedMenuForOptions.id)
       
       const { count } = await supabase
@@ -1395,7 +1426,7 @@ function ManageMenu() {
     if (newStock !== null && !isNaN(newStock) && newStock >= 0) {
       const { error } = await supabase.from('menu').update({ stock: parseInt(newStock) }).eq('id', item.id)
       if (error) { 
-        setMessage('❌ ' + translate('error') + ': ' + error.message) 
+        setMessage(`❌ ${translate('error')}: ${error.message}`) 
       } else { 
         setMessage(`✅ ${item.name} ${translate('stock_updated_to')} ${newStock}`)
         await loadMenu()
@@ -1600,16 +1631,16 @@ function ManageMenu() {
               marginLeft: '8px', 
               background: '#3b82f6', 
               color: 'white', 
-              padding: '2px 8px', 
+              padding: '2px 10px', 
               borderRadius: '12px', 
               fontSize: '10px' 
             }}>
-              ⠿ Drag to reorder
+              {translate('drag_hint')}
             </span>
           </p>
         </div>
 
-        {/* TABS */}
+        {/* TABS - CLEAN, NO DOUBLE ICONS */}
         <div style={{ 
           display: 'flex', 
           gap: '6px', 
@@ -1673,7 +1704,7 @@ function ManageMenu() {
         </div>
 
         {/* ========================================================== */}
-        {/* REGULAR TAB - WITH DRAG & DROP */}
+        {/* REGULAR TAB */}
         {/* ========================================================== */}
         {activeTab === 'regular' && (
           <>
@@ -1724,10 +1755,10 @@ function ManageMenu() {
             {/* Message */}
             {message && (
               <div style={{ 
-                background: message.includes('✅') 
+                background: message.includes('✅') || message.includes('✔') 
                   ? (darkMode ? 'rgba(34,197,94,0.15)' : '#dcfce7') 
                   : (darkMode ? 'rgba(239,68,68,0.15)' : '#fee2e2'), 
-                color: message.includes('✅') 
+                color: message.includes('✅') || message.includes('✔') 
                   ? (darkMode ? '#4ade80' : '#166534') 
                   : (darkMode ? '#f87171' : '#991b1b'), 
                 padding: '12px 20px', 
@@ -1735,7 +1766,7 @@ function ManageMenu() {
                 marginBottom: '20px', 
                 textAlign: 'center', 
                 fontSize: isMobile ? '13px' : '14px', 
-                border: `1px solid ${message.includes('✅') ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'}`,
+                border: `1px solid ${message.includes('✅') || message.includes('✔') ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'}`,
                 fontWeight: '500'
               }}>
                 {message}
@@ -1788,7 +1819,7 @@ function ManageMenu() {
               </div>
             </div>
 
-            {/* Category Filters - WITH DRAG & DROP */}
+            {/* Category Filters */}
             <div style={{ 
               display: 'flex', 
               gap: '8px', 
@@ -1797,7 +1828,6 @@ function ManageMenu() {
               padding: '4px',
               alignItems: 'center'
             }}>
-              {/* All button - NOT draggable */}
               <button 
                 onClick={() => setActiveCategory('all')} 
                 style={{ 
@@ -1815,7 +1845,6 @@ function ManageMenu() {
                 🍽️ {translate('all')}
               </button>
               
-              {/* Draggable category buttons */}
               <DndContext
                 sensors={categorySensors}
                 collisionDetection={closestCenter}
@@ -1846,7 +1875,7 @@ function ManageMenu() {
               </DndContext>
             </div>
 
-            {/* Menu Grid - WITH DRAG & DROP */}
+            {/* Menu Grid */}
             {filteredMenu.length === 0 ? (
               <div style={{ 
                 textAlign: 'center', 
@@ -2070,6 +2099,7 @@ function ManageMenu() {
                                         fontWeight: 'bold',
                                         transition: 'all 0.2s'
                                       }}
+                                      title={translate('stock')}
                                     >
                                       📦
                                     </button>
@@ -2086,6 +2116,7 @@ function ManageMenu() {
                                         fontWeight: 'bold',
                                         transition: 'all 0.2s'
                                       }}
+                                      title={translate('edit')}
                                     >
                                       ✏️
                                     </button>
@@ -2106,6 +2137,7 @@ function ManageMenu() {
                                         fontWeight: 'bold',
                                         transition: 'all 0.2s'
                                       }}
+                                      title={translate('size_options')}
                                     >
                                       ⚙️
                                     </button>
@@ -2122,6 +2154,7 @@ function ManageMenu() {
                                         fontWeight: 'bold',
                                         transition: 'all 0.2s'
                                       }}
+                                      title={translate('delete')}
                                     >
                                       🗑️
                                     </button>
@@ -2175,6 +2208,7 @@ function ManageMenu() {
                                         fontWeight: 'bold',
                                         transition: 'all 0.2s'
                                       }}
+                                      title={translate('save')}
                                     >
                                       ✓
                                     </button>
@@ -2212,6 +2246,7 @@ function ManageMenu() {
                                         fontWeight: 'bold',
                                         transition: 'all 0.2s'
                                       }}
+                                      title={translate('save')}
                                     >
                                       ✓
                                     </button>
@@ -2249,6 +2284,7 @@ function ManageMenu() {
                                         fontWeight: 'bold',
                                         transition: 'all 0.2s'
                                       }}
+                                      title={translate('save')}
                                     >
                                       ✓
                                     </button>
@@ -2341,13 +2377,7 @@ function ManageMenu() {
             {specialMenuEnabled && (
               <>
                 <div style={{ marginBottom: '20px' }}>
-                  <label style={{ 
-                    display: 'block', 
-                    fontWeight: 'bold', 
-                    marginBottom: '8px', 
-                    color: textColor, 
-                    fontSize: isMobile ? '13px' : '14px' 
-                  }}>
+                  <label style={labelStyle}>
                     {translate('special_title')}
                   </label>
                   <input 
@@ -2449,7 +2479,7 @@ function ManageMenu() {
                                 transition: 'all 0.2s'
                               }}
                             >
-                              {translate('edit')}
+                              ✏️ {translate('edit')}
                             </button>
                             <button 
                               onClick={() => deleteSpecialItem(item.id, item.name)} 
@@ -2465,7 +2495,7 @@ function ManageMenu() {
                                 transition: 'all 0.2s'
                               }}
                             >
-                              {translate('delete')}
+                              🗑️ {translate('delete')}
                             </button>
                           </div>
                         </div>
@@ -2648,7 +2678,7 @@ function ManageMenu() {
         )}
 
         {/* ========================================================== */}
-        {/* MODALS */}
+        {/* MODALS - FIXED DARK MODE READABILITY */}
         {/* ========================================================== */}
         
         {/* ADD MENU MODAL */}
@@ -2656,6 +2686,7 @@ function ManageMenu() {
           <div style={modalOverlayStyle}>
             <div style={modalContentStyle}>
               <h3 style={modalTitleStyle}>{translate('add_menu')}</h3>
+              <label style={labelStyle}>{translate('name')} *</label>
               <input
                 type="text"
                 placeholder={translate('name')}
@@ -2663,6 +2694,7 @@ function ManageMenu() {
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
                 style={inputStyle}
               />
+              <label style={labelStyle}>{translate('price')} *</label>
               <input
                 type="number"
                 step="0.01"
@@ -2671,6 +2703,7 @@ function ManageMenu() {
                 onChange={(e) => setFormData({...formData, price: e.target.value})}
                 style={inputStyle}
               />
+              <label style={labelStyle}>{translate('description')}</label>
               <input
                 type="text"
                 placeholder={translate('description')}
@@ -2678,6 +2711,7 @@ function ManageMenu() {
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
                 style={inputStyle}
               />
+              <label style={labelStyle}>{translate('stock_qty')}</label>
               <input
                 type="number"
                 placeholder={translate('stock_qty')}
@@ -2685,6 +2719,7 @@ function ManageMenu() {
                 onChange={(e) => setFormData({...formData, stock: parseInt(e.target.value) || 0})}
                 style={inputStyle}
               />
+              <label style={labelStyle}>{translate('category')}</label>
               <select
                 value={formData.category}
                 onChange={(e) => setFormData({...formData, category: e.target.value})}
@@ -2695,18 +2730,25 @@ function ManageMenu() {
                   <option key={cat.id} value={cat.name}>{cat.icon} {cat.name}</option>
                 ))}
               </select>
+              <label style={labelStyle}>{translate('image')}</label>
               <input
                 type="file"
                 accept="image/*"
                 onChange={(e) => setFormData({...formData, image_file: e.target.files[0]})}
                 style={inputStyle}
               />
+              {formData.image_file && (
+                <div style={{ marginBottom: '12px' }}>
+                  <p style={{ color: textMuted, fontSize: '12px' }}>{translate('preview')}:</p>
+                  <img src={URL.createObjectURL(formData.image_file)} alt="Preview" style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px' }} />
+                </div>
+              )}
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button onClick={() => setShowAddModal(false)} style={buttonSecondaryStyle}>
                   {translate('cancel')}
                 </button>
                 <button onClick={addRegularMenuItem} style={buttonPrimaryStyle}>
-                  {translate('add')}
+                  {uploading ? '...' : translate('add')}
                 </button>
               </div>
             </div>
@@ -2718,6 +2760,7 @@ function ManageMenu() {
           <div style={modalOverlayStyle}>
             <div style={modalContentStyle}>
               <h3 style={modalTitleStyle}>{translate('edit_menu')}</h3>
+              <label style={labelStyle}>{translate('name')} *</label>
               <input
                 type="text"
                 placeholder={translate('name')}
@@ -2725,6 +2768,7 @@ function ManageMenu() {
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
                 style={inputStyle}
               />
+              <label style={labelStyle}>{translate('price')} *</label>
               <input
                 type="number"
                 step="0.01"
@@ -2733,6 +2777,7 @@ function ManageMenu() {
                 onChange={(e) => setFormData({...formData, price: e.target.value})}
                 style={inputStyle}
               />
+              <label style={labelStyle}>{translate('description')}</label>
               <input
                 type="text"
                 placeholder={translate('description')}
@@ -2740,6 +2785,7 @@ function ManageMenu() {
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
                 style={inputStyle}
               />
+              <label style={labelStyle}>{translate('stock_qty')}</label>
               <input
                 type="number"
                 placeholder={translate('stock_qty')}
@@ -2747,6 +2793,7 @@ function ManageMenu() {
                 onChange={(e) => setFormData({...formData, stock: parseInt(e.target.value) || 0})}
                 style={inputStyle}
               />
+              <label style={labelStyle}>{translate('category')}</label>
               <select
                 value={formData.category}
                 onChange={(e) => setFormData({...formData, category: e.target.value})}
@@ -2757,15 +2804,23 @@ function ManageMenu() {
                   <option key={cat.id} value={cat.name}>{cat.icon} {cat.name}</option>
                 ))}
               </select>
+              <label style={labelStyle}>{translate('image')}</label>
               <input
                 type="file"
                 accept="image/*"
                 onChange={(e) => setFormData({...formData, image_file: e.target.files[0]})}
                 style={inputStyle}
               />
-              {formData.image_url && (
+              {formData.image_url && !formData.image_file && (
                 <div style={{ marginBottom: '12px' }}>
-                  <img src={formData.image_url} alt="Preview" style={{ width: '100px', borderRadius: '8px' }} />
+                  <p style={{ color: textMuted, fontSize: '12px' }}>{translate('preview')}:</p>
+                  <img src={formData.image_url} alt="Preview" style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px' }} />
+                </div>
+              )}
+              {formData.image_file && (
+                <div style={{ marginBottom: '12px' }}>
+                  <p style={{ color: textMuted, fontSize: '12px' }}>{translate('preview')}:</p>
+                  <img src={URL.createObjectURL(formData.image_file)} alt="Preview" style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px' }} />
                 </div>
               )}
               <div style={{ display: 'flex', gap: '10px' }}>
@@ -2773,7 +2828,7 @@ function ManageMenu() {
                   {translate('cancel')}
                 </button>
                 <button onClick={updateRegularMenuItem} style={buttonPrimaryStyle}>
-                  {translate('save')}
+                  {uploading ? '...' : translate('save')}
                 </button>
               </div>
             </div>
@@ -2785,6 +2840,7 @@ function ManageMenu() {
           <div style={modalOverlayStyle}>
             <div style={modalContentStyle}>
               <h3 style={modalTitleStyle}>{translate('add_drink_title')}</h3>
+              <label style={labelStyle}>{translate('drink_name')} *</label>
               <input
                 type="text"
                 placeholder={translate('drink_name')}
@@ -2792,6 +2848,7 @@ function ManageMenu() {
                 onChange={(e) => setNewDrinkName(e.target.value)}
                 style={inputStyle}
               />
+              <label style={labelStyle}>{translate('hot_price')}</label>
               <input
                 type="number"
                 step="0.01"
@@ -2800,6 +2857,7 @@ function ManageMenu() {
                 onChange={(e) => setNewDrinkPanas(e.target.value)}
                 style={inputStyle}
               />
+              <label style={labelStyle}>{translate('cold_price')}</label>
               <input
                 type="number"
                 step="0.01"
@@ -2808,6 +2866,7 @@ function ManageMenu() {
                 onChange={(e) => setNewDrinkSejuk(e.target.value)}
                 style={inputStyle}
               />
+              <label style={labelStyle}>{translate('takeaway_price')}</label>
               <input
                 type="number"
                 step="0.01"
@@ -2816,6 +2875,7 @@ function ManageMenu() {
                 onChange={(e) => setNewDrinkBungkus(e.target.value)}
                 style={inputStyle}
               />
+              <label style={labelStyle}>{translate('stock_qty')}</label>
               <input
                 type="number"
                 placeholder={translate('stock_qty')}
@@ -2838,11 +2898,12 @@ function ManageMenu() {
         {/* SIZE OPTIONS MODAL */}
         {showOptionsModal && selectedMenuForOptions && (
           <div style={modalOverlayStyle}>
-            <div style={modalContentStyle}>
-              <h3 style={modalTitleStyle}>⚙️ {translate('size_options')} - {selectedMenuForOptions.name}</h3>
+            <div style={{ ...modalContentStyle, maxWidth: isMobile ? '95%' : '500px' }}>
+              <h3 style={modalTitleStyle}>{translate('size_options')} - {selectedMenuForOptions.name}</h3>
               
               <div style={{ marginBottom: '16px' }}>
                 <h4 style={{ color: textColor, marginBottom: '8px' }}>{translate('add_size')}</h4>
+                <label style={labelStyle}>{translate('size_name')} *</label>
                 <input
                   type="text"
                   placeholder={translate('size_name')}
@@ -2850,6 +2911,7 @@ function ManageMenu() {
                   onChange={(e) => setOptionForm({...optionForm, option_name: e.target.value})}
                   style={inputStyle}
                 />
+                <label style={labelStyle}>{translate('size_price')} *</label>
                 <input
                   type="number"
                   step="0.01"
@@ -2926,6 +2988,7 @@ function ManageMenu() {
           <div style={modalOverlayStyle}>
             <div style={modalContentStyle}>
               <h3 style={modalTitleStyle}>{translate('add_special')}</h3>
+              <label style={labelStyle}>{translate('name')} *</label>
               <input
                 type="text"
                 placeholder={translate('name')}
@@ -2933,6 +2996,7 @@ function ManageMenu() {
                 onChange={(e) => setSpecialFormData({...specialFormData, name: e.target.value})}
                 style={inputStyle}
               />
+              <label style={labelStyle}>{translate('price')} *</label>
               <input
                 type="number"
                 step="0.01"
@@ -2941,6 +3005,7 @@ function ManageMenu() {
                 onChange={(e) => setSpecialFormData({...specialFormData, price: e.target.value})}
                 style={inputStyle}
               />
+              <label style={labelStyle}>{translate('description')}</label>
               <input
                 type="text"
                 placeholder={translate('description')}
@@ -2948,6 +3013,7 @@ function ManageMenu() {
                 onChange={(e) => setSpecialFormData({...specialFormData, description: e.target.value})}
                 style={inputStyle}
               />
+              <label style={labelStyle}>{translate('stock_qty')}</label>
               <input
                 type="number"
                 placeholder={translate('stock_qty')}
@@ -2955,12 +3021,19 @@ function ManageMenu() {
                 onChange={(e) => setSpecialFormData({...specialFormData, stock: e.target.value})}
                 style={inputStyle}
               />
+              <label style={labelStyle}>{translate('image')}</label>
               <input
                 type="file"
                 accept="image/*"
                 onChange={(e) => setSpecialFormData({...specialFormData, image_file: e.target.files[0]})}
                 style={inputStyle}
               />
+              {specialFormData.image_file && (
+                <div style={{ marginBottom: '12px' }}>
+                  <p style={{ color: textMuted, fontSize: '12px' }}>{translate('preview')}:</p>
+                  <img src={URL.createObjectURL(specialFormData.image_file)} alt="Preview" style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px' }} />
+                </div>
+              )}
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button onClick={() => setShowAddSpecialModal(false)} style={buttonSecondaryStyle}>
                   {translate('cancel')}
@@ -2978,6 +3051,7 @@ function ManageMenu() {
           <div style={modalOverlayStyle}>
             <div style={modalContentStyle}>
               <h3 style={modalTitleStyle}>{translate('edit_special')}</h3>
+              <label style={labelStyle}>{translate('name')} *</label>
               <input
                 type="text"
                 placeholder={translate('name')}
@@ -2985,6 +3059,7 @@ function ManageMenu() {
                 onChange={(e) => setSpecialFormData({...specialFormData, name: e.target.value})}
                 style={inputStyle}
               />
+              <label style={labelStyle}>{translate('price')} *</label>
               <input
                 type="number"
                 step="0.01"
@@ -2993,6 +3068,7 @@ function ManageMenu() {
                 onChange={(e) => setSpecialFormData({...specialFormData, price: e.target.value})}
                 style={inputStyle}
               />
+              <label style={labelStyle}>{translate('description')}</label>
               <input
                 type="text"
                 placeholder={translate('description')}
@@ -3000,6 +3076,7 @@ function ManageMenu() {
                 onChange={(e) => setSpecialFormData({...specialFormData, description: e.target.value})}
                 style={inputStyle}
               />
+              <label style={labelStyle}>{translate('stock_qty')}</label>
               <input
                 type="number"
                 placeholder={translate('stock_qty')}
@@ -3007,15 +3084,23 @@ function ManageMenu() {
                 onChange={(e) => setSpecialFormData({...specialFormData, stock: e.target.value})}
                 style={inputStyle}
               />
+              <label style={labelStyle}>{translate('image')}</label>
               <input
                 type="file"
                 accept="image/*"
                 onChange={(e) => setSpecialFormData({...specialFormData, image_file: e.target.files[0]})}
                 style={inputStyle}
               />
-              {specialFormData.image_url && (
+              {specialFormData.image_url && !specialFormData.image_file && (
                 <div style={{ marginBottom: '12px' }}>
-                  <img src={specialFormData.image_url} alt="Preview" style={{ width: '100px', borderRadius: '8px' }} />
+                  <p style={{ color: textMuted, fontSize: '12px' }}>{translate('preview')}:</p>
+                  <img src={specialFormData.image_url} alt="Preview" style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px' }} />
+                </div>
+              )}
+              {specialFormData.image_file && (
+                <div style={{ marginBottom: '12px' }}>
+                  <p style={{ color: textMuted, fontSize: '12px' }}>{translate('preview')}:</p>
+                  <img src={URL.createObjectURL(specialFormData.image_file)} alt="Preview" style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px' }} />
                 </div>
               )}
               <div style={{ display: 'flex', gap: '10px' }}>
@@ -3030,13 +3115,12 @@ function ManageMenu() {
           </div>
         )}
 
-        {/* ========================================================== */}
-        {/* ADD PROMOTION MODAL - FIXED with checkbox checklist for mobile */}
-        {/* ========================================================== */}
+        {/* ADD PROMOTION MODAL */}
         {showAddPromoModal && (
           <div style={modalOverlayStyle}>
             <div style={modalContentStyle}>
               <h3 style={modalTitleStyle}>{translate('add_promotion')}</h3>
+              <label style={labelStyle}>{translate('promo_name')} *</label>
               <input
                 type="text"
                 placeholder={translate('promo_name')}
@@ -3044,6 +3128,7 @@ function ManageMenu() {
                 onChange={(e) => setPromoFormData({...promoFormData, name: e.target.value})}
                 style={inputStyle}
               />
+              <label style={labelStyle}>{translate('promo_type')}</label>
               <select
                 value={promoFormData.type}
                 onChange={(e) => setPromoFormData({...promoFormData, type: e.target.value})}
@@ -3056,28 +3141,30 @@ function ManageMenu() {
 
               {promoFormData.type === 'bogo' && (
                 <>
+                  <label style={labelStyle}>{translate('trigger_item')}</label>
                   <select
                     value={promoFormData.trigger_item_id || ''}
                     onChange={(e) => setPromoFormData({...promoFormData, trigger_item_id: parseInt(e.target.value)})}
                     style={inputStyle}
                   >
-                    <option value="">{translate('trigger_item')}</option>
+                    <option value="">{translate('select_item')}</option>
                     {availableMenuItems.length === 0 ? (
-                      <option value="" disabled>No items available</option>
+                      <option value="" disabled>{translate('no_items_available')}</option>
                     ) : (
                       availableMenuItems.map(item => (
                         <option key={item.id} value={item.id}>{item.name} (RM {item.price})</option>
                       ))
                     )}
                   </select>
+                  <label style={labelStyle}>{translate('free_item')}</label>
                   <select
                     value={promoFormData.free_item_id || ''}
                     onChange={(e) => setPromoFormData({...promoFormData, free_item_id: parseInt(e.target.value)})}
                     style={inputStyle}
                   >
-                    <option value="">{translate('free_item')}</option>
+                    <option value="">{translate('select_item')}</option>
                     {availableMenuItems.length === 0 ? (
-                      <option value="" disabled>No items available</option>
+                      <option value="" disabled>{translate('no_items_available')}</option>
                     ) : (
                       availableMenuItems.map(item => (
                         <option key={item.id} value={item.id}>{item.name} (RM {item.price})</option>
@@ -3091,11 +3178,10 @@ function ManageMenu() {
                 <>
                   <div style={{ fontSize: '12px', color: textMuted, marginBottom: '8px' }}>
                     {availableMenuItems.length > 0 
-                      ? `📋 ${availableMenuItems.length} items available. Tap checkbox to select.` 
-                      : '⚠️ No items available. Please add menu items first.'}
+                      ? `📋 ${availableMenuItems.length} ${translate('items_available')}` 
+                      : `⚠️ ${translate('no_items_available')}`}
                   </div>
                   
-                  {/* CHECKBOX LIST - MOBILE FRIENDLY */}
                   <div style={{ 
                     maxHeight: '150px', 
                     overflowY: 'auto', 
@@ -3107,7 +3193,7 @@ function ManageMenu() {
                   }}>
                     {availableMenuItems.length === 0 ? (
                       <div style={{ color: textMuted, padding: '8px', textAlign: 'center' }}>
-                        No items available - add menu items first
+                        {translate('no_items_available')}
                       </div>
                     ) : (
                       availableMenuItems.map(item => (
@@ -3147,6 +3233,7 @@ function ManageMenu() {
                     )}
                   </div>
                   
+                  <label style={labelStyle}>{translate('promo_price')}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -3158,6 +3245,7 @@ function ManageMenu() {
                 </>
               )}
 
+              <label style={labelStyle}>{translate('start_date')}</label>
               <input
                 type="date"
                 placeholder={translate('start_date')}
@@ -3165,6 +3253,7 @@ function ManageMenu() {
                 onChange={(e) => setPromoFormData({...promoFormData, start_date: e.target.value})}
                 style={inputStyle}
               />
+              <label style={labelStyle}>{translate('end_date')}</label>
               <input
                 type="date"
                 placeholder={translate('end_date')}
@@ -3172,12 +3261,19 @@ function ManageMenu() {
                 onChange={(e) => setPromoFormData({...promoFormData, end_date: e.target.value})}
                 style={inputStyle}
               />
+              <label style={labelStyle}>{translate('promo_image')}</label>
               <input
                 type="file"
                 accept="image/*"
                 onChange={(e) => setPromoFormData({...promoFormData, image_file: e.target.files[0]})}
                 style={inputStyle}
               />
+              {promoFormData.image_file && (
+                <div style={{ marginBottom: '12px' }}>
+                  <p style={{ color: textMuted, fontSize: '12px' }}>{translate('preview')}:</p>
+                  <img src={URL.createObjectURL(promoFormData.image_file)} alt="Preview" style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px' }} />
+                </div>
+              )}
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button onClick={() => setShowAddPromoModal(false)} style={buttonSecondaryStyle}>
                   {translate('cancel')}
@@ -3190,13 +3286,12 @@ function ManageMenu() {
           </div>
         )}
 
-        {/* ========================================================== */}
-        {/* EDIT PROMOTION MODAL - FIXED with checkbox checklist for mobile */}
-        {/* ========================================================== */}
+        {/* EDIT PROMOTION MODAL */}
         {showEditPromoModal && selectedPromo && (
           <div style={modalOverlayStyle}>
             <div style={modalContentStyle}>
               <h3 style={modalTitleStyle}>{translate('edit_promotion')}</h3>
+              <label style={labelStyle}>{translate('promo_name')} *</label>
               <input
                 type="text"
                 placeholder={translate('promo_name')}
@@ -3204,6 +3299,7 @@ function ManageMenu() {
                 onChange={(e) => setPromoFormData({...promoFormData, name: e.target.value})}
                 style={inputStyle}
               />
+              <label style={labelStyle}>{translate('promo_type')}</label>
               <select
                 value={promoFormData.type}
                 onChange={(e) => setPromoFormData({...promoFormData, type: e.target.value})}
@@ -3216,28 +3312,30 @@ function ManageMenu() {
 
               {promoFormData.type === 'bogo' && (
                 <>
+                  <label style={labelStyle}>{translate('trigger_item')}</label>
                   <select
                     value={promoFormData.trigger_item_id || ''}
                     onChange={(e) => setPromoFormData({...promoFormData, trigger_item_id: parseInt(e.target.value)})}
                     style={inputStyle}
                   >
-                    <option value="">{translate('trigger_item')}</option>
+                    <option value="">{translate('select_item')}</option>
                     {availableMenuItems.length === 0 ? (
-                      <option value="" disabled>No items available</option>
+                      <option value="" disabled>{translate('no_items_available')}</option>
                     ) : (
                       availableMenuItems.map(item => (
                         <option key={item.id} value={item.id}>{item.name} (RM {item.price})</option>
                       ))
                     )}
                   </select>
+                  <label style={labelStyle}>{translate('free_item')}</label>
                   <select
                     value={promoFormData.free_item_id || ''}
                     onChange={(e) => setPromoFormData({...promoFormData, free_item_id: parseInt(e.target.value)})}
                     style={inputStyle}
                   >
-                    <option value="">{translate('free_item')}</option>
+                    <option value="">{translate('select_item')}</option>
                     {availableMenuItems.length === 0 ? (
-                      <option value="" disabled>No items available</option>
+                      <option value="" disabled>{translate('no_items_available')}</option>
                     ) : (
                       availableMenuItems.map(item => (
                         <option key={item.id} value={item.id}>{item.name} (RM {item.price})</option>
@@ -3251,11 +3349,10 @@ function ManageMenu() {
                 <>
                   <div style={{ fontSize: '12px', color: textMuted, marginBottom: '8px' }}>
                     {availableMenuItems.length > 0 
-                      ? `📋 ${availableMenuItems.length} items available. Tap checkbox to select.` 
-                      : '⚠️ No items available. Please add menu items first.'}
+                      ? `📋 ${availableMenuItems.length} ${translate('items_available')}` 
+                      : `⚠️ ${translate('no_items_available')}`}
                   </div>
                   
-                  {/* CHECKBOX LIST - MOBILE FRIENDLY */}
                   <div style={{ 
                     maxHeight: '150px', 
                     overflowY: 'auto', 
@@ -3267,7 +3364,7 @@ function ManageMenu() {
                   }}>
                     {availableMenuItems.length === 0 ? (
                       <div style={{ color: textMuted, padding: '8px', textAlign: 'center' }}>
-                        No items available - add menu items first
+                        {translate('no_items_available')}
                       </div>
                     ) : (
                       availableMenuItems.map(item => (
@@ -3307,6 +3404,7 @@ function ManageMenu() {
                     )}
                   </div>
                   
+                  <label style={labelStyle}>{translate('promo_price')}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -3318,6 +3416,7 @@ function ManageMenu() {
                 </>
               )}
 
+              <label style={labelStyle}>{translate('start_date')}</label>
               <input
                 type="date"
                 placeholder={translate('start_date')}
@@ -3325,6 +3424,7 @@ function ManageMenu() {
                 onChange={(e) => setPromoFormData({...promoFormData, start_date: e.target.value})}
                 style={inputStyle}
               />
+              <label style={labelStyle}>{translate('end_date')}</label>
               <input
                 type="date"
                 placeholder={translate('end_date')}
@@ -3332,15 +3432,23 @@ function ManageMenu() {
                 onChange={(e) => setPromoFormData({...promoFormData, end_date: e.target.value})}
                 style={inputStyle}
               />
+              <label style={labelStyle}>{translate('promo_image')}</label>
               <input
                 type="file"
                 accept="image/*"
                 onChange={(e) => setPromoFormData({...promoFormData, image_file: e.target.files[0]})}
                 style={inputStyle}
               />
-              {promoFormData.image_url && (
+              {promoFormData.image_url && !promoFormData.image_file && (
                 <div style={{ marginBottom: '12px' }}>
-                  <img src={promoFormData.image_url} alt="Preview" style={{ width: '100px', borderRadius: '8px' }} />
+                  <p style={{ color: textMuted, fontSize: '12px' }}>{translate('preview')}:</p>
+                  <img src={promoFormData.image_url} alt="Preview" style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px' }} />
+                </div>
+              )}
+              {promoFormData.image_file && (
+                <div style={{ marginBottom: '12px' }}>
+                  <p style={{ color: textMuted, fontSize: '12px' }}>{translate('preview')}:</p>
+                  <img src={URL.createObjectURL(promoFormData.image_file)} alt="Preview" style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px' }} />
                 </div>
               )}
               <div style={{ display: 'flex', gap: '10px' }}>
@@ -3368,16 +3476,6 @@ function ManageMenu() {
               border-radius: 50%; 
               animation: spin 1s linear infinite; 
               margin: 0 auto; 
-            }
-            
-            .spinner-small {
-              width: 20px;
-              height: 20px;
-              border: 2px solid rgba(59,130,246,0.15);
-              border-top-color: #3b82f6;
-              border-radius: 50%;
-              animation: spin 1s linear infinite;
-              flex-shrink: 0;
             }
             
             @keyframes spin { 
@@ -3434,13 +3532,18 @@ function ManageMenu() {
               transition: all 0.2s; 
             }
             
-            button:hover { 
+            button:hover:not(:disabled) { 
               opacity: 0.88; 
               transform: scale(0.97); 
             }
             
-            button:active {
+            button:active:not(:disabled) {
               transform: scale(0.93);
+            }
+            
+            button:disabled {
+              opacity: 0.5;
+              cursor: not-allowed;
             }
             
             .sortable-item {

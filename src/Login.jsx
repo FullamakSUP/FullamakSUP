@@ -6,7 +6,7 @@ import { supabase } from './lib/supabase'
 
 function Login({ onLogin }) {
   const { darkMode, toggleDarkMode } = useTheme()
-  const { language, setLanguage, t } = useLanguage()
+  const { language, setLanguage } = useLanguage()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -21,7 +21,39 @@ function Login({ onLogin }) {
   const [loginBrandingText, setLoginBrandingText] = useState('POS System for Small & Medium Restaurants')
   const [loginFooterText, setLoginFooterText] = useState('© 2024 Restoran Kita • POS System')
 
-  // Check if mobile
+  // ============================================================
+  // COMPLETE TRANSLATIONS
+  // ============================================================
+  const translations = {
+    // Login Page
+    login_title: { en: 'POS System for Small & Medium Restaurants', ms: 'Sistem POS untuk Restoran Kecil & Sederhana' },
+    username: { en: 'Username', ms: 'Nama Pengguna' },
+    password: { en: 'Password', ms: 'Kata Laluan' },
+    enter_username: { en: 'Enter username', ms: 'Masukkan nama pengguna' },
+    enter_password: { en: 'Enter password', ms: 'Masukkan kata laluan' },
+    login: { en: 'Login', ms: 'Log Masuk' },
+    logging_in: { en: 'Logging in...', ms: 'Log masuk...' },
+    english: { en: 'Bahasa Melayu', ms: 'English' },
+    
+    // Error Messages
+    enter_credentials: { en: 'Please enter username and password', ms: 'Sila masukkan nama pengguna dan kata laluan' },
+    invalid_credentials: { en: 'Invalid username or password', ms: 'Nama pengguna atau kata laluan salah' },
+    login_error: { en: 'Login error. Please try again.', ms: 'Ralat log masuk. Sila cuba lagi.' },
+    welcome: { en: 'Welcome', ms: 'Selamat datang' },
+    
+    // Footer
+    powered_by: { en: 'Powered by', ms: 'Dikuasakan oleh' },
+    all_rights_reserved: { en: 'All rights reserved', ms: 'Hak cipta terpelihara' },
+  }
+
+  const t = (key) => {
+    if (!translations[key]) return key
+    return language === 'en' ? translations[key].en : translations[key].ms
+  }
+
+  // ============================================================
+  // CHECK MOBILE
+  // ============================================================
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
@@ -31,21 +63,31 @@ function Login({ onLogin }) {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  // Modern theme colors
-  const bgColor = darkMode ? '#0f0f1a' : '#f1f5f9'
-  const cardBg = darkMode ? 'rgba(30, 30, 46, 0.95)' : 'rgba(255, 255, 255, 0.95)'
+  // ============================================================
+  // THEME COLORS
+  // ============================================================
+  const bgColor = darkMode ? '#0a0a16' : '#f0f4f8'
+  const cardBg = darkMode ? 'rgba(20, 20, 40, 0.95)' : 'rgba(255, 255, 255, 0.95)'
   const textColor = darkMode ? '#f1f5f9' : '#0f172a'
   const textMuted = darkMode ? '#94a3b8' : '#64748b'
   const borderColor = darkMode ? 'rgba(71, 85, 105, 0.3)' : 'rgba(203, 213, 225, 0.4)'
-  const inputBg = darkMode ? '#1e1e2e' : '#ffffff'
+  const inputBg = darkMode ? '#1a1a30' : '#ffffff'
+  const inputBorder = darkMode ? '#334155' : '#cbd5e1'
+  const primaryGradient = 'linear-gradient(135deg, #3b82f6, #1d4ed8)'
+  const primaryGlow = 'rgba(59, 130, 246, 0.4)'
   
   const glassEffect = {
     background: cardBg,
-    backdropFilter: 'blur(20px)',
+    backdropFilter: 'blur(24px)',
     border: `1px solid ${borderColor}`,
-    boxShadow: darkMode ? '0 25px 50px -12px rgba(0,0,0,0.5)' : '0 25px 50px -12px rgba(0,0,0,0.15)'
+    boxShadow: darkMode 
+      ? '0 25px 60px -12px rgba(0,0,0,0.7)' 
+      : '0 25px 60px -12px rgba(0,0,0,0.15)'
   }
 
+  // ============================================================
+  // LOAD DATA
+  // ============================================================
   useEffect(() => {
     loadRestaurantInfo()
     loadLoginSettings()
@@ -80,11 +122,14 @@ function Login({ onLogin }) {
     }
   }
 
+  // ============================================================
+  // HANDLE LOGIN
+  // ============================================================
   const handleSubmit = async (e) => {
     e.preventDefault()
     
     if (!username || !password) {
-      toast.error(language === 'bm' ? 'Sila masukkan nama pengguna dan kata laluan' : 'Please enter username and password')
+      toast.error(t('enter_credentials'))
       return
     }
 
@@ -98,13 +143,13 @@ function Login({ onLogin }) {
         .single()
 
       if (error || !data) {
-        toast.error(language === 'bm' ? 'Nama pengguna atau kata laluan salah' : 'Invalid username or password')
+        toast.error(t('invalid_credentials'))
         setLoading(false)
         return
       }
 
       if (data.password !== password) {
-        toast.error(language === 'bm' ? 'Nama pengguna atau kata laluan salah' : 'Invalid username or password')
+        toast.error(t('invalid_credentials'))
         setLoading(false)
         return
       }
@@ -118,7 +163,7 @@ function Login({ onLogin }) {
       
       sessionStorage.setItem('staffAuth', JSON.stringify(userData))
       
-      toast.success(`${language === 'bm' ? 'Selamat datang' : 'Welcome'}, ${userData.name}!`)
+      toast.success(`${t('welcome')}, ${userData.name}!`)
       
       if (onLogin) {
         onLogin(userData)
@@ -135,27 +180,15 @@ function Login({ onLogin }) {
       }
     } catch (err) {
       console.error('Login error:', err)
-      toast.error(language === 'bm' ? 'Ralat log masuk. Sila cuba lagi.' : 'Login error. Please try again.')
+      toast.error(t('login_error'))
     } finally {
       setLoading(false)
     }
   }
 
-  // Translations for static text
-  const getLoginText = (key) => {
-    const texts = {
-      login_title: { bm: 'Sistem POS untuk Restoran Kecil & Sederhana', en: 'POS System for Small & Medium Restaurants' },
-      username: { bm: 'Nama Pengguna', en: 'Username' },
-      password: { bm: 'Kata Laluan', en: 'Password' },
-      enter_username: { bm: 'Masukkan nama pengguna', en: 'Enter username' },
-      enter_password: { bm: 'Masukkan kata laluan', en: 'Enter password' },
-      login: { bm: 'Log Masuk', en: 'Login' },
-      logging_in: { bm: 'Log masuk...', en: 'Logging in...' },
-      english: { bm: 'English', en: 'Bahasa Melayu' }
-    }
-    return texts[key]?.[language] || texts[key]?.en || key
-  }
-
+  // ============================================================
+  // RENDER
+  // ============================================================
   return (
     <div style={{ 
       minHeight: '100vh', 
@@ -163,21 +196,21 @@ function Login({ onLogin }) {
       alignItems: 'center', 
       justifyContent: 'center', 
       background: bgColor, 
-      padding: isMobile ? '16px' : '20px',
+      padding: isMobile ? '12px' : '20px',
       position: 'relative', 
       overflow: 'hidden' 
     }}>
       
-      {/* Animated Background Elements */}
+      {/* ===== ANIMATED BACKGROUND ===== */}
       <div style={{ 
         position: 'absolute', 
         top: '-30%', 
         right: '-20%', 
         width: isMobile ? '300px' : '600px', 
         height: isMobile ? '300px' : '600px', 
-        background: 'radial-gradient(circle, rgba(59,130,246,0.15) 0%, rgba(59,130,246,0) 70%)', 
+        background: 'radial-gradient(circle, rgba(59,130,246,0.12) 0%, rgba(59,130,246,0) 70%)', 
         borderRadius: '50%', 
-        animation: 'float 8s ease-in-out infinite' 
+        animation: 'float1 8s ease-in-out infinite' 
       }} />
       <div style={{ 
         position: 'absolute', 
@@ -185,12 +218,23 @@ function Login({ onLogin }) {
         left: '-20%', 
         width: isMobile ? '250px' : '500px', 
         height: isMobile ? '250px' : '500px', 
-        background: 'radial-gradient(circle, rgba(34,197,94,0.1) 0%, rgba(34,197,94,0) 70%)', 
+        background: 'radial-gradient(circle, rgba(34,197,94,0.08) 0%, rgba(34,197,94,0) 70%)', 
         borderRadius: '50%', 
-        animation: 'float 6s ease-in-out infinite reverse' 
+        animation: 'float2 6s ease-in-out infinite reverse' 
+      }} />
+      <div style={{ 
+        position: 'absolute', 
+        top: '50%', 
+        left: '50%', 
+        transform: 'translate(-50%, -50%)',
+        width: isMobile ? '400px' : '800px', 
+        height: isMobile ? '400px' : '800px', 
+        background: 'radial-gradient(circle, rgba(139,92,246,0.05) 0%, rgba(139,92,246,0) 70%)', 
+        borderRadius: '50%', 
+        animation: 'float3 10s ease-in-out infinite' 
       }} />
 
-      {/* Main Container - Responsive Layout */}
+      {/* ===== MAIN CONTAINER ===== */}
       <div style={{ 
         ...glassEffect, 
         borderRadius: isMobile ? '24px' : '40px', 
@@ -199,47 +243,119 @@ function Login({ onLogin }) {
         display: 'flex', 
         flexDirection: isMobile ? 'column' : 'row',
         overflow: 'hidden', 
-        animation: 'slideUp 0.6s ease' 
+        animation: 'slideUp 0.6s cubic-bezier(0.34, 1.2, 0.64, 1)' 
       }}>
         
-        {/* LEFT SIDE - Branding (desktop only) */}
+        {/* ===== LEFT SIDE - BRANDING ===== */}
         {!isMobile && (
           <div style={{ 
             flex: 1, 
-            background: 'linear-gradient(135deg, #2563eb, #1e40af, #1e1b4b)', 
+            background: 'linear-gradient(145deg, #1e293b, #0f172a, #0a0a16)', 
             padding: '48px', 
             display: 'flex', 
             flexDirection: 'column', 
             justifyContent: 'center', 
             alignItems: 'center', 
             textAlign: 'center', 
-            color: 'white' 
+            color: 'white',
+            position: 'relative',
+            overflow: 'hidden'
           }}>
+            {/* Decorative elements */}
             <div style={{ 
-              width: '120px', 
-              height: '120px', 
-              background: 'rgba(255,255,255,0.1)', 
-              borderRadius: '32px', 
+              position: 'absolute', 
+              top: '-50%', 
+              right: '-50%', 
+              width: '200%', 
+              height: '200%', 
+              background: 'radial-gradient(circle, rgba(59,130,246,0.05) 0%, transparent 70%)',
+              borderRadius: '50%'
+            }} />
+            
+            <div style={{ 
+              width: '130px', 
+              height: '130px', 
+              background: 'rgba(255,255,255,0.06)', 
+              borderRadius: '36px', 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center', 
               marginBottom: '32px', 
               backdropFilter: 'blur(10px)', 
-              border: '1px solid rgba(255,255,255,0.2)' 
+              border: '1px solid rgba(255,255,255,0.08)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+              position: 'relative',
+              zIndex: 1
             }}>
               {restaurantLogo ? 
-                <img src={restaurantLogo} alt={restaurantName} style={{ width: '80px', height: '80px', objectFit: 'contain', borderRadius: '16px' }} /> : 
+                <img src={restaurantLogo} alt={restaurantName} style={{ 
+                  width: '80px', 
+                  height: '80px', 
+                  objectFit: 'contain', 
+                  borderRadius: '16px' 
+                }} /> : 
                 <span style={{ fontSize: '64px' }}>🏪</span>
               }
             </div>
-            <h1 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '16px', letterSpacing: '-0.5px' }}>{restaurantName}</h1>
-            <p style={{ fontSize: '14px', opacity: 0.8, marginBottom: '32px', maxWidth: '280px' }}>{getLoginText('login_title')}</p>
-            <div style={{ width: '80%', height: '2px', background: 'rgba(255,255,255,0.2)', margin: '24px 0' }} />
-            <div style={{ fontSize: '12px', opacity: 0.7 }}>⭐ {loginBrandingText}</div>
+            
+            <h1 style={{ 
+              fontSize: '32px', 
+              fontWeight: 'bold', 
+              marginBottom: '12px', 
+              letterSpacing: '-0.5px',
+              position: 'relative',
+              zIndex: 1
+            }}>
+              {restaurantName}
+            </h1>
+            
+            <p style={{ 
+              fontSize: '14px', 
+              opacity: 0.7, 
+              marginBottom: '32px', 
+              maxWidth: '280px',
+              position: 'relative',
+              zIndex: 1,
+              lineHeight: '1.6'
+            }}>
+              {t('login_title')}
+            </p>
+            
+            <div style={{ 
+              width: '60%', 
+              height: '1px', 
+              background: 'rgba(255,255,255,0.1)', 
+              margin: '20px auto',
+              position: 'relative',
+              zIndex: 1
+            }} />
+            
+            <div style={{ 
+              fontSize: '12px', 
+              opacity: 0.5,
+              position: 'relative',
+              zIndex: 1
+            }}>
+              ⭐ {loginBrandingText}
+            </div>
+
+            {/* Decorative dots */}
+            <div style={{ 
+              position: 'absolute', 
+              bottom: '40px', 
+              left: '40px',
+              display: 'flex',
+              gap: '8px',
+              opacity: 0.3
+            }}>
+              <span style={{ width: '6px', height: '6px', background: '#3b82f6', borderRadius: '50%' }} />
+              <span style={{ width: '6px', height: '6px', background: '#22c55e', borderRadius: '50%' }} />
+              <span style={{ width: '6px', height: '6px', background: '#f59e0b', borderRadius: '50%' }} />
+            </div>
           </div>
         )}
         
-        {/* Mobile Logo (only on mobile) */}
+        {/* ===== MOBILE LOGO ===== */}
         {isMobile && (
           <div style={{ 
             textAlign: 'center', 
@@ -247,75 +363,102 @@ function Login({ onLogin }) {
             borderBottom: `1px solid ${borderColor}`
           }}>
             <div style={{ 
-              width: '70px', 
-              height: '70px', 
+              width: '72px', 
+              height: '72px', 
               background: 'linear-gradient(135deg, #2563eb, #1e40af)', 
-              borderRadius: '20px', 
+              borderRadius: '22px', 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center', 
-              margin: '0 auto 12px auto' 
+              margin: '0 auto 12px auto',
+              boxShadow: '0 8px 24px rgba(37,99,235,0.3)'
             }}>
               {restaurantLogo ? 
-                <img src={restaurantLogo} alt={restaurantName} style={{ width: '50px', height: '50px', objectFit: 'contain', borderRadius: '12px' }} /> : 
+                <img src={restaurantLogo} alt={restaurantName} style={{ 
+                  width: '50px', 
+                  height: '50px', 
+                  objectFit: 'contain', 
+                  borderRadius: '12px' 
+                }} /> : 
                 <span style={{ fontSize: '40px' }}>🏪</span>
               }
             </div>
-            <h1 style={{ fontSize: '24px', fontWeight: 'bold', margin: 0, color: textColor }}>{restaurantName}</h1>
-            <p style={{ fontSize: '12px', color: textMuted, marginTop: '4px' }}>{getLoginText('login_title')}</p>
+            <h1 style={{ 
+              fontSize: '24px', 
+              fontWeight: 'bold', 
+              margin: 0, 
+              color: textColor 
+            }}>
+              {restaurantName}
+            </h1>
+            <p style={{ 
+              fontSize: '11px', 
+              color: textMuted, 
+              marginTop: '4px' 
+            }}>
+              {t('login_title')}
+            </p>
           </div>
         )}
         
-        {/* RIGHT SIDE - Login Form */}
+        {/* ===== RIGHT SIDE - LOGIN FORM ===== */}
         <div style={{ 
           flex: 1, 
           padding: isMobile ? '24px' : '48px', 
           background: 'transparent' 
         }}>
           
-          {/* Top Toggles */}
+          {/* ===== TOP TOGGLES ===== */}
           <div style={{ 
             display: 'flex', 
             justifyContent: 'flex-end', 
-            gap: '12px', 
+            gap: '10px', 
             marginBottom: isMobile ? '16px' : '32px' 
           }}>
             <button 
               onClick={toggleDarkMode} 
               style={{ 
-                background: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)', 
+                background: darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', 
                 color: textColor, 
                 padding: '8px', 
                 border: `1px solid ${borderColor}`, 
                 borderRadius: '40px', 
                 cursor: 'pointer', 
-                width: '38px', 
-                height: '38px', 
+                width: '40px', 
+                height: '40px', 
                 display: 'flex', 
                 alignItems: 'center', 
-                justifyContent: 'center' 
+                justifyContent: 'center',
+                fontSize: '18px',
+                transition: 'all 0.2s'
               }}
+              onMouseEnter={e => e.currentTarget.style.transform = 'scale(0.95)'}
+              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
             >
               {darkMode ? '☀️' : '🌙'}
             </button>
+            
             <button 
               onClick={() => setLanguage(language === 'bm' ? 'en' : 'bm')} 
               style={{ 
-                background: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)', 
+                background: darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', 
                 color: textColor, 
-                padding: '8px 16px', 
+                padding: '8px 18px', 
                 border: `1px solid ${borderColor}`, 
                 borderRadius: '40px', 
                 cursor: 'pointer', 
-                fontSize: '13px', 
-                fontWeight: '500' 
+                fontSize: '12px', 
+                fontWeight: '600',
+                transition: 'all 0.2s'
               }}
+              onMouseEnter={e => e.currentTarget.style.transform = 'scale(0.95)'}
+              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
             >
-              {language === 'bm' ? '🇺🇸 English' : '🇲🇾 Bahasa'}
+              {language === 'bm' ? '🇺🇸 EN' : '🇲🇾 BM'}
             </button>
           </div>
           
-          {/* Welcome Text */}
+          {/* ===== WELCOME TEXT ===== */}
           <div style={{ marginBottom: isMobile ? '20px' : '32px' }}>
             <h2 style={{ 
               margin: 0, 
@@ -326,22 +469,26 @@ function Login({ onLogin }) {
             }}>
               {loginWelcomeText}
             </h2>
-            <p style={{ color: textMuted, fontSize: '14px', marginTop: '8px' }}>
+            <p style={{ 
+              color: textMuted, 
+              fontSize: '14px', 
+              marginTop: '6px' 
+            }}>
               {loginSubtitleText}
             </p>
           </div>
 
-          {/* Login Form */}
+          {/* ===== LOGIN FORM ===== */}
           <form onSubmit={handleSubmit}>
-            <div style={{ marginBottom: '20px' }}>
+            <div style={{ marginBottom: '18px' }}>
               <label style={{ 
                 display: 'block', 
-                marginBottom: '8px', 
+                marginBottom: '6px', 
                 fontWeight: '600', 
                 color: textColor, 
                 fontSize: '13px' 
               }}>
-                📧 {getLoginText('username')}
+                👤 {t('username')}
               </label>
               <div style={{ position: 'relative' }}>
                 <span style={{ 
@@ -349,8 +496,9 @@ function Login({ onLogin }) {
                   left: '16px', 
                   top: '50%', 
                   transform: 'translateY(-50%)', 
-                  fontSize: '18px', 
-                  color: textMuted 
+                  fontSize: '16px', 
+                  color: textMuted,
+                  opacity: 0.6
                 }}>
                   👤
                 </span>
@@ -358,25 +506,26 @@ function Login({ onLogin }) {
                   type="text" 
                   value={username} 
                   onChange={(e) => setUsername(e.target.value)} 
-                  placeholder={getLoginText('enter_username')} 
+                  placeholder={t('enter_username')} 
                   autoComplete="off" 
                   style={{ 
                     width: '100%', 
                     padding: isMobile ? '14px 16px 14px 48px' : '16px 16px 16px 48px', 
                     borderRadius: '24px', 
-                    border: `1px solid ${borderColor}`, 
+                    border: `1px solid ${inputBorder}`, 
                     background: inputBg, 
                     color: textColor, 
                     fontSize: isMobile ? '14px' : '15px', 
                     outline: 'none', 
-                    transition: 'all 0.2s' 
+                    transition: 'all 0.25s',
+                    boxSizing: 'border-box'
                   }}
                   onFocus={e => { 
                     e.currentTarget.style.borderColor = '#3b82f6'; 
-                    e.currentTarget.style.boxShadow = '0 0 0 4px rgba(59,130,246,0.15)' 
+                    e.currentTarget.style.boxShadow = '0 0 0 4px rgba(59,130,246,0.12)' 
                   }}
                   onBlur={e => { 
-                    e.currentTarget.style.borderColor = borderColor; 
+                    e.currentTarget.style.borderColor = inputBorder; 
                     e.currentTarget.style.boxShadow = 'none' 
                   }} 
                 />
@@ -386,12 +535,12 @@ function Login({ onLogin }) {
             <div style={{ marginBottom: '24px' }}>
               <label style={{ 
                 display: 'block', 
-                marginBottom: '8px', 
+                marginBottom: '6px', 
                 fontWeight: '600', 
                 color: textColor, 
                 fontSize: '13px' 
               }}>
-                🔒 {getLoginText('password')}
+                🔒 {t('password')}
               </label>
               <div style={{ position: 'relative' }}>
                 <span style={{ 
@@ -399,8 +548,9 @@ function Login({ onLogin }) {
                   left: '16px', 
                   top: '50%', 
                   transform: 'translateY(-50%)', 
-                  fontSize: '18px', 
-                  color: textMuted 
+                  fontSize: '16px', 
+                  color: textMuted,
+                  opacity: 0.6
                 }}>
                   🔑
                 </span>
@@ -408,25 +558,26 @@ function Login({ onLogin }) {
                   type={showPassword ? 'text' : 'password'} 
                   value={password} 
                   onChange={(e) => setPassword(e.target.value)} 
-                  placeholder={getLoginText('enter_password')} 
+                  placeholder={t('enter_password')} 
                   style={{ 
                     width: '100%', 
                     padding: isMobile ? '14px 16px 14px 48px' : '16px 16px 16px 48px', 
                     paddingRight: '50px', 
                     borderRadius: '24px', 
-                    border: `1px solid ${borderColor}`, 
+                    border: `1px solid ${inputBorder}`, 
                     background: inputBg, 
                     color: textColor, 
                     fontSize: isMobile ? '14px' : '15px', 
                     outline: 'none', 
-                    transition: 'all 0.2s' 
+                    transition: 'all 0.25s',
+                    boxSizing: 'border-box'
                   }}
                   onFocus={e => { 
                     e.currentTarget.style.borderColor = '#3b82f6'; 
-                    e.currentTarget.style.boxShadow = '0 0 0 4px rgba(59,130,246,0.15)' 
+                    e.currentTarget.style.boxShadow = '0 0 0 4px rgba(59,130,246,0.12)' 
                   }}
                   onBlur={e => { 
-                    e.currentTarget.style.borderColor = borderColor; 
+                    e.currentTarget.style.borderColor = inputBorder; 
                     e.currentTarget.style.boxShadow = 'none' 
                   }} 
                 />
@@ -441,10 +592,14 @@ function Login({ onLogin }) {
                     background: 'none', 
                     border: 'none', 
                     cursor: 'pointer', 
-                    fontSize: '20px', 
+                    fontSize: '18px', 
                     color: textMuted, 
-                    padding: '0' 
+                    padding: '4px',
+                    opacity: 0.7,
+                    transition: 'all 0.2s'
                   }}
+                  onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+                  onMouseLeave={e => e.currentTarget.style.opacity = '0.7'}
                 >
                   {showPassword ? '🙈' : '👁️'}
                 </button>
@@ -457,7 +612,7 @@ function Login({ onLogin }) {
               style={{ 
                 width: '100%', 
                 padding: isMobile ? '14px' : '16px', 
-                background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)', 
+                background: primaryGradient, 
                 color: 'white', 
                 border: 'none', 
                 borderRadius: '60px', 
@@ -466,61 +621,126 @@ function Login({ onLogin }) {
                 cursor: loading ? 'not-allowed' : 'pointer', 
                 opacity: loading ? 0.7 : 1, 
                 transition: 'all 0.3s', 
-                boxShadow: '0 8px 20px -4px rgba(59,130,246,0.4)' 
+                boxShadow: `0 8px 24px -4px ${primaryGlow}`,
+                position: 'relative',
+                overflow: 'hidden'
+              }}
+              onMouseEnter={e => {
+                if (!loading) {
+                  e.currentTarget.style.transform = 'scale(0.98)'
+                  e.currentTarget.style.boxShadow = `0 4px 16px -2px ${primaryGlow}`
+                }
+              }}
+              onMouseLeave={e => {
+                if (!loading) {
+                  e.currentTarget.style.transform = 'scale(1)'
+                  e.currentTarget.style.boxShadow = `0 8px 24px -4px ${primaryGlow}`
+                }
               }}
             >
               {loading ? (
                 <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                  <span className="spinner"></span> {getLoginText('logging_in')}
+                  <span className="spinner"></span> {t('logging_in')}
                 </span>
               ) : (
-                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                  <span>🔑</span> {getLoginText('login')} <span>→</span>
+                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                  <span>🔑</span> {t('login')} <span>→</span>
                 </span>
               )}
+              
+              {/* Shine effect */}
+              <span style={{
+                position: 'absolute',
+                top: '-50%',
+                left: '-50%',
+                width: '200%',
+                height: '200%',
+                background: 'linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%)',
+                animation: 'shine 3s infinite',
+                pointerEvents: 'none'
+              }} />
             </button>
           </form>
 
-          {/* Mobile Branding Text (only on mobile) */}
+          {/* ===== MOBILE BRANDING ===== */}
           {isMobile && (
             <div style={{ textAlign: 'center', marginTop: '20px' }}>
-              <div style={{ fontSize: '10px', color: textMuted, opacity: 0.7 }}>⭐ {loginBrandingText}</div>
+              <div style={{ 
+                fontSize: '10px', 
+                color: textMuted, 
+                opacity: 0.6,
+                letterSpacing: '0.5px'
+              }}>
+                ⭐ {loginBrandingText}
+              </div>
             </div>
           )}
 
-          {/* Footer */}
+          {/* ===== FOOTER ===== */}
           <div style={{ 
             textAlign: 'center', 
-            marginTop: isMobile ? '24px' : '32px', 
-            paddingTop: isMobile ? '16px' : '20px', 
+            marginTop: isMobile ? '20px' : '32px', 
+            paddingTop: isMobile ? '14px' : '20px', 
             borderTop: `1px solid ${borderColor}` 
           }}>
-            <p style={{ fontSize: '10px', color: textMuted, margin: 0 }}>
+            <p style={{ 
+              fontSize: '10px', 
+              color: textMuted, 
+              margin: 0,
+              opacity: 0.6,
+              letterSpacing: '0.3px'
+            }}>
               {loginFooterText.replace('{restaurantName}', restaurantName)}
             </p>
           </div>
         </div>
       </div>
 
+      {/* ===== STYLES ===== */}
       <style>
         {`
           @keyframes slideUp { 
-            from { opacity: 0; transform: translateY(40px); } 
-            to { opacity: 1; transform: translateY(0); } 
+            from { 
+              opacity: 0; 
+              transform: translateY(40px) scale(0.98); 
+            } 
+            to { 
+              opacity: 1; 
+              transform: translateY(0) scale(1); 
+            } 
           }
-          @keyframes float { 
+          
+          @keyframes float1 { 
             0%, 100% { transform: translateY(0) translateX(0); } 
-            50% { transform: translateY(-20px) translateX(10px); } 
+            50% { transform: translateY(-20px) translateX(15px); } 
           }
+          
+          @keyframes float2 { 
+            0%, 100% { transform: translateY(0) translateX(0); } 
+            50% { transform: translateY(25px) translateX(-15px); } 
+          }
+          
+          @keyframes float3 { 
+            0%, 100% { transform: translate(-50%, -50%) scale(1); } 
+            50% { transform: translate(-50%, -50%) scale(1.2); } 
+          }
+          
+          @keyframes shine {
+            0% { transform: translateX(-100%) rotate(25deg); }
+            100% { transform: translateX(100%) rotate(25deg); }
+          }
+          
           .spinner { 
             width: 18px; 
             height: 18px; 
-            border: 2px solid rgba(255,255,255,0.3); 
+            border: 2px solid rgba(255,255,255,0.2); 
             border-top-color: white; 
             border-radius: 50%; 
             animation: spin 0.8s linear infinite; 
             display: inline-block; 
+            flex-shrink: 0;
           }
+          
           @keyframes spin { 
             to { transform: rotate(360deg); } 
           }

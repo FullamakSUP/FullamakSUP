@@ -6,7 +6,7 @@ import { supabase } from './lib/supabase'
 
 function CustomerMenu() {
   const { darkMode, toggleDarkMode } = useTheme()
-  const { language, setLanguage, t } = useLanguage()
+  const { language, setLanguage } = useLanguage()
   const [menu, setMenu] = useState([])
   const [categories, setCategories] = useState([])
   const [cart, setCart] = useState([])
@@ -44,40 +44,59 @@ function CustomerMenu() {
   const [activePromos, setActivePromos] = useState([])
   const [promoItems, setPromoItems] = useState([])
 
-  // ========== TRANSLATIONS ==========
+  // ============================================================
+  // COMPLETE TRANSLATIONS
+  // ============================================================
   const translations = {
+    // Header
     scan_qr: { en: 'Scan QR to order', ms: 'Scan QR untuk pesan' },
     table_no: { en: 'Table No.', ms: 'No. Meja' },
     enter_table: { en: 'Please enter your table number', ms: 'Sila masukkan nombor meja' },
+    
+    // Promotions
     promotions: { en: '🔥 Active Promotions!', ms: '🔥 Promosi Giat!' },
     buy: { en: 'Buy', ms: 'Beli' },
     get_free: { en: 'get', ms: 'dapat' },
     free: { en: 'FREE', ms: 'PERCUMA' },
     only: { en: 'Only', ms: 'Hanya' },
     save: { en: 'Save', ms: 'Jimat' },
+    promo: { en: 'PROMO', ms: 'PROMOSI' },
+    promo_bundle: { en: 'Bundle', ms: 'Bundle' },
+    promo_set: { en: 'Set Menu', ms: 'Set Menu' },
+    promo_bogo: { en: 'Buy 1 Free 1', ms: 'Beli 1 Percuma 1' },
+    buy_promo: { en: '+ Buy Promo', ms: '+ Beli Promo' },
+    
+    // Cart
+    your_order: { en: '🛒 Your Order', ms: '🛒 Pesanan Anda' },
+    empty_cart_msg: { en: 'Your cart is empty', ms: 'Keranjang kosong' },
     back_to_menu: { en: '⬅️ Back to Menu', ms: '⬅️ Kembali ke Menu' },
     place_order: { en: '📤 Place Order →', ms: '📤 Hantar Pesanan →' },
     table_required: { en: '📋 Please enter your table number', ms: '📋 Sila masukkan nombor meja' },
-    empty_cart: { en: 'Your cart is empty', ms: 'Keranjang anda kosong' },
-    your_order: { en: '🛒 Your Order', ms: '🛒 Pesanan Anda' },
-    empty_cart_msg: { en: 'Your cart is empty', ms: 'Keranjang kosong' },
+    
+    // Order totals
     subtotal: { en: 'Subtotal', ms: 'Subtotal' },
     service: { en: 'Service', ms: 'Perkhidmatan' },
     tax: { en: 'Tax', ms: 'Cukai' },
     total: { en: 'Total', ms: 'Jumlah' },
+    total_items: { en: 'Total Items', ms: 'Jumlah Item' },
+    total_amount: { en: 'Total Amount', ms: 'Jumlah Bayaran' },
+    
+    // Customer info
     your_name: { en: 'Your name', ms: 'Nama anda' },
     phone_optional: { en: 'Phone (optional)', ms: 'Telefon (optional)' },
     special_notes: { en: 'Special notes (e.g: less spicy, no onion)...', ms: 'Catatan khas (cth: kurang pedas, no onion)...' },
+    
+    // Confirmation
     confirm_order: { en: 'Confirm Order', ms: 'Sahkan Pesanan' },
     review_order: { en: 'Please review your order before placing', ms: 'Sila semak semula pesanan anda sebelum menghantar' },
     table: { en: 'Table', ms: 'Meja' },
     customer: { en: 'Customer', ms: 'Pelanggan' },
     guest: { en: 'Guest', ms: 'Tetamu' },
-    total_items: { en: 'Total Items', ms: 'Jumlah Item' },
-    total_amount: { en: 'Total Amount', ms: 'Jumlah Bayaran' },
     back: { en: '⬅️ Back', ms: '⬅️ Kembali' },
     close: { en: '❌ Close', ms: '❌ Tutup' },
     confirm: { en: '✅ Confirm', ms: '✅ Sahkan' },
+    
+    // Success
     order_confirmed: { en: 'Order Confirmed!', ms: 'Pesanan Disahkan!' },
     order_sent: { en: 'Your order has been sent to the kitchen', ms: 'Pesanan anda telah dihantar ke dapur' },
     order_number: { en: 'Order Number', ms: 'Nombor Pesanan' },
@@ -85,34 +104,35 @@ function CustomerMenu() {
     track_order: { en: '🔍 Track Order', ms: '🔍 Jejak Pesanan' },
     new_order: { en: 'New Order →', ms: 'Pesanan Baru →' },
     copied: { en: 'Copied!', ms: 'Disalin!' },
+    
+    // Drink options
     drink_type: { en: 'Select drink type', ms: 'Pilih jenis minuman' },
     hot: { en: '🔥 Hot', ms: '🔥 Panas' },
     cold: { en: '🧊 Cold', ms: '🧊 Sejuk' },
     takeaway: { en: '📦 Takeaway', ms: '📦 Bungkus' },
     add_to_cart: { en: '+ Add to Cart', ms: '+ Tambah ke Keranjang' },
     cancel: { en: 'Cancel', ms: 'Batal' },
+    
+    // Size options
     choose_size: { en: 'Choose size / option', ms: 'Pilih saiz / option' },
+    select_size: { en: '📏 Select Size', ms: '📏 Pilih Saiz' },
+    
+    // Menu
     no_menu_category: { en: 'No menu items in this category', ms: 'Tiada menu dalam kategori ini' },
-    promo: { en: 'PROMO', ms: 'PROMOSI' },
-    size: { en: '📏 Size', ms: '📏 Saiz' },
-    select_size: { en: '📏 Select Size →', ms: '📏 Pilih Saiz →' },
-    add: { en: '+ Add', ms: '+ Tambah' },
-    buy_promo: { en: '+ Buy Promo', ms: '+ Beli Promo' },
-    added: { en: '✓ Added!', ms: '✓ Ditambah!' },
-    select_size_btn: { en: '📏 Select Size', ms: '📏 Pilih Saiz' },
-    promo_bundle: { en: 'Bundle', ms: 'Bundle' },
-    promo_set: { en: 'Set Menu', ms: 'Set Menu' },
-    promo_bogo: { en: 'Buy 1 Free 1', ms: 'Beli 1 Percuma 1' },
     special_today: { en: 'Special Today', ms: 'Istimewa Hari Ini' },
-    add_special: { en: 'Special', ms: 'Istimewa' },
-    hot_price: { en: 'Hot', ms: 'Panas' },
-    cold_price: { en: 'Cold', ms: 'Sejuk' },
-    takeaway_price: { en: 'Takeaway', ms: 'Bungkus' },
+    add: { en: '+ Add', ms: '+ Tambah' },
+    added: { en: '✓ Added!', ms: '✓ Ditambah!' },
     all: { en: 'All', ms: 'Semua' },
-    // New translations for real-time
+    
+    // Real-time updates
     menu_updated: { en: '🔄 Menu updated!', ms: '🔄 Menu dikemaskini!' },
     category_updated: { en: '🔄 Categories updated!', ms: '🔄 Kategori dikemaskini!' },
     promo_updated: { en: '🔄 Promotions updated!', ms: '🔄 Promosi dikemaskini!' },
+    live: { en: '🔄 Live', ms: '🔄 Langsung' },
+    
+    // Errors
+    empty_cart: { en: 'Your cart is empty', ms: 'Keranjang anda kosong' },
+    error_submit: { en: 'Error submitting order', ms: 'Ralat menghantar pesanan' },
   }
 
   const translate = (key) => {
@@ -120,7 +140,9 @@ function CustomerMenu() {
     return language === 'en' ? translations[key].en : translations[key].ms
   }
 
-  // Check if mobile
+  // ============================================================
+  // CHECK MOBILE
+  // ============================================================
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
@@ -130,119 +152,74 @@ function CustomerMenu() {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  // Dark mode colors
-  const bgColor = darkMode ? '#0f0f1a' : '#fefce8'
-  const cardBg = darkMode ? 'rgba(30, 30, 46, 0.95)' : 'rgba(255, 255, 255, 0.98)'
-  const textColor = darkMode ? '#f1f5f9' : '#1e293b'
+  // ============================================================
+  // THEME COLORS
+  // ============================================================
+  const bgColor = darkMode ? '#0a0a16' : '#fefce8'
+  const cardBg = darkMode ? 'rgba(20, 20, 40, 0.95)' : 'rgba(255, 255, 255, 0.98)'
+  const textColor = darkMode ? '#e8edf5' : '#1e293b'
   const textMuted = darkMode ? '#94a3b8' : '#64748b'
   const borderColor = darkMode ? 'rgba(71, 85, 105, 0.3)' : 'rgba(203, 213, 225, 0.4)'
-  const inputBg = darkMode ? '#1e1e2e' : '#ffffff'
-  const secondaryBg = darkMode ? 'rgba(30, 30, 46, 0.8)' : '#fef3c7'
+  const inputBg = darkMode ? '#1a1a2e' : '#ffffff'
+  const secondaryBg = darkMode ? 'rgba(30, 30, 50, 0.6)' : '#fef3c7'
 
   // ============================================================
   // LOAD DATA + REAL-TIME SUBSCRIPTIONS
   // ============================================================
   useEffect(() => {
-    // Load initial data
     loadAllData()
     loadSettings()
     loadPromotions()
     
-    // Get table number from URL
     const params = new URLSearchParams(window.location.search)
     const table = params.get('table')
     if (table) setTableNumber(table)
 
-    // ===== REAL-TIME SUBSCRIPTION FOR MENU =====
+    // ===== REAL-TIME SUBSCRIPTIONS =====
     const menuSubscription = supabase
       .channel('customer-menu-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*', // INSERT, UPDATE, DELETE
-          schema: 'public',
-          table: 'menu'
-        },
-        (payload) => {
-          console.log('🔄 Menu changed:', payload)
-          loadMenu()
-          toast.success(translate('menu_updated'), { duration: 1500 })
-        }
-      )
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'menu' }, (payload) => {
+        console.log('🔄 Menu changed:', payload)
+        loadMenu()
+        toast.success(translate('menu_updated'), { duration: 1500 })
+      })
       .subscribe()
 
-    // ===== REAL-TIME SUBSCRIPTION FOR CATEGORIES =====
     const categorySubscription = supabase
       .channel('customer-category-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'categories'
-        },
-        (payload) => {
-          console.log('🔄 Categories changed:', payload)
-          loadCategories()
-          toast.success(translate('category_updated'), { duration: 1500 })
-        }
-      )
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, (payload) => {
+        console.log('🔄 Categories changed:', payload)
+        loadCategories()
+        toast.success(translate('category_updated'), { duration: 1500 })
+      })
       .subscribe()
 
-    // ===== REAL-TIME SUBSCRIPTION FOR DRINK OPTIONS =====
     const drinkSubscription = supabase
       .channel('customer-drink-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'drink_options'
-        },
-        (payload) => {
-          console.log('🔄 Drink options changed:', payload)
-          loadDrinkOptions()
-        }
-      )
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'drink_options' }, () => {
+        console.log('🔄 Drink options changed')
+        loadDrinkOptions()
+      })
       .subscribe()
 
-    // ===== REAL-TIME SUBSCRIPTION FOR PROMOTIONS =====
     const promoSubscription = supabase
       .channel('customer-promo-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'promotions'
-        },
-        (payload) => {
-          console.log('🔄 Promotions changed:', payload)
-          loadPromotions()
-          toast.success(translate('promo_updated'), { duration: 1500 })
-        }
-      )
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'promotions' }, () => {
+        console.log('🔄 Promotions changed')
+        loadPromotions()
+        toast.success(translate('promo_updated'), { duration: 1500 })
+      })
       .subscribe()
 
-    // ===== REAL-TIME SUBSCRIPTION FOR SPECIAL MENU (Settings) =====
     const settingsSubscription = supabase
       .channel('customer-settings-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'settings'
-        },
-        (payload) => {
-          console.log('🔄 Settings changed:', payload)
-          loadSpecialMenu()
-          loadRestaurantInfo()
-        }
-      )
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'settings' }, () => {
+        console.log('🔄 Settings changed')
+        loadSpecialMenu()
+        loadRestaurantInfo()
+      })
       .subscribe()
 
-    // ===== CLEANUP =====
     return () => {
       menuSubscription.unsubscribe()
       categorySubscription.unsubscribe()
@@ -252,6 +229,9 @@ function CustomerMenu() {
     }
   }, [])
 
+  // ============================================================
+  // LOAD FUNCTIONS
+  // ============================================================
   async function loadAllData() {
     setLoading(true)
     await loadRestaurantInfo()
@@ -398,7 +378,9 @@ function CustomerMenu() {
     }
   }
 
-  // Get sub categories for menu filtering - SORTED BY sort_order
+  // ============================================================
+  // HELPERS
+  // ============================================================
   const getSubCategoriesForMenu = () => {
     const minumanMain = categories.find(c => c.name === 'Minuman' && c.parent_id === null)
     
@@ -411,7 +393,36 @@ function CustomerMenu() {
       .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
   }
 
-  // Menu Options Functions
+  const getDefaultIcon = (category) => {
+    const foundCat = categories.find(c => c.name === category)
+    if (foundCat && foundCat.icon) return foundCat.icon
+    switch(category) {
+      case 'Makanan': return '🍚'
+      case 'Minuman': return '🥤'
+      default: return '🍽️'
+    }
+  }
+
+  const getCategoryIcon = (catName) => {
+    if (catName === 'All') return '🍽️'
+    if (catName === '🔥 Promosi') return '🏷️'
+    const foundCat = getSubCategoriesForMenu().find(c => c.name === catName)
+    if (foundCat && foundCat.icon) return foundCat.icon
+    return '🍽️'
+  }
+
+  // ============================================================
+  // CART FUNCTIONS
+  // ============================================================
+  const getSubtotal = () => cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+  const getServiceCharge = () => getSubtotal() * (serviceChargePercent / 100)
+  const getTax = () => getSubtotal() * (taxPercent / 100)
+  const getGrandTotal = () => getSubtotal() + getServiceCharge() + getTax()
+  const getCartItemCount = () => cart.reduce((sum, item) => sum + item.quantity, 0)
+
+  // ============================================================
+  // MENU OPTIONS FUNCTIONS
+  // ============================================================
   async function loadMenuOptions(menuId) {
     const { data } = await supabase
       .from('menu_options')
@@ -626,6 +637,9 @@ function CustomerMenu() {
     }
   }
 
+  // ============================================================
+  // ORDER FUNCTIONS
+  // ============================================================
   const handlePlaceOrder = () => {
     if (cart.length === 0) { toast.error(translate('empty_cart')); return }
     if (!tableNumber) { toast.error(translate('table_required')); return }
@@ -646,7 +660,7 @@ function CustomerMenu() {
       original_price: item.original_price || null,
       option_name: item.option_name || null,
       option_type: item.option_type || null,
-      category: item.category || (item.name.includes('Teh') || item.name.includes('Kopi') || item.name.includes('Air') ? 'Minuman' : 'Makanan')
+      category: item.category || 'Makanan'
     }))
     
     const orderNumber = 'ORD-' + Date.now()
@@ -675,7 +689,7 @@ function CustomerMenu() {
 
       if (error) {
         console.error('Submit error:', error)
-        toast.error('Error: ' + error.message)
+        toast.error(translate('error_submit') + ': ' + error.message)
       } else {
         setSubmitted(true)
         setCart([])
@@ -684,17 +698,13 @@ function CustomerMenu() {
       }
     } catch (err) {
       console.error('Exception:', err)
-      toast.error('Ralat semasa menghantar pesanan')
+      toast.error(translate('error_submit'))
     }
   }
 
-  const getSubtotal = () => cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-  const getServiceCharge = () => getSubtotal() * (serviceChargePercent / 100)
-  const getTax = () => getSubtotal() * (taxPercent / 100)
-  const getGrandTotal = () => getSubtotal() + getServiceCharge() + getTax()
-  const getCartItemCount = () => cart.reduce((sum, item) => sum + item.quantity, 0)
-
-  // ========== SUB CATEGORIES - EXCLUDE MINUMAN (SORTED) ==========
+  // ============================================================
+  // FILTERS
+  // ============================================================
   const subCategoriesForMenu = getSubCategoriesForMenu()
   const categoryNames = ['All']
   subCategoriesForMenu.forEach(cat => categoryNames.push(cat.name))
@@ -714,92 +724,321 @@ function CustomerMenu() {
   }
   
   const filteredMenu = getFilteredMenu()
-
-  const getDefaultIcon = (category) => {
-    const foundCat = categories.find(c => c.name === category)
-    if (foundCat && foundCat.icon) return foundCat.icon
-    switch(category) {
-      case 'Makanan': return '🍚'
-      case 'Minuman': return '🥤'
-      default: return '🍽️'
-    }
-  }
-
-  const getCategoryIcon = (catName) => {
-    if (catName === 'All') return '🍽️'
-    if (catName === '🔥 Promosi') return '🏷️'
-    const foundCat = subCategoriesForMenu.find(c => c.name === catName)
-    if (foundCat && foundCat.icon) return foundCat.icon
-    return '🍽️'
-  }
-
-  const menuGridCols = isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(170px, 1fr))'
+  const menuGridCols = isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(180px, 1fr))'
 
   // ============================================================
-  // RETURN RENDER
+  // LOADING STATE
   // ============================================================
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', background: bgColor }}>
+      <div style={{ 
+        minHeight: '100vh', 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        background: bgColor 
+      }}>
         <div className="spinner"></div>
-        <style>{`.spinner{width:40px;height:40px;border:3px solid rgba(245,158,11,0.2);border-top-color:#f59e0b;border-radius:50%;animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+        <style>{`
+          .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(245,158,11,0.15);
+            border-top-color: #f59e0b;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+          }
+          @keyframes spin { to { transform: rotate(360deg); } }
+        `}</style>
       </div>
     )
   }
 
+  // ============================================================
+  // SUCCESS STATE
+  // ============================================================
   if (submitted) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', background: bgColor, padding: isMobile ? '16px' : '20px' }}>
-        <div style={{ background: cardBg, borderRadius: '28px', padding: isMobile ? '24px' : '32px', maxWidth: '400px', width: '100%', textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}>
-          <div style={{ width: isMobile ? '60px' : '80px', height: isMobile ? '60px' : '80px', background: '#dcfce7', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px auto' }}>
+      <div style={{ 
+        minHeight: '100vh', 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        background: bgColor, 
+        padding: isMobile ? '16px' : '20px' 
+      }}>
+        <div style={{ 
+          background: cardBg, 
+          borderRadius: '28px', 
+          padding: isMobile ? '24px' : '32px', 
+          maxWidth: '400px', 
+          width: '100%', 
+          textAlign: 'center',
+          ...glassEffect
+        }}>
+          <div style={{ 
+            width: isMobile ? '60px' : '80px', 
+            height: isMobile ? '60px' : '80px', 
+            background: '#dcfce7', 
+            borderRadius: '50%', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            margin: '0 auto 16px auto' 
+          }}>
             <span style={{ fontSize: isMobile ? '36px' : '48px' }}>✅</span>
           </div>
-          <h1 style={{ color: '#16a34a', fontSize: isMobile ? '20px' : '24px', marginBottom: '6px', fontWeight: 'bold' }}>{translate('order_confirmed')}</h1>
-          <p style={{ color: textMuted, marginBottom: '16px', fontSize: isMobile ? '12px' : '14px' }}>{translate('order_sent')}</p>
-          <div style={{ background: secondaryBg, borderRadius: '14px', padding: '12px', marginBottom: '20px' }}>
-            <p style={{ color: textMuted, fontSize: '10px', marginBottom: '4px' }}>{translate('order_number')}:</p>
-            <div style={{ fontSize: isMobile ? '16px' : '20px', fontWeight: 'bold', letterSpacing: '1px', color: textColor, fontFamily: 'monospace', wordBreak: 'break-all' }}>{submittedOrderNumber}</div>
+          <h1 style={{ 
+            color: '#16a34a', 
+            fontSize: isMobile ? '20px' : '24px', 
+            marginBottom: '6px', 
+            fontWeight: 'bold' 
+          }}>
+            {translate('order_confirmed')}
+          </h1>
+          <p style={{ 
+            color: textMuted, 
+            marginBottom: '16px', 
+            fontSize: isMobile ? '12px' : '14px' 
+          }}>
+            {translate('order_sent')}
+          </p>
+          <div style={{ 
+            background: secondaryBg, 
+            borderRadius: '14px', 
+            padding: '12px', 
+            marginBottom: '20px' 
+          }}>
+            <p style={{ 
+              color: textMuted, 
+              fontSize: '10px', 
+              marginBottom: '4px' 
+            }}>
+              {translate('order_number')}:
+            </p>
+            <div style={{ 
+              fontSize: isMobile ? '16px' : '20px', 
+              fontWeight: 'bold', 
+              letterSpacing: '1px', 
+              color: textColor, 
+              fontFamily: 'monospace', 
+              wordBreak: 'break-all' 
+            }}>
+              {submittedOrderNumber}
+            </div>
           </div>
-          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '12px', flexWrap: 'wrap' }}>
-            <button onClick={() => { navigator.clipboard.writeText(submittedOrderNumber); toast.success(translate('copied')) }} style={{ background: '#3b82f6', color: 'white', padding: isMobile ? '8px 16px' : '10px 20px', border: 'none', borderRadius: '40px', cursor: 'pointer', fontSize: isMobile ? '12px' : '14px', fontWeight: 'bold' }}>{translate('copy')}</button>
-            <button onClick={() => window.open(`/track?order=${submittedOrderNumber}`, '_blank')} style={{ background: '#22c55e', color: 'white', padding: isMobile ? '8px 16px' : '10px 20px', border: 'none', borderRadius: '40px', cursor: 'pointer', fontSize: isMobile ? '12px' : '14px', fontWeight: 'bold' }}>{translate('track_order')}</button>
+          <div style={{ 
+            display: 'flex', 
+            gap: '10px', 
+            justifyContent: 'center', 
+            marginBottom: '12px', 
+            flexWrap: 'wrap' 
+          }}>
+            <button 
+              onClick={() => { 
+                navigator.clipboard.writeText(submittedOrderNumber)
+                toast.success(translate('copied')) 
+              }} 
+              style={{ 
+                background: '#3b82f6', 
+                color: 'white', 
+                padding: isMobile ? '8px 16px' : '10px 20px', 
+                border: 'none', 
+                borderRadius: '40px', 
+                cursor: 'pointer', 
+                fontSize: isMobile ? '12px' : '14px', 
+                fontWeight: 'bold' 
+              }}
+            >
+              {translate('copy')}
+            </button>
+            <button 
+              onClick={() => window.open(`/track?order=${submittedOrderNumber}`, '_blank')} 
+              style={{ 
+                background: '#22c55e', 
+                color: 'white', 
+                padding: isMobile ? '8px 16px' : '10px 20px', 
+                border: 'none', 
+                borderRadius: '40px', 
+                cursor: 'pointer', 
+                fontSize: isMobile ? '12px' : '14px', 
+                fontWeight: 'bold' 
+              }}
+            >
+              {translate('track_order')}
+            </button>
           </div>
-          <button onClick={() => window.location.reload()} style={{ background: 'linear-gradient(135deg, #f59e0b, #ea580c)', color: 'white', padding: isMobile ? '12px' : '14px', border: 'none', borderRadius: '40px', cursor: 'pointer', fontSize: isMobile ? '14px' : '16px', fontWeight: 'bold', width: '100%' }}>{translate('new_order')}</button>
+          <button 
+            onClick={() => window.location.reload()} 
+            style={{ 
+              background: 'linear-gradient(135deg, #f59e0b, #ea580c)', 
+              color: 'white', 
+              padding: isMobile ? '12px' : '14px', 
+              border: 'none', 
+              borderRadius: '40px', 
+              cursor: 'pointer', 
+              fontSize: isMobile ? '14px' : '16px', 
+              fontWeight: 'bold', 
+              width: '100%' 
+            }}
+          >
+            {translate('new_order')}
+          </button>
         </div>
       </div>
     )
+  }
+
+  // ============================================================
+  // GLASS EFFECT
+  // ============================================================
+  const glassEffect = {
+    background: cardBg,
+    backdropFilter: 'blur(16px)',
+    border: `1px solid ${borderColor}`,
+    boxShadow: darkMode 
+      ? '0 8px 40px rgba(0,0,0,0.5)' 
+      : '0 8px 40px rgba(0,0,0,0.06)'
   }
 
   const cartItemCount = getCartItemCount()
 
+  // ============================================================
+  // RENDER
+  // ============================================================
   return (
     <div style={{ minHeight: '100vh', background: bgColor }}>
       
-      {/* Hero Banner */}
-      <div style={{ background: 'linear-gradient(135deg, #f59e0b, #ea580c)', padding: isMobile ? '24px 16px' : '40px 24px', textAlign: 'center', color: 'white', position: 'relative', overflow: 'hidden' }}>
+      {/* ===== HERO BANNER ===== */}
+      <div style={{ 
+        background: 'linear-gradient(135deg, #f59e0b, #ea580c)', 
+        padding: isMobile ? '24px 16px' : '40px 24px', 
+        textAlign: 'center', 
+        color: 'white', 
+        position: 'relative', 
+        overflow: 'hidden' 
+      }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            marginBottom: '16px', 
+            flexWrap: 'wrap', 
+            gap: '10px' 
+          }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              {restaurantLogo ? <img src={restaurantLogo} alt={restaurantName} style={{ height: isMobile ? '36px' : '50px', borderRadius: '10px', background: 'white', padding: '4px' }} /> : <span style={{ fontSize: isMobile ? '32px' : '40px' }}>🏪</span>}
-              <div><h1 style={{ margin: 0, fontSize: isMobile ? '16px' : '20px', fontWeight: 'bold' }}>{restaurantName}</h1><p style={{ margin: 0, fontSize: isMobile ? '9px' : '12px', opacity: 0.9 }}>{translate('scan_qr')}</p></div>
+              {restaurantLogo ? (
+                <img 
+                  src={restaurantLogo} 
+                  alt={restaurantName} 
+                  style={{ 
+                    height: isMobile ? '36px' : '50px', 
+                    borderRadius: '10px', 
+                    background: 'white', 
+                    padding: '4px' 
+                  }} 
+                />
+              ) : (
+                <span style={{ fontSize: isMobile ? '32px' : '40px' }}>🏪</span>
+              )}
+              <div>
+                <h1 style={{ 
+                  margin: 0, 
+                  fontSize: isMobile ? '16px' : '20px', 
+                  fontWeight: 'bold' 
+                }}>
+                  {restaurantName}
+                </h1>
+                <p style={{ 
+                  margin: 0, 
+                  fontSize: isMobile ? '9px' : '12px', 
+                  opacity: 0.9 
+                }}>
+                  {translate('scan_qr')}
+                </p>
+              </div>
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
-              <button onClick={toggleDarkMode} style={{ background: 'rgba(255,255,255,0.2)', color: 'white', padding: isMobile ? '6px 10px' : '8px 12px', border: 'none', borderRadius: '30px', cursor: 'pointer', transition: 'all 0.2s', fontSize: isMobile ? '12px' : '14px' }}>{darkMode ? '☀️' : '🌙'}</button>
-              <button onClick={() => setLanguage(language === 'bm' ? 'en' : 'bm')} style={{ background: 'rgba(255,255,255,0.2)', color: 'white', padding: isMobile ? '6px 10px' : '8px 12px', border: 'none', borderRadius: '30px', cursor: 'pointer', transition: 'all 0.2s', fontSize: isMobile ? '12px' : '14px' }}>{language === 'bm' ? '🇺🇸 EN' : '🇲🇾 BM'}</button>
+              <button 
+                onClick={toggleDarkMode} 
+                style={{ 
+                  background: 'rgba(255,255,255,0.2)', 
+                  color: 'white', 
+                  padding: isMobile ? '6px 10px' : '8px 12px', 
+                  border: 'none', 
+                  borderRadius: '30px', 
+                  cursor: 'pointer', 
+                  transition: 'all 0.2s', 
+                  fontSize: isMobile ? '12px' : '14px' 
+                }}
+              >
+                {darkMode ? '☀️' : '🌙'}
+              </button>
+              <button 
+                onClick={() => setLanguage(language === 'bm' ? 'en' : 'bm')} 
+                style={{ 
+                  background: 'rgba(255,255,255,0.2)', 
+                  color: 'white', 
+                  padding: isMobile ? '6px 10px' : '8px 12px', 
+                  border: 'none', 
+                  borderRadius: '30px', 
+                  cursor: 'pointer', 
+                  transition: 'all 0.2s', 
+                  fontSize: isMobile ? '12px' : '14px' 
+                }}
+              >
+                {language === 'bm' ? '🇺🇸 EN' : '🇲🇾 BM'}
+              </button>
             </div>
           </div>
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: '16px' }}>
-            <div style={{ background: 'white', borderRadius: '50px', padding: isMobile ? '2px 16px' : '4px 20px', display: 'inline-flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
+            <div style={{ 
+              background: 'white', 
+              borderRadius: '50px', 
+              padding: isMobile ? '2px 16px' : '4px 20px', 
+              display: 'inline-flex', 
+              alignItems: 'center', 
+              gap: '8px', 
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)' 
+            }}>
               <span style={{ fontSize: isMobile ? '18px' : '24px' }}>📋</span>
-              <input type="number" value={tableNumber} onChange={(e) => setTableNumber(e.target.value)} placeholder={translate('table_no')} style={{ padding: isMobile ? '8px 0' : '12px 0', width: isMobile ? '80px' : '120px', textAlign: 'center', border: 'none', outline: 'none', fontSize: isMobile ? '14px' : '18px', fontWeight: 'bold', background: 'transparent' }} />
+              <input 
+                type="number" 
+                value={tableNumber} 
+                onChange={(e) => setTableNumber(e.target.value)} 
+                placeholder={translate('table_no')} 
+                style={{ 
+                  padding: isMobile ? '8px 0' : '12px 0', 
+                  width: isMobile ? '80px' : '120px', 
+                  textAlign: 'center', 
+                  border: 'none', 
+                  outline: 'none', 
+                  fontSize: isMobile ? '14px' : '18px', 
+                  fontWeight: 'bold', 
+                  background: 'transparent' 
+                }} 
+              />
               <span style={{ fontSize: isMobile ? '18px' : '24px' }}>🪑</span>
             </div>
           </div>
-          {!tableNumber && <p style={{ marginTop: '10px', fontSize: isMobile ? '10px' : '12px', opacity: 0.9, background: 'rgba(0,0,0,0.2)', display: 'inline-block', padding: '4px 12px', borderRadius: '30px' }}>⚠️ {translate('enter_table')}</p>}
+          {!tableNumber && (
+            <p style={{ 
+              marginTop: '10px', 
+              fontSize: isMobile ? '10px' : '12px', 
+              opacity: 0.9, 
+              background: 'rgba(0,0,0,0.2)', 
+              display: 'inline-block', 
+              padding: '4px 12px', 
+              borderRadius: '30px' 
+            }}>
+              ⚠️ {translate('enter_table')}
+            </p>
+          )}
         </div>
       </div>
 
-      {/* REAL-TIME STATUS INDICATOR */}
+      {/* ===== REAL-TIME INDICATOR ===== */}
       <div style={{ 
         maxWidth: '1280px', 
         margin: '8px auto 0 auto', 
@@ -808,34 +1047,67 @@ function CustomerMenu() {
         fontSize: '10px',
         color: '#22c55e'
       }}>
-        <span>🔄 Live</span>
+        <span>🔄 {translate('live')}</span>
       </div>
 
-      {/* Promo Banner */}
+      {/* ===== PROMO BANNER ===== */}
       {activePromos.length > 0 && (
         <div style={{ maxWidth: '1280px', margin: '-16px auto 0 auto', padding: isMobile ? '0 12px' : '0 20px' }}>
-          <div style={{ background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)', borderRadius: '20px', padding: isMobile ? '12px 16px' : '20px', boxShadow: '0 4px 12px rgba(139,92,246,0.3)' }}>
+          <div style={{ 
+            background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)', 
+            borderRadius: '20px', 
+            padding: isMobile ? '12px 16px' : '20px', 
+            boxShadow: '0 4px 12px rgba(139,92,246,0.3)' 
+          }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
               <span style={{ fontSize: isMobile ? '20px' : '28px' }}>🏷️</span>
-              <span style={{ fontWeight: 'bold', color: 'white', fontSize: isMobile ? '13px' : '16px' }}>{translate('promotions')}</span>
+              <span style={{ 
+                fontWeight: 'bold', 
+                color: 'white', 
+                fontSize: isMobile ? '13px' : '16px' 
+              }}>
+                {translate('promotions')}
+              </span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               {activePromos.slice(0, isMobile ? 2 : 3).map(promo => (
-                <div key={promo.id} style={{ background: 'rgba(255,255,255,0.15)', borderRadius: '12px', padding: isMobile ? '8px 12px' : '12px 16px' }}>
-                  <div style={{ fontWeight: 'bold', color: 'white', fontSize: isMobile ? '12px' : '14px' }}>{promo.name}</div>
+                <div key={promo.id} style={{ 
+                  background: 'rgba(255,255,255,0.15)', 
+                  borderRadius: '12px', 
+                  padding: isMobile ? '8px 12px' : '12px 16px' 
+                }}>
+                  <div style={{ 
+                    fontWeight: 'bold', 
+                    color: 'white', 
+                    fontSize: isMobile ? '12px' : '14px' 
+                  }}>
+                    {promo.name}
+                  </div>
                   {promo.type === 'bogo' && (
-                    <div style={{ fontSize: isMobile ? '11px' : '13px', color: 'rgba(255,255,255,0.9)', marginTop: '2px' }}>
+                    <div style={{ 
+                      fontSize: isMobile ? '11px' : '13px', 
+                      color: 'rgba(255,255,255,0.9)', 
+                      marginTop: '2px' 
+                    }}>
                       🎁 {translate('buy')} <strong>{promo.trigger_items?.[0]?.name || 'item'}</strong> {translate('get_free')} <strong>{promo.free_items?.[0]?.name || 'item'}</strong> {translate('free')}!
                     </div>
                   )}
                   {promo.type === 'set_menu' && (
-                    <div style={{ fontSize: isMobile ? '11px' : '13px', color: 'rgba(255,255,255,0.9)', marginTop: '2px' }}>
+                    <div style={{ 
+                      fontSize: isMobile ? '11px' : '13px', 
+                      color: 'rgba(255,255,255,0.9)', 
+                      marginTop: '2px' 
+                    }}>
                       🍽️ <strong>{promo.bundle_items?.map(i => i.name).join(' + ')}</strong><br />
                       {translate('only')} <strong>RM {promo.bundle_price}</strong>! ({translate('save')} RM {(promo.bundle_items?.reduce((s, i) => s + (i.price || 0), 0) - (promo.bundle_price || 0)).toFixed(2)})
                     </div>
                   )}
                   {promo.type === 'bundle' && (
-                    <div style={{ fontSize: isMobile ? '11px' : '13px', color: 'rgba(255,255,255,0.9)', marginTop: '2px' }}>
+                    <div style={{ 
+                      fontSize: isMobile ? '11px' : '13px', 
+                      color: 'rgba(255,255,255,0.9)', 
+                      marginTop: '2px' 
+                    }}>
                       📦 <strong>{promo.bundle_items?.map(i => i.name).join(' + ')}</strong><br />
                       {translate('only')} <strong>RM {promo.bundle_price}</strong>! ({translate('save')} RM {(promo.bundle_items?.reduce((s, i) => s + (i.price || 0), 0) - (promo.bundle_price || 0)).toFixed(2)})
                     </div>
@@ -847,26 +1119,91 @@ function CustomerMenu() {
         </div>
       )}
 
-      {/* Special Menu Section */}
+      {/* ===== SPECIAL MENU ===== */}
       {specialMenuEnabled && specialMenuItems.length > 0 && (
         <div style={{ maxWidth: '1280px', margin: '16px auto', padding: isMobile ? '0 12px' : '0 20px' }}>
-          <div style={{ background: 'linear-gradient(135deg, #fef3c7, #fde68a)', borderRadius: '20px', padding: isMobile ? '12px 16px' : '20px' }}>
+          <div style={{ 
+            background: 'linear-gradient(135deg, #fef3c7, #fde68a)', 
+            borderRadius: '20px', 
+            padding: isMobile ? '12px 16px' : '20px' 
+          }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
               <span style={{ fontSize: isMobile ? '20px' : '28px' }}>⭐</span>
-              <h2 style={{ margin: 0, color: '#92400e', fontSize: isMobile ? '14px' : '18px', fontWeight: 'bold' }}>{specialMenuTitle}</h2>
+              <h2 style={{ 
+                margin: 0, 
+                color: '#92400e', 
+                fontSize: isMobile ? '14px' : '18px', 
+                fontWeight: 'bold' 
+              }}>
+                {specialMenuTitle}
+              </h2>
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
               {specialMenuItems.slice(0, isMobile ? 6 : 10).map((item, idx) => (
-                <div key={idx} style={{ background: 'white', borderRadius: '50px', padding: isMobile ? '4px 12px' : '8px 20px', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }}>
-                  {item.image_url ? <img src={item.image_url} alt={item.name} style={{ width: isMobile ? '24px' : '32px', height: isMobile ? '24px' : '32px', borderRadius: '6px', objectFit: 'cover' }} /> : <span>⭐</span>}
-                  <span style={{ fontWeight: 'bold', fontSize: isMobile ? '12px' : '14px' }}>{item.name}</span>
-                  <span style={{ color: '#16a34a', fontWeight: 'bold', background: '#dcfce7', padding: '2px 8px', borderRadius: '20px', fontSize: isMobile ? '11px' : '13px' }}>RM {item.price}</span>
+                <div key={idx} style={{ 
+                  background: 'white', 
+                  borderRadius: '50px', 
+                  padding: isMobile ? '4px 12px' : '8px 20px', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '8px', 
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.1)' 
+                }}>
+                  {item.image_url ? (
+                    <img 
+                      src={item.image_url} 
+                      alt={item.name} 
+                      style={{ 
+                        width: isMobile ? '24px' : '32px', 
+                        height: isMobile ? '24px' : '32px', 
+                        borderRadius: '6px', 
+                        objectFit: 'cover' 
+                      }} 
+                    />
+                  ) : (
+                    <span>⭐</span>
+                  )}
+                  <span style={{ 
+                    fontWeight: 'bold', 
+                    fontSize: isMobile ? '12px' : '14px' 
+                  }}>
+                    {item.name}
+                  </span>
+                  <span style={{ 
+                    color: '#16a34a', 
+                    fontWeight: 'bold', 
+                    background: '#dcfce7', 
+                    padding: '2px 8px', 
+                    borderRadius: '20px', 
+                    fontSize: isMobile ? '11px' : '13px' 
+                  }}>
+                    RM {item.price}
+                  </span>
                   {item.description && (
-                    <div style={{ fontSize: '9px', color: '#64748b', fontStyle: 'italic', marginLeft: '4px' }}>
+                    <div style={{ 
+                      fontSize: isMobile ? '8px' : '9px', 
+                      color: '#64748b', 
+                      fontStyle: 'italic', 
+                      marginLeft: '4px' 
+                    }}>
                       📝 {item.description}
                     </div>
                   )}
-                  <button onClick={() => addSpecialToCart(item)} style={{ background: '#22c55e', color: 'white', border: 'none', borderRadius: '30px', padding: isMobile ? '2px 10px' : '4px 16px', cursor: 'pointer', fontWeight: 'bold', fontSize: isMobile ? '10px' : '12px' }}>+</button>
+                  <button 
+                    onClick={() => addSpecialToCart(item)} 
+                    style={{ 
+                      background: '#22c55e', 
+                      color: 'white', 
+                      border: 'none', 
+                      borderRadius: '30px', 
+                      padding: isMobile ? '2px 10px' : '4px 16px', 
+                      cursor: 'pointer', 
+                      fontWeight: 'bold', 
+                      fontSize: isMobile ? '10px' : '12px' 
+                    }}
+                  >
+                    +
+                  </button>
                 </div>
               ))}
             </div>
@@ -874,17 +1211,18 @@ function CustomerMenu() {
         </div>
       )}
 
-      {/* Category Filters - SORTED (EXCLUDE MINUMAN SUB CATEGORIES) */}
+      {/* ===== CATEGORY FILTERS ===== */}
       <div style={{ maxWidth: '1280px', margin: '16px auto', padding: isMobile ? '0 12px' : '0 20px' }}>
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'nowrap', overflowX: 'auto', paddingBottom: '8px', scrollbarWidth: 'thin' }}>
+        <div style={{ 
+          display: 'flex', 
+          gap: '8px', 
+          flexWrap: 'nowrap', 
+          overflowX: 'auto', 
+          paddingBottom: '8px', 
+          scrollbarWidth: 'thin' 
+        }}>
           {categoryNames.map(cat => {
-            let icon = '🍽️'
-            if (cat === 'All') icon = '🍽️'
-            else if (cat === '🔥 Promosi') icon = '🏷️'
-            else {
-              const found = subCategoriesForMenu.find(c => c.name === cat)
-              if (found && found.icon) icon = found.icon
-            }
+            let icon = getCategoryIcon(cat)
             
             return (
               <button 
@@ -912,9 +1250,13 @@ function CustomerMenu() {
         </div>
       </div>
 
-      {/* Menu Grid - with Bungkus price display & Description */}
+      {/* ===== MENU GRID ===== */}
       <div style={{ maxWidth: '1280px', margin: '0 auto', padding: isMobile ? '0 12px 24px 12px' : '0 20px 40px 20px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: menuGridCols, gap: isMobile ? '12px' : '20px' }}>
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: menuGridCols, 
+          gap: isMobile ? '12px' : '20px' 
+        }}>
           {filteredMenu.map(item => {
             const isPromoItem = item.type === 'set_menu' || item.type === 'bundle' || item.type === 'bogo'
             const hasDrinkOptions = !isPromoItem && drinkOptions[item.name] && drinkOptions[item.name].length > 0
@@ -952,37 +1294,88 @@ function CustomerMenu() {
                   }
                 }}
               >
-                <div style={{ background: isPromoItem ? '#f3e8ff' : '#fef3c7', padding: isMobile ? '16px' : '20px', textAlign: 'center', position: 'relative' }}>
-                  {isPromoItem && <div style={{ position: 'absolute', top: '6px', right: '6px', background: '#8b5cf6', color: 'white', fontSize: isMobile ? '8px' : '10px', padding: '2px 6px', borderRadius: '20px', fontWeight: 'bold' }}>{translate('promo')}</div>}
-                  {hasSizeOptions && <div style={{ position: 'absolute', top: '6px', left: '6px', background: '#f59e0b', color: 'white', fontSize: isMobile ? '8px' : '10px', padding: '2px 6px', borderRadius: '20px', fontWeight: 'bold' }}>{translate('size')}</div>}
+                {/* Image / Icon */}
+                <div style={{ 
+                  background: isPromoItem ? '#f3e8ff' : '#fef3c7', 
+                  padding: isMobile ? '16px' : '20px', 
+                  textAlign: 'center', 
+                  position: 'relative' 
+                }}>
+                  {isPromoItem && (
+                    <div style={{ 
+                      position: 'absolute', 
+                      top: '6px', 
+                      right: '6px', 
+                      background: '#8b5cf6', 
+                      color: 'white', 
+                      fontSize: isMobile ? '8px' : '10px', 
+                      padding: '2px 6px', 
+                      borderRadius: '20px', 
+                      fontWeight: 'bold' 
+                    }}>
+                      {translate('promo')}
+                    </div>
+                  )}
+                  {hasSizeOptions && (
+                    <div style={{ 
+                      position: 'absolute', 
+                      top: '6px', 
+                      left: '6px', 
+                      background: '#f59e0b', 
+                      color: 'white', 
+                      fontSize: isMobile ? '8px' : '10px', 
+                      padding: '2px 6px', 
+                      borderRadius: '20px', 
+                      fontWeight: 'bold' 
+                    }}>
+                      {translate('select_size')}
+                    </div>
+                  )}
                   {hasImage ? (
                     <img 
                       src={item.image_url} 
                       alt={item.name} 
-                      style={{ width: isMobile ? '70px' : '100px', height: isMobile ? '70px' : '100px', objectFit: 'cover', borderRadius: '12px', margin: '0 auto' }}
+                      style={{ 
+                        width: isMobile ? '70px' : '100px', 
+                        height: isMobile ? '70px' : '100px', 
+                        objectFit: 'cover', 
+                        borderRadius: '12px', 
+                        margin: '0 auto' 
+                      }}
                       onError={(e) => {
                         e.target.style.display = 'none'
                         e.target.parentElement.innerHTML = `<span style="font-size:${isMobile ? '40px' : '56px'}">${isPromoItem ? '🏷️' : getDefaultIcon(item.category)}</span>`
                       }}
                     />
                   ) : (
-                    <span style={{ fontSize: isMobile ? '40px' : '56px' }}>{isPromoItem ? '🏷️' : getDefaultIcon(item.category)}</span>
+                    <span style={{ fontSize: isMobile ? '40px' : '56px' }}>
+                      {isPromoItem ? '🏷️' : getDefaultIcon(item.category)}
+                    </span>
                   )}
                 </div>
+                
+                {/* Info */}
                 <div style={{ padding: isMobile ? '12px' : '16px', textAlign: 'center' }}>
-                  <h3 style={{ margin: '0 0 6px 0', fontSize: isMobile ? '13px' : '15px', fontWeight: 'bold', color: '#1e293b' }}>{item.name}</h3>
+                  <h3 style={{ 
+                    margin: '0 0 6px 0', 
+                    fontSize: isMobile ? '13px' : '15px', 
+                    fontWeight: 'bold', 
+                    color: textColor 
+                  }}>
+                    {item.name}
+                  </h3>
                   
-                  {/* 👇 DESCRIPTION DISPLAY */}
+                  {/* DESCRIPTION */}
                   {hasDescription && (
                     <div style={{ 
                       fontSize: isMobile ? '10px' : '12px', 
-                      color: '#64748b', 
+                      color: textMuted, 
                       fontStyle: 'italic',
                       marginBottom: '6px',
-                      background: '#f8fafc',
+                      background: secondaryBg,
                       padding: '4px 8px',
                       borderRadius: '8px',
-                      border: '1px solid #e2e8f0'
+                      border: `1px solid ${borderColor}`
                     }}>
                       📝 {item.description}
                     </div>
@@ -990,23 +1383,79 @@ function CustomerMenu() {
                   
                   {isPromoItem && item.original_price && (
                     <div style={{ marginBottom: '6px' }}>
-                      <span style={{ fontSize: isMobile ? '10px' : '12px', color: '#94a3b8', textDecoration: 'line-through', marginRight: '6px' }}>RM {item.original_price.toFixed(2)}</span>
-                      <span style={{ fontSize: isMobile ? '13px' : '16px', fontWeight: 'bold', color: '#8b5cf6' }}>RM {item.price.toFixed(2)}</span>
+                      <span style={{ 
+                        fontSize: isMobile ? '10px' : '12px', 
+                        color: '#94a3b8', 
+                        textDecoration: 'line-through', 
+                        marginRight: '6px' 
+                      }}>
+                        RM {item.original_price.toFixed(2)}
+                      </span>
+                      <span style={{ 
+                        fontSize: isMobile ? '13px' : '16px', 
+                        fontWeight: 'bold', 
+                        color: '#8b5cf6' 
+                      }}>
+                        RM {item.price.toFixed(2)}
+                      </span>
                     </div>
                   )}
                   
                   {hasDrinkOptions ? (
-                    <div style={{ marginBottom: '8px', display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '4px' }}>
-                      {panasPrice && <span style={{ color: '#f97316', fontSize: isMobile ? '9px' : '11px', marginRight: '4px' }}>🔥 RM {panasPrice?.toFixed(2)}</span>}
-                      {sejukPrice && <span style={{ color: '#06b6d4', fontSize: isMobile ? '9px' : '11px', marginRight: '4px' }}>🧊 RM {sejukPrice?.toFixed(2)}</span>}
-                      {bungkusPrice && <span style={{ color: '#8b5cf6', fontSize: isMobile ? '9px' : '11px' }}>📦 RM {bungkusPrice?.toFixed(2)}</span>}
+                    <div style={{ 
+                      marginBottom: '8px', 
+                      display: 'flex', 
+                      flexWrap: 'wrap', 
+                      justifyContent: 'center', 
+                      gap: '4px' 
+                    }}>
+                      {panasPrice && (
+                        <span style={{ 
+                          color: '#f97316', 
+                          fontSize: isMobile ? '9px' : '11px', 
+                          marginRight: '4px' 
+                        }}>
+                          🔥 RM {panasPrice?.toFixed(2)}
+                        </span>
+                      )}
+                      {sejukPrice && (
+                        <span style={{ 
+                          color: '#06b6d4', 
+                          fontSize: isMobile ? '9px' : '11px', 
+                          marginRight: '4px' 
+                        }}>
+                          🧊 RM {sejukPrice?.toFixed(2)}
+                        </span>
+                      )}
+                      {bungkusPrice && (
+                        <span style={{ 
+                          color: '#8b5cf6', 
+                          fontSize: isMobile ? '9px' : '11px' 
+                        }}>
+                          📦 RM {bungkusPrice?.toFixed(2)}
+                        </span>
+                      )}
                     </div>
                   ) : !isPromoItem && !hasSizeOptions && (
-                    <div style={{ fontSize: isMobile ? '16px' : '20px', fontWeight: 'bold', color: '#22c55e', marginBottom: '6px' }}>RM {item.price?.toFixed(2)}</div>
+                    <div style={{ 
+                      fontSize: isMobile ? '16px' : '20px', 
+                      fontWeight: 'bold', 
+                      color: '#22c55e', 
+                      marginBottom: '6px' 
+                    }}>
+                      RM {item.price?.toFixed(2)}
+                    </div>
                   )}
                   
                   {hasSizeOptions && (
-                    <div style={{ fontSize: isMobile ? '11px' : '14px', fontWeight: 'bold', color: '#f59e0b', marginBottom: '6px' }}>{translate('select_size')}</div>
+                    <div style={{ 
+                      fontSize: isMobile ? '11px' : '14px', 
+                      fontWeight: 'bold', 
+                      color: '#f59e0b', 
+                      marginBottom: '6px' 
+                    }}>
+                      {translate('select_size')}
+                    </div>
                   )}
                   
                   <div style={{ 
@@ -1020,7 +1469,7 @@ function CustomerMenu() {
                     textAlign: 'center',
                     fontSize: isMobile ? '11px' : '13px'
                   }}>
-                    {isAdding ? translate('added') : (isPromoItem ? translate('buy_promo') : (hasSizeOptions ? translate('select_size_btn') : translate('add')))}
+                    {isAdding ? translate('added') : (isPromoItem ? translate('buy_promo') : (hasSizeOptions ? translate('select_size') : translate('add')))}
                   </div>
                 </div>
               </div>
@@ -1029,64 +1478,60 @@ function CustomerMenu() {
         </div>
         
         {filteredMenu.length === 0 && (
-          <div style={{ textAlign: 'center', padding: isMobile ? '40px 20px' : '80px 20px', background: cardBg, borderRadius: '20px' }}>
+          <div style={{ 
+            textAlign: 'center', 
+            padding: isMobile ? '40px 20px' : '80px 20px', 
+            ...glassEffect, 
+            borderRadius: '20px' 
+          }}>
             <span style={{ fontSize: isMobile ? '48px' : '64px', opacity: 0.5 }}>🍽️</span>
-            <p style={{ color: textMuted, marginTop: '12px', fontSize: isMobile ? '13px' : '14px' }}>{translate('no_menu_category')}</p>
+            <p style={{ 
+              color: textMuted, 
+              marginTop: '12px', 
+              fontSize: isMobile ? '13px' : '14px' 
+            }}>
+              {translate('no_menu_category')}
+            </p>
           </div>
         )}
       </div>
 
-      {/* Floating Cart Button */}
-      {cartItemCount > 0 && (
-        <button 
-          onClick={() => setShowCart(true)} 
-          style={{ 
-            position: 'fixed', 
-            bottom: '16px', 
-            right: '16px', 
-            width: isMobile ? '50px' : '64px', 
-            height: isMobile ? '50px' : '64px', 
-            borderRadius: '25px', 
-            background: 'linear-gradient(135deg, #f59e0b, #ea580c)', 
-            color: 'white', 
-            border: 'none', 
-            fontSize: isMobile ? '22px' : '28px', 
-            cursor: 'pointer', 
-            boxShadow: '0 4px 12px rgba(245,158,11,0.4)', 
-            zIndex: 1000, 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center'
-          }}
-        >
-          🛒
-          <span style={{ 
-            position: 'absolute', 
-            top: '-4px', 
-            right: '-4px', 
-            background: '#ef4444', 
-            color: 'white', 
-            borderRadius: '50%', 
-            width: '18px', 
-            height: '18px', 
-            fontSize: '10px', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            fontWeight: 'bold' 
-          }}>
-            {cartItemCount}
-          </span>
-        </button>
-      )}
+      {/* ========================================================== */}
+      {/* MODALS */}
+      {/* ========================================================== */}
 
-      {/* Size Options Modal */}
+      {/* ===== SIZE OPTIONS MODAL ===== */}
       {showSizeModal && selectedSizeItem && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000, animation: 'fadeIn 0.2s ease' }}>
-          <div style={{ background: 'white', borderRadius: '24px', padding: isMobile ? '20px' : '28px', maxWidth: '380px', width: '90%', textAlign: 'center', animation: 'popIn 0.3s ease' }}>
+        <div style={{ 
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
+          background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', 
+          display: 'flex', justifyContent: 'center', alignItems: 'center', 
+          zIndex: 2000, animation: 'fadeIn 0.2s ease' 
+        }}>
+          <div style={{ 
+            background: 'white', 
+            borderRadius: '24px', 
+            padding: isMobile ? '20px' : '28px', 
+            maxWidth: '380px', 
+            width: '90%', 
+            textAlign: 'center', 
+            animation: 'popIn 0.3s ease' 
+          }}>
             <div style={{ fontSize: isMobile ? '36px' : '48px', marginBottom: '8px' }}>🍽️</div>
-            <h2 style={{ marginBottom: '6px', fontSize: isMobile ? '18px' : '22px', fontWeight: 'bold' }}>{selectedSizeItem.name}</h2>
-            <p style={{ color: '#64748b', marginBottom: '20px', fontSize: isMobile ? '12px' : '14px' }}>{translate('choose_size')}</p>
+            <h2 style={{ 
+              marginBottom: '6px', 
+              fontSize: isMobile ? '18px' : '22px', 
+              fontWeight: 'bold' 
+            }}>
+              {selectedSizeItem.name}
+            </h2>
+            <p style={{ 
+              color: '#64748b', 
+              marginBottom: '20px', 
+              fontSize: isMobile ? '12px' : '14px' 
+            }}>
+              {translate('choose_size')}
+            </p>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
               {menuOptions.map(opt => {
@@ -1137,14 +1582,45 @@ function CustomerMenu() {
         </div>
       )}
 
-      {/* Drink Options Modal - with Bungkus */}
+      {/* ===== DRINK OPTIONS MODAL ===== */}
       {showDrinkModal && selectedDrink && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000, animation: 'fadeIn 0.2s ease' }}>
-          <div style={{ background: 'white', borderRadius: '24px', padding: isMobile ? '20px' : '28px', maxWidth: '380px', width: '90%', textAlign: 'center', animation: 'popIn 0.3s ease' }}>
-            <h2 style={{ marginBottom: '6px', fontSize: isMobile ? '18px' : '22px', fontWeight: 'bold' }}>🥤 {selectedDrink.name}</h2>
-            <p style={{ color: '#64748b', marginBottom: '20px', fontSize: isMobile ? '12px' : '14px' }}>{translate('drink_type')}</p>
+        <div style={{ 
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
+          background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', 
+          display: 'flex', justifyContent: 'center', alignItems: 'center', 
+          zIndex: 2000, animation: 'fadeIn 0.2s ease' 
+        }}>
+          <div style={{ 
+            background: 'white', 
+            borderRadius: '24px', 
+            padding: isMobile ? '20px' : '28px', 
+            maxWidth: '380px', 
+            width: '90%', 
+            textAlign: 'center', 
+            animation: 'popIn 0.3s ease' 
+          }}>
+            <h2 style={{ 
+              marginBottom: '6px', 
+              fontSize: isMobile ? '18px' : '22px', 
+              fontWeight: 'bold' 
+            }}>
+              🥤 {selectedDrink.name}
+            </h2>
+            <p style={{ 
+              color: '#64748b', 
+              marginBottom: '20px', 
+              fontSize: isMobile ? '12px' : '14px' 
+            }}>
+              {translate('drink_type')}
+            </p>
             
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <div style={{ 
+              display: 'flex', 
+              gap: '10px', 
+              marginBottom: '20px', 
+              flexWrap: 'wrap', 
+              justifyContent: 'center' 
+            }}>
               {drinkOptions[selectedDrink.name]?.some(o => o.type === 'Panas') && (
                 <button 
                   onClick={() => setSelectedOption('Panas')} 
@@ -1248,7 +1724,51 @@ function CustomerMenu() {
         </div>
       )}
 
-      {/* Cart Drawer */}
+      {/* ===== FLOATING CART BUTTON ===== */}
+      {cartItemCount > 0 && (
+        <button 
+          onClick={() => setShowCart(true)} 
+          style={{ 
+            position: 'fixed', 
+            bottom: '16px', 
+            right: '16px', 
+            width: isMobile ? '50px' : '64px', 
+            height: isMobile ? '50px' : '64px', 
+            borderRadius: '25px', 
+            background: 'linear-gradient(135deg, #f59e0b, #ea580c)', 
+            color: 'white', 
+            border: 'none', 
+            fontSize: isMobile ? '22px' : '28px', 
+            cursor: 'pointer', 
+            boxShadow: '0 4px 12px rgba(245,158,11,0.4)', 
+            zIndex: 1000, 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center'
+          }}
+        >
+          🛒
+          <span style={{ 
+            position: 'absolute', 
+            top: '-4px', 
+            right: '-4px', 
+            background: '#ef4444', 
+            color: 'white', 
+            borderRadius: '50%', 
+            width: '18px', 
+            height: '18px', 
+            fontSize: '10px', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            fontWeight: 'bold' 
+          }}>
+            {cartItemCount}
+          </span>
+        </button>
+      )}
+
+      {/* ===== CART DRAWER ===== */}
       {showCart && (
         <div style={{ 
           position: 'fixed', 
@@ -1265,41 +1785,164 @@ function CustomerMenu() {
           animation: 'slideIn 0.3s ease' 
         }}>
           
-          <div style={{ padding: isMobile ? '14px 16px' : '20px', borderBottom: `1px solid #e2e8f0`, background: '#f59e0b', color: 'white' }}>
+          <div style={{ 
+            padding: isMobile ? '14px 16px' : '20px', 
+            borderBottom: `1px solid #e2e8f0`, 
+            background: '#f59e0b', 
+            color: 'white' 
+          }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 style={{ margin: 0, fontSize: isMobile ? '16px' : '20px' }}>{translate('your_order')} ({cartItemCount})</h2>
-              <button onClick={() => setShowCart(false)} style={{ background: 'rgba(255,255,255,0.2)', color: 'white', border: 'none', borderRadius: '30px', width: '28px', height: '28px', cursor: 'pointer', fontSize: '16px' }}>✕</button>
+              <h2 style={{ margin: 0, fontSize: isMobile ? '16px' : '20px' }}>
+                {translate('your_order')} ({cartItemCount})
+              </h2>
+              <button 
+                onClick={() => setShowCart(false)} 
+                style={{ 
+                  background: 'rgba(255,255,255,0.2)', 
+                  color: 'white', 
+                  border: 'none', 
+                  borderRadius: '30px', 
+                  width: '28px', 
+                  height: '28px', 
+                  cursor: 'pointer', 
+                  fontSize: '16px' 
+                }}
+              >
+                ✕
+              </button>
             </div>
           </div>
           
-          <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '16px' : '20px' }}>
+          <div style={{ 
+            flex: 1, 
+            overflowY: 'auto', 
+            padding: isMobile ? '16px' : '20px' 
+          }}>
             {cart.length === 0 ? (
-              <p style={{ textAlign: 'center', color: '#94a3b8', padding: '30px' }}>{translate('empty_cart_msg')}</p>
+              <p style={{ textAlign: 'center', color: '#94a3b8', padding: '30px' }}>
+                {translate('empty_cart_msg')}
+              </p>
             ) : (
               <>
                 {cart.map(item => (
-                  <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', paddingBottom: '8px', borderBottom: `1px solid #e2e8f0` }}>
+                  <div key={item.id} style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center', 
+                    marginBottom: '12px', 
+                    paddingBottom: '8px', 
+                    borderBottom: `1px solid #e2e8f0` 
+                  }}>
                     <div style={{ flex: 2 }}>
-                      <div style={{ fontWeight: 'bold', fontSize: isMobile ? '13px' : '14px' }}>
+                      <div style={{ 
+                        fontWeight: 'bold', 
+                        fontSize: isMobile ? '13px' : '14px' 
+                      }}>
                         {item.name} 
-                        {item.is_free && <span style={{ color: '#22c55e', fontSize: '10px', marginLeft: '4px' }}>({translate('free')})</span>}
-                        {item.is_promo_item && <span style={{ color: '#8b5cf6', fontSize: '10px', marginLeft: '4px' }}>(PROMO)</span>}
-                        {item.option_type === 'Bungkus' && <span style={{ color: '#8b5cf6', fontSize: '10px', marginLeft: '4px' }}>📦</span>}
+                        {item.is_free && (
+                          <span style={{ 
+                            color: '#22c55e', 
+                            fontSize: '10px', 
+                            marginLeft: '4px' 
+                          }}>
+                            ({translate('free')})
+                          </span>
+                        )}
+                        {item.is_promo_item && (
+                          <span style={{ 
+                            color: '#8b5cf6', 
+                            fontSize: '10px', 
+                            marginLeft: '4px' 
+                          }}>
+                            (PROMO)
+                          </span>
+                        )}
+                        {item.option_type === 'Bungkus' && (
+                          <span style={{ 
+                            color: '#8b5cf6', 
+                            fontSize: '10px', 
+                            marginLeft: '4px' 
+                          }}>
+                            📦
+                          </span>
+                        )}
                       </div>
-                      <div style={{ fontSize: isMobile ? '10px' : '12px', color: '#94a3b8' }}>x{item.quantity}</div>
+                      <div style={{ 
+                        fontSize: isMobile ? '10px' : '12px', 
+                        color: '#94a3b8' 
+                      }}>
+                        x{item.quantity}
+                      </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <span style={{ fontWeight: 'bold', color: '#22c55e', fontSize: isMobile ? '13px' : '14px' }}>RM {(item.price * item.quantity).toFixed(2)}</span>
-                      <button onClick={() => removeFromCart(item.id)} style={{ background: '#ef4444', color: 'white', border: 'none', borderRadius: '20px', padding: '2px 8px', cursor: 'pointer', fontSize: '10px', fontWeight: 'bold' }}>✕</button>
+                      <span style={{ 
+                        fontWeight: 'bold', 
+                        color: '#22c55e', 
+                        fontSize: isMobile ? '13px' : '14px' 
+                      }}>
+                        RM {(item.price * item.quantity).toFixed(2)}
+                      </span>
+                      <button 
+                        onClick={() => removeFromCart(item.id)} 
+                        style={{ 
+                          background: '#ef4444', 
+                          color: 'white', 
+                          border: 'none', 
+                          borderRadius: '20px', 
+                          padding: '2px 8px', 
+                          cursor: 'pointer', 
+                          fontSize: '10px', 
+                          fontWeight: 'bold' 
+                        }}
+                      >
+                        ✕
+                      </button>
                     </div>
                   </div>
                 ))}
                 
-                <div style={{ background: '#fef3c7', borderRadius: '14px', padding: isMobile ? '12px' : '16px', marginTop: '12px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: isMobile ? '12px' : '13px' }}><span>{translate('subtotal')}:</span><span>RM {getSubtotal().toFixed(2)}</span></div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: isMobile ? '12px' : '13px' }}><span>{translate('service')} ({serviceChargePercent}%):</span><span>RM {getServiceCharge().toFixed(2)}</span></div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: isMobile ? '12px' : '13px' }}><span>{translate('tax')} ({taxPercent}%):</span><span>RM {getTax().toFixed(2)}</span></div>
-                  <div style={{ borderTop: `1px solid #fde68a`, marginTop: '6px', paddingTop: '6px', display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: isMobile ? '16px' : '18px' }}>
+                <div style={{ 
+                  background: '#fef3c7', 
+                  borderRadius: '14px', 
+                  padding: isMobile ? '12px' : '16px', 
+                  marginTop: '12px' 
+                }}>
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    marginBottom: '6px', 
+                    fontSize: isMobile ? '12px' : '13px' 
+                  }}>
+                    <span>{translate('subtotal')}:</span>
+                    <span>RM {getSubtotal().toFixed(2)}</span>
+                  </div>
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    marginBottom: '6px', 
+                    fontSize: isMobile ? '12px' : '13px' 
+                  }}>
+                    <span>{translate('service')} ({serviceChargePercent}%):</span>
+                    <span>RM {getServiceCharge().toFixed(2)}</span>
+                  </div>
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    marginBottom: '6px', 
+                    fontSize: isMobile ? '12px' : '13px' 
+                  }}>
+                    <span>{translate('tax')} ({taxPercent}%):</span>
+                    <span>RM {getTax().toFixed(2)}</span>
+                  </div>
+                  <div style={{ 
+                    borderTop: `1px solid #fde68a`, 
+                    marginTop: '6px', 
+                    paddingTop: '6px', 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    fontWeight: 'bold', 
+                    fontSize: isMobile ? '16px' : '18px' 
+                  }}>
                     <span>{translate('total')}:</span>
                     <span style={{ color: '#22c55e' }}>RM {getGrandTotal().toFixed(2)}</span>
                   </div>
@@ -1310,27 +1953,56 @@ function CustomerMenu() {
                   placeholder={translate('your_name')} 
                   value={customerName} 
                   onChange={(e) => setCustomerName(e.target.value)} 
-                  style={{ width: '100%', padding: isMobile ? '10px 12px' : '12px', marginTop: '12px', marginBottom: '10px', borderRadius: '12px', border: `1px solid #cbd5e1`, outline: 'none', fontSize: isMobile ? '13px' : '14px' }} 
+                  style={{ 
+                    width: '100%', 
+                    padding: isMobile ? '10px 12px' : '12px', 
+                    marginTop: '12px', 
+                    marginBottom: '10px', 
+                    borderRadius: '12px', 
+                    border: `1px solid #cbd5e1`, 
+                    outline: 'none', 
+                    fontSize: isMobile ? '13px' : '14px' 
+                  }} 
                 />
                 <input 
                   type="tel" 
                   placeholder={translate('phone_optional')} 
                   value={customerPhone} 
                   onChange={(e) => setCustomerPhone(e.target.value)} 
-                  style={{ width: '100%', padding: isMobile ? '10px 12px' : '12px', marginBottom: '10px', borderRadius: '12px', border: `1px solid #cbd5e1`, outline: 'none', fontSize: isMobile ? '13px' : '14px' }} 
+                  style={{ 
+                    width: '100%', 
+                    padding: isMobile ? '10px 12px' : '12px', 
+                    marginBottom: '10px', 
+                    borderRadius: '12px', 
+                    border: `1px solid #cbd5e1`, 
+                    outline: 'none', 
+                    fontSize: isMobile ? '13px' : '14px' 
+                  }} 
                 />
                 <textarea 
                   placeholder={translate('special_notes')} 
                   value={notes} 
                   onChange={(e) => setNotes(e.target.value)} 
                   rows="2" 
-                  style={{ width: '100%', padding: isMobile ? '10px 12px' : '12px', marginBottom: '12px', borderRadius: '12px', border: `1px solid #cbd5e1`, outline: 'none', fontFamily: 'inherit', fontSize: isMobile ? '13px' : '14px' }} 
+                  style={{ 
+                    width: '100%', 
+                    padding: isMobile ? '10px 12px' : '12px', 
+                    marginBottom: '12px', 
+                    borderRadius: '12px', 
+                    border: `1px solid #cbd5e1`, 
+                    outline: 'none', 
+                    fontFamily: 'inherit', 
+                    fontSize: isMobile ? '13px' : '14px' 
+                  }} 
                 />
               </>
             )}
           </div>
           
-          <div style={{ padding: isMobile ? '14px 16px' : '20px', borderTop: `1px solid #e2e8f0` }}>
+          <div style={{ 
+            padding: isMobile ? '14px 16px' : '20px', 
+            borderTop: `1px solid #e2e8f0` 
+          }}>
             <div style={{ display: 'flex', gap: '10px' }}>
               <button 
                 onClick={() => setShowCart(false)} 
@@ -1370,52 +2042,210 @@ function CustomerMenu() {
         </div>
       )}
 
-      {/* Confirmation Modal */}
+      {/* ===== CONFIRMATION MODAL ===== */}
       {showConfirmModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(4px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000, animation: 'fadeIn 0.2s ease' }}>
-          <div style={{ background: 'white', borderRadius: '28px', padding: isMobile ? '20px' : '28px', maxWidth: '400px', width: '90%', textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.2)', animation: 'popIn 0.3s ease' }}>
-            <div style={{ width: isMobile ? '48px' : '60px', height: isMobile ? '48px' : '60px', background: '#fef3c7', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px auto' }}>
+        <div style={{ 
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
+          background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(4px)', 
+          display: 'flex', justifyContent: 'center', alignItems: 'center', 
+          zIndex: 2000, animation: 'fadeIn 0.2s ease' 
+        }}>
+          <div style={{ 
+            background: 'white', 
+            borderRadius: '28px', 
+            padding: isMobile ? '20px' : '28px', 
+            maxWidth: '400px', 
+            width: '90%', 
+            textAlign: 'center', 
+            boxShadow: '0 20px 40px rgba(0,0,0,0.2)', 
+            animation: 'popIn 0.3s ease' 
+          }}>
+            <div style={{ 
+              width: isMobile ? '48px' : '60px', 
+              height: isMobile ? '48px' : '60px', 
+              background: '#fef3c7', 
+              borderRadius: '50%', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              margin: '0 auto 12px auto' 
+            }}>
               <span style={{ fontSize: isMobile ? '26px' : '32px' }}>📋</span>
             </div>
-            <h2 style={{ marginBottom: '6px', fontSize: isMobile ? '18px' : '22px', fontWeight: 'bold' }}>{translate('confirm_order')}</h2>
-            <p style={{ color: '#64748b', marginBottom: '16px', fontSize: isMobile ? '12px' : '14px' }}>{translate('review_order')}</p>
-            <div style={{ background: '#f8fafc', borderRadius: '14px', padding: isMobile ? '12px' : '16px', marginBottom: '16px', textAlign: 'left' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: isMobile ? '12px' : '13px' }}>
+            <h2 style={{ 
+              marginBottom: '6px', 
+              fontSize: isMobile ? '18px' : '22px', 
+              fontWeight: 'bold' 
+            }}>
+              {translate('confirm_order')}
+            </h2>
+            <p style={{ 
+              color: '#64748b', 
+              marginBottom: '16px', 
+              fontSize: isMobile ? '12px' : '14px' 
+            }}>
+              {translate('review_order')}
+            </p>
+            <div style={{ 
+              background: '#f8fafc', 
+              borderRadius: '14px', 
+              padding: isMobile ? '12px' : '16px', 
+              marginBottom: '16px', 
+              textAlign: 'left' 
+            }}>
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                marginBottom: '6px', 
+                fontSize: isMobile ? '12px' : '13px' 
+              }}>
                 <span style={{ color: '#64748b' }}>{translate('table')}:</span>
                 <span style={{ fontWeight: 'bold' }}>{tableNumber}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: isMobile ? '12px' : '13px' }}>
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                marginBottom: '6px', 
+                fontSize: isMobile ? '12px' : '13px' 
+              }}>
                 <span style={{ color: '#64748b' }}>{translate('customer')}:</span>
                 <span style={{ fontWeight: 'bold' }}>{customerName || translate('guest')}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px', paddingTop: '6px', borderTop: '1px solid #e2e8f0', fontSize: isMobile ? '12px' : '13px' }}>
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                marginTop: '6px', 
+                paddingTop: '6px', 
+                borderTop: '1px solid #e2e8f0', 
+                fontSize: isMobile ? '12px' : '13px' 
+              }}>
                 <span style={{ fontWeight: 'bold' }}>{translate('total_items')}:</span>
                 <span style={{ fontWeight: 'bold' }}>{getCartItemCount()}</span>
               </div>
             </div>
-            <div style={{ background: '#fef3c7', borderRadius: '14px', padding: isMobile ? '12px' : '16px', marginBottom: '20px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: isMobile ? '16px' : '18px' }}>
+            <div style={{ 
+              background: '#fef3c7', 
+              borderRadius: '14px', 
+              padding: isMobile ? '12px' : '16px', 
+              marginBottom: '20px' 
+            }}>
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                fontWeight: 'bold', 
+                fontSize: isMobile ? '16px' : '18px' 
+              }}>
                 <span>{translate('total_amount')}:</span>
                 <span style={{ color: '#22c55e' }}>RM {getGrandTotal().toFixed(2)}</span>
               </div>
             </div>
             <div style={{ display: 'flex', gap: '10px' }}>
-              <button onClick={() => { setShowConfirmModal(false); setShowCart(true) }} style={{ flex: 1, padding: isMobile ? '10px' : '14px', background: '#64748b', color: 'white', border: 'none', borderRadius: '40px', cursor: 'pointer', fontWeight: 'bold', fontSize: isMobile ? '12px' : '14px' }}>{translate('back')}</button>
-              <button onClick={() => setShowConfirmModal(false)} style={{ flex: 1, padding: isMobile ? '10px' : '14px', background: 'transparent', color: '#64748b', border: `1px solid #64748b`, borderRadius: '40px', cursor: 'pointer', fontSize: isMobile ? '12px' : '14px', fontWeight: 'bold' }}>{translate('close')}</button>
-              <button onClick={submitOrderConfirmed} style={{ flex: 1, padding: isMobile ? '10px' : '14px', background: 'linear-gradient(135deg, #22c55e, #16a34a)', color: 'white', border: 'none', borderRadius: '40px', cursor: 'pointer', fontWeight: 'bold', fontSize: isMobile ? '12px' : '14px' }}>{translate('confirm')}</button>
+              <button 
+                onClick={() => { setShowConfirmModal(false); setShowCart(true) }} 
+                style={{ 
+                  flex: 1, 
+                  padding: isMobile ? '10px' : '14px', 
+                  background: '#64748b', 
+                  color: 'white', 
+                  border: 'none', 
+                  borderRadius: '40px', 
+                  cursor: 'pointer', 
+                  fontWeight: 'bold', 
+                  fontSize: isMobile ? '12px' : '14px' 
+                }}
+              >
+                {translate('back')}
+              </button>
+              <button 
+                onClick={() => setShowConfirmModal(false)} 
+                style={{ 
+                  flex: 1, 
+                  padding: isMobile ? '10px' : '14px', 
+                  background: 'transparent', 
+                  color: '#64748b', 
+                  border: `1px solid #64748b`, 
+                  borderRadius: '40px', 
+                  cursor: 'pointer', 
+                  fontSize: isMobile ? '12px' : '14px', 
+                  fontWeight: 'bold' 
+                }}
+              >
+                {translate('close')}
+              </button>
+              <button 
+                onClick={submitOrderConfirmed} 
+                style={{ 
+                  flex: 1, 
+                  padding: isMobile ? '10px' : '14px', 
+                  background: 'linear-gradient(135deg, #22c55e, #16a34a)', 
+                  color: 'white', 
+                  border: 'none', 
+                  borderRadius: '40px', 
+                  cursor: 'pointer', 
+                  fontWeight: 'bold', 
+                  fontSize: isMobile ? '12px' : '14px' 
+                }}
+              >
+                {translate('confirm')}
+              </button>
             </div>
           </div>
         </div>
       )}
 
+      {/* ========================================================== */}
+      {/* STYLES */}
+      {/* ========================================================== */}
       <style>
         {`
-          @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
-          @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-          @keyframes popIn { 0% { opacity: 0; transform: scale(0.9); } 100% { opacity: 1; transform: scale(1); } }
-          ::-webkit-scrollbar { width: 6px; height: 6px; }
-          ::-webkit-scrollbar-track { background: ${darkMode ? '#2a2a3e' : '#e2e8f0'}; border-radius: 10px; }
-          ::-webkit-scrollbar-thumb { background: ${darkMode ? '#555' : '#94a3b8'}; border-radius: 10px; }
+          @keyframes slideIn { 
+            from { transform: translateX(100%); } 
+            to { transform: translateX(0); } 
+          }
+          
+          @keyframes fadeIn { 
+            from { opacity: 0; } 
+            to { opacity: 1; } 
+          }
+          
+          @keyframes popIn { 
+            0% { opacity: 0; transform: scale(0.9) translateY(10px); } 
+            100% { opacity: 1; transform: scale(1) translateY(0); } 
+          }
+          
+          ::-webkit-scrollbar { 
+            width: 6px; 
+            height: 6px; 
+          }
+          
+          ::-webkit-scrollbar-track { 
+            background: ${darkMode ? '#1a1a2e' : '#e2e8f0'}; 
+            border-radius: 10px; 
+          }
+          
+          ::-webkit-scrollbar-thumb { 
+            background: ${darkMode ? '#3d3d5c' : '#94a3b8'}; 
+            border-radius: 10px; 
+          }
+          
+          button, input, textarea, select { 
+            transition: all 0.2s ease; 
+          }
+          
+          button:hover:not(:disabled) { 
+            opacity: 0.88; 
+            transform: scale(0.97); 
+          }
+          
+          button:active:not(:disabled) {
+            transform: scale(0.93);
+          }
+          
+          input:focus, textarea:focus { 
+            outline: none; 
+            border-color: #f59e0b;
+            box-shadow: 0 0 0 3px rgba(245,158,11,0.12);
+          }
         `}
       </style>
     </div>

@@ -6,7 +6,7 @@ import { supabase } from '../lib/supabase'
 
 function Sidebar({ children }) {
   const { darkMode, toggleDarkMode } = useTheme()
-  const { language, setLanguage, t } = useLanguage()
+  const { language, setLanguage } = useLanguage()
   const navigate = useNavigate()
   const location = useLocation()
   const [collapsed, setCollapsed] = useState(false)
@@ -19,7 +19,43 @@ function Sidebar({ children }) {
   const userStr = sessionStorage.getItem('staffAuth')
   const user = userStr ? JSON.parse(userStr) : null
 
-  // Check if mobile
+  // ============================================================
+  // COMPLETE TRANSLATIONS
+  // ============================================================
+  const translations = {
+    // Navigation
+    dashboard: { en: '📊 Dashboard', ms: '📊 Papan Pemuka' },
+    pos: { en: '🧾 POS', ms: '🧾 POS' },
+    kitchen: { en: '🍳 Kitchen', ms: '🍳 Dapur' },
+    manage_menu: { en: '📋 Manage Menu', ms: '📋 Urus Menu' },
+    manage_categories: { en: '📂 Categories', ms: '📂 Kategori' },
+    manage_staff: { en: '👥 Staff', ms: '👥 Staff' },
+    manage_tables: { en: '🪑 Tables', ms: '🪑 Meja' },
+    table_qrs: { en: '📱 Table QR', ms: '📱 QR Meja' },
+    system_settings: { en: '⚙️ Settings', ms: '⚙️ Tetapan' },
+    reports: { en: '📈 Reports', ms: '📈 Laporan' },
+    
+    // User
+    admin: { en: 'Admin', ms: 'Admin' },
+    staff: { en: 'Staff', ms: 'Staff' },
+    kitchen_role: { en: 'Kitchen', ms: 'Dapur' },
+    
+    // Actions
+    logout: { en: '🚪 Logout', ms: '🚪 Log Keluar' },
+    light_mode: { en: '☀️ Light Mode', ms: '☀️ Mod Terang' },
+    dark_mode: { en: '🌙 Dark Mode', ms: '🌙 Mod Gelap' },
+    english: { en: '🇺🇸 English', ms: '🇺🇸 English' },
+    bahasa: { en: '🇲🇾 Bahasa Melayu', ms: '🇲🇾 Bahasa Melayu' },
+  }
+
+  const t = (key) => {
+    if (!translations[key]) return key
+    return language === 'en' ? translations[key].en : translations[key].ms
+  }
+
+  // ============================================================
+  // CHECK MOBILE
+  // ============================================================
   useEffect(() => {
     const checkMobile = () => {
       const mobile = window.innerWidth < 768
@@ -33,6 +69,9 @@ function Sidebar({ children }) {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
+  // ============================================================
+  // LOAD RESTAURANT INFO
+  // ============================================================
   const loadRestaurantInfo = async () => {
     try {
       const { data: nameData } = await supabase
@@ -84,11 +123,46 @@ function Sidebar({ children }) {
     }
   }, [])
 
+  // ============================================================
+  // HANDLE LOGOUT
+  // ============================================================
   const handleLogout = () => {
     sessionStorage.removeItem('staffAuth')
     navigate('/login')
   }
 
+  // ============================================================
+  // THEME COLORS
+  // ============================================================
+  const sidebarBg = darkMode ? '#0a0a16' : '#ffffff'
+  const sidebarBorder = darkMode ? 'rgba(71, 85, 105, 0.3)' : 'rgba(203, 213, 225, 0.5)'
+  const textColor = darkMode ? '#e8edf5' : '#1e293b'
+  const textMuted = darkMode ? '#94a3b8' : '#64748b'
+  const activeBg = darkMode ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.08)'
+  const activeColor = '#3b82f6'
+  const hoverBg = darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.04)'
+  const hoverBgDark = darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)'
+
+  // ============================================================
+  // HELPERS
+  // ============================================================
+  const isActive = (path) => location.pathname === path
+
+  const getRoleText = () => {
+    if (user?.role === 'admin') return t('admin')
+    if (user?.role === 'kitchen') return t('kitchen_role')
+    return t('staff')
+  }
+
+  const getRoleIcon = () => {
+    if (user?.role === 'admin') return '👑'
+    if (user?.role === 'kitchen') return '🍳'
+    return '👤'
+  }
+
+  // ============================================================
+  // MENU ITEMS
+  // ============================================================
   const menuItems = [
     { path: '/dashboard', icon: '📊', label: 'dashboard', roles: ['admin'] },
     { path: '/staff', icon: '🧾', label: 'pos', roles: ['admin', 'staff'] },
@@ -111,7 +185,7 @@ function Sidebar({ children }) {
       'manage_categories': t('manage_categories'),
       'manage_staff': t('manage_staff'),
       'manage_tables': t('manage_tables'),
-      'table_qrs': language === 'bm' ? 'QR Meja' : 'Table QR',
+      'table_qrs': t('table_qrs'),
       'system_settings': t('system_settings'),
       'reports': t('reports')
     }
@@ -123,35 +197,18 @@ function Sidebar({ children }) {
     return item.roles.includes(user.role)
   })
 
-  const sidebarBg = darkMode ? '#0f0f1a' : '#ffffff'
-  const sidebarBorder = darkMode ? 'rgba(71, 85, 105, 0.3)' : 'rgba(203, 213, 225, 0.6)'
-  const textColor = darkMode ? '#f1f5f9' : '#0f172a'
-  const textMuted = darkMode ? '#94a3b8' : '#64748b'
-  const activeBg = darkMode ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.1)'
-  const activeColor = '#3b82f6'
-  const hoverBg = darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'
+  // ============================================================
+  // SIDEBAR WIDTH
+  // ============================================================
+  const sidebarWidth = collapsed ? '72px' : '260px'
 
-  const isActive = (path) => location.pathname === path
-
-  const getRoleText = () => {
-    if (user?.role === 'admin') return t('admin')
-    if (user?.role === 'kitchen') return t('kitchen')
-    return t('staff')
-  }
-
-  const getRoleIcon = () => {
-    if (user?.role === 'admin') return '👑'
-    if (user?.role === 'kitchen') return '🍳'
-    return '👤'
-  }
-
-  // Sidebar width
-  const sidebarWidth = collapsed ? '80px' : '280px'
-
+  // ============================================================
+  // RENDER
+  // ============================================================
   return (
     <div style={{ display: 'flex', minHeight: '100vh', width: '100%' }}>
       
-      {/* DESKTOP SIDEBAR - FULL VISIBLE */}
+      {/* ===== DESKTOP SIDEBAR ===== */}
       <div style={{
         width: isMobile ? '0px' : sidebarWidth,
         minWidth: isMobile ? '0px' : sidebarWidth,
@@ -166,56 +223,66 @@ function Sidebar({ children }) {
         overflowX: 'hidden',
         zIndex: 1000,
         display: isMobile ? 'none' : 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        boxShadow: darkMode 
+          ? '4px 0 20px rgba(0,0,0,0.3)' 
+          : '4px 0 20px rgba(0,0,0,0.04)'
       }}>
         
-        {/* LOGO SECTION */}
+        {/* ===== LOGO SECTION ===== */}
         <div style={{
-          padding: collapsed ? '20px 12px' : '24px 20px',
+          padding: collapsed ? '16px 12px' : '20px 18px',
           borderBottom: `1px solid ${sidebarBorder}`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: collapsed ? 'center' : 'flex-start',
-          gap: collapsed ? 0 : '12px'
+          gap: collapsed ? 0 : '14px',
+          minHeight: '70px'
         }}>
-          {/* Logo Image */}
+          {/* Logo */}
           {restaurantLogo && !logoError && restaurantLogo !== '' ? (
             <img 
               src={restaurantLogo} 
               alt={restaurantName} 
               style={{ 
-                width: collapsed ? '40px' : '36px', 
-                height: collapsed ? '40px' : '36px', 
+                width: collapsed ? '40px' : '40px', 
+                height: collapsed ? '40px' : '40px', 
                 objectFit: 'contain', 
                 borderRadius: '10px',
                 backgroundColor: '#fff',
-                padding: '4px'
+                padding: '4px',
+                flexShrink: 0
               }} 
               onError={() => setLogoError(true)}
             />
           ) : (
             <div style={{ 
-              width: collapsed ? '40px' : '36px', 
-              height: collapsed ? '40px' : '36px', 
+              width: collapsed ? '40px' : '40px', 
+              height: collapsed ? '40px' : '40px', 
               background: 'linear-gradient(135deg, #f59e0b, #ea580c)',
               borderRadius: '10px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: collapsed ? '22px' : '20px',
-              color: 'white'
+              fontSize: collapsed ? '20px' : '20px',
+              color: 'white',
+              flexShrink: 0,
+              boxShadow: '0 4px 12px rgba(245,158,11,0.3)'
             }}>
               🏪
             </div>
           )}
           
-          {/* Restaurant Name - only when not collapsed */}
+          {/* Restaurant Name */}
           {!collapsed && (
             <span style={{ 
               fontWeight: 'bold', 
-              fontSize: '16px', 
+              fontSize: '15px', 
               color: textColor,
-              flex: 1
+              flex: 1,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis'
             }}>
               {restaurantName}
             </span>
@@ -231,45 +298,68 @@ function Sidebar({ children }) {
                 cursor: 'pointer',
                 fontSize: '16px',
                 color: textMuted,
-                padding: '6px 8px',
+                padding: '4px 8px',
                 borderRadius: '8px',
-                transition: 'all 0.2s ease'
+                transition: 'all 0.2s ease',
+                flexShrink: 0
               }}
+              onMouseEnter={e => e.currentTarget.style.background = hoverBgDark}
+              onMouseLeave={e => e.currentTarget.style.background = hoverBg}
             >
               {collapsed ? '→' : '←'}
             </button>
           )}
         </div>
 
-        {/* USER INFO SECTION */}
+        {/* ===== USER INFO ===== */}
         <div style={{
-          padding: collapsed ? '16px 12px' : '20px',
+          padding: collapsed ? '16px 12px' : '20px 18px',
           borderBottom: `1px solid ${sidebarBorder}`,
-          textAlign: collapsed ? 'center' : 'left'
+          textAlign: collapsed ? 'center' : 'left',
+          display: 'flex',
+          alignItems: 'center',
+          gap: collapsed ? 0 : '12px',
+          flexDirection: collapsed ? 'column' : 'row'
         }}>
           <div style={{
-            width: collapsed ? '44px' : '52px',
-            height: collapsed ? '44px' : '52px',
+            width: collapsed ? '40px' : '44px',
+            height: collapsed ? '40px' : '44px',
             background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            margin: collapsed ? '0 auto' : '0 0 12px 0',
-            fontSize: collapsed ? '22px' : '26px'
+            fontSize: collapsed ? '18px' : '20px',
+            flexShrink: 0,
+            boxShadow: '0 4px 12px rgba(59,130,246,0.3)'
           }}>
             {getRoleIcon()}
           </div>
           {!collapsed && (
-            <>
-              <div style={{ fontWeight: 'bold', color: textColor, fontSize: '14px' }}>{user?.name || user?.username || 'Staff'}</div>
-              <div style={{ fontSize: '11px', color: textMuted, marginTop: '4px' }}>{getRoleText()}</div>
-            </>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ 
+                fontWeight: 'bold', 
+                color: textColor, 
+                fontSize: '14px',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+              }}>
+                {user?.name || user?.username || 'Staff'}
+              </div>
+              <div style={{ 
+                fontSize: '11px', 
+                color: textMuted, 
+                marginTop: '2px' 
+              }}>
+                {getRoleText()}
+              </div>
+            </div>
           )}
         </div>
 
-        {/* NAVIGATION MENU */}
-        <nav style={{ flex: 1, padding: '16px 12px' }}>
+        {/* ===== NAVIGATION ===== */}
+        <nav style={{ flex: 1, padding: '16px 12px', overflowY: 'auto' }}>
           {filteredMenu.map((item) => (
             <button
               key={item.path}
@@ -280,30 +370,63 @@ function Sidebar({ children }) {
                 alignItems: 'center',
                 gap: collapsed ? '0' : '12px',
                 justifyContent: collapsed ? 'center' : 'flex-start',
-                padding: collapsed ? '12px' : '12px 16px',
-                marginBottom: '6px',
+                padding: collapsed ? '10px' : '10px 14px',
+                marginBottom: '4px',
                 background: isActive(item.path) ? activeBg : 'transparent',
                 color: isActive(item.path) ? activeColor : textColor,
                 border: 'none',
-                borderRadius: '12px',
+                borderRadius: '10px',
                 cursor: 'pointer',
                 fontSize: '14px',
                 fontWeight: isActive(item.path) ? '600' : '400',
-                transition: 'all 0.2s ease'
+                transition: 'all 0.2s ease',
+                position: 'relative'
+              }}
+              onMouseEnter={e => {
+                if (!isActive(item.path)) {
+                  e.currentTarget.style.background = hoverBg
+                }
+              }}
+              onMouseLeave={e => {
+                if (!isActive(item.path)) {
+                  e.currentTarget.style.background = 'transparent'
+                }
               }}
             >
-              <span style={{ fontSize: '20px' }}>{item.icon}</span>
-              {!collapsed && <span style={{ whiteSpace: 'nowrap' }}>{getLabel(item)}</span>}
+              {/* Active Indicator */}
+              {isActive(item.path) && (
+                <div style={{
+                  position: 'absolute',
+                  left: 0,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  width: '3px',
+                  height: '24px',
+                  background: activeColor,
+                  borderRadius: '0 4px 4px 0'
+                }} />
+              )}
+              <span style={{ fontSize: '20px', flexShrink: 0 }}>{item.icon}</span>
+              {!collapsed && (
+                <span style={{ 
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
+                }}>
+                  {getLabel(item)}
+                </span>
+              )}
             </button>
           ))}
         </nav>
 
-        {/* BOTTOM SECTION - Dark Mode, Language, Logout */}
+        {/* ===== BOTTOM ACTIONS ===== */}
         <div style={{
-          padding: collapsed ? '16px 12px' : '20px',
+          padding: collapsed ? '12px 12px' : '16px 18px',
           borderTop: `1px solid ${sidebarBorder}`,
           marginTop: 'auto'
         }}>
+          {/* Dark Mode Toggle */}
           <button
             onClick={toggleDarkMode}
             style={{
@@ -312,20 +435,23 @@ function Sidebar({ children }) {
               alignItems: 'center',
               gap: collapsed ? '0' : '12px',
               justifyContent: collapsed ? 'center' : 'flex-start',
-              padding: collapsed ? '10px' : '10px 16px',
+              padding: collapsed ? '8px' : '8px 14px',
               background: 'transparent',
               color: textColor,
               border: 'none',
-              borderRadius: '12px',
+              borderRadius: '10px',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
-              marginBottom: '8px'
+              marginBottom: '4px'
             }}
+            onMouseEnter={e => e.currentTarget.style.background = hoverBg}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
           >
-            <span style={{ fontSize: '18px' }}>{darkMode ? '☀️' : '🌙'}</span>
+            <span style={{ fontSize: '18px', flexShrink: 0 }}>{darkMode ? '☀️' : '🌙'}</span>
             {!collapsed && <span>{darkMode ? t('light_mode') : t('dark_mode')}</span>}
           </button>
           
+          {/* Language Toggle */}
           <button
             onClick={() => setLanguage(language === 'bm' ? 'en' : 'bm')}
             style={{
@@ -334,20 +460,25 @@ function Sidebar({ children }) {
               alignItems: 'center',
               gap: collapsed ? '0' : '12px',
               justifyContent: collapsed ? 'center' : 'flex-start',
-              padding: collapsed ? '10px' : '10px 16px',
+              padding: collapsed ? '8px' : '8px 14px',
               background: 'transparent',
               color: textColor,
               border: 'none',
-              borderRadius: '12px',
+              borderRadius: '10px',
               cursor: 'pointer',
-              marginBottom: '8px',
-              transition: 'all 0.2s ease'
+              transition: 'all 0.2s ease',
+              marginBottom: '4px'
             }}
+            onMouseEnter={e => e.currentTarget.style.background = hoverBg}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
           >
-            <span style={{ fontSize: '18px' }}>{language === 'bm' ? '🇺🇸' : '🇲🇾'}</span>
+            <span style={{ fontSize: '18px', flexShrink: 0 }}>
+              {language === 'bm' ? '🇺🇸' : '🇲🇾'}
+            </span>
             {!collapsed && <span>{language === 'bm' ? t('english') : t('bahasa')}</span>}
           </button>
 
+          {/* Logout */}
           <button
             onClick={handleLogout}
             style={{
@@ -356,31 +487,34 @@ function Sidebar({ children }) {
               alignItems: 'center',
               gap: collapsed ? '0' : '12px',
               justifyContent: collapsed ? 'center' : 'flex-start',
-              padding: collapsed ? '10px' : '10px 16px',
+              padding: collapsed ? '8px' : '8px 14px',
               background: 'transparent',
               color: '#ef4444',
               border: 'none',
-              borderRadius: '12px',
+              borderRadius: '10px',
               cursor: 'pointer',
               transition: 'all 0.2s ease'
             }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
           >
-            <span style={{ fontSize: '18px' }}>🚪</span>
+            <span style={{ fontSize: '18px', flexShrink: 0 }}>🚪</span>
             {!collapsed && <span>{t('logout')}</span>}
           </button>
         </div>
       </div>
 
-      {/* MAIN CONTENT - with margin left for sidebar space */}
+      {/* ===== MAIN CONTENT ===== */}
       <div style={{
         marginLeft: isMobile ? '0px' : sidebarWidth,
         transition: 'margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         width: isMobile ? '100%' : `calc(100% - ${sidebarWidth})`,
         minHeight: '100vh',
-        paddingBottom: isMobile ? '70px' : '0px'
+        paddingBottom: isMobile ? '70px' : '0px',
+        background: darkMode ? '#0a0a16' : '#f1f5f9'
       }}>
         
-        {/* Mobile Header */}
+        {/* ===== MOBILE HEADER ===== */}
         <div style={{
           position: 'sticky',
           top: 0,
@@ -389,50 +523,106 @@ function Sidebar({ children }) {
           zIndex: 99,
           background: sidebarBg,
           borderBottom: `1px solid ${sidebarBorder}`,
-          padding: '12px 16px',
+          padding: '10px 16px',
           display: isMobile ? 'flex' : 'none',
           justifyContent: 'space-between',
-          alignItems: 'center'
+          alignItems: 'center',
+          boxShadow: darkMode 
+            ? '0 2px 12px rgba(0,0,0,0.3)' 
+            : '0 2px 12px rgba(0,0,0,0.04)'
         }}>
           <button
             onClick={() => setMobileMenuOpen(true)}
             style={{
               background: hoverBg,
               border: 'none',
-              borderRadius: '12px',
-              padding: '10px 14px',
+              borderRadius: '10px',
+              padding: '8px 12px',
               cursor: 'pointer',
               fontSize: '20px',
-              color: textColor
+              color: textColor,
+              transition: 'all 0.2s ease'
             }}
+            onMouseEnter={e => e.currentTarget.style.background = hoverBgDark}
+            onMouseLeave={e => e.currentTarget.style.background = hoverBg}
           >
             ☰
           </button>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             {restaurantLogo && !logoError && restaurantLogo !== '' ? (
-              <img src={restaurantLogo} alt={restaurantName} style={{ height: '32px', width: '32px', borderRadius: '8px', objectFit: 'contain' }} />
+              <img 
+                src={restaurantLogo} 
+                alt={restaurantName} 
+                style={{ 
+                  height: '28px', 
+                  width: '28px', 
+                  borderRadius: '8px', 
+                  objectFit: 'contain',
+                  background: '#fff',
+                  padding: '2px'
+                }} 
+              />
             ) : (
-              <span style={{ fontSize: '24px' }}>🏪</span>
+              <span style={{ fontSize: '22px' }}>🏪</span>
             )}
-            <span style={{ fontWeight: 'bold', fontSize: '14px', color: textColor }}>{restaurantName}</span>
+            <span style={{ 
+              fontWeight: 'bold', 
+              fontSize: '14px', 
+              color: textColor 
+            }}>
+              {restaurantName}
+            </span>
           </div>
           
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button onClick={toggleDarkMode} style={{ background: hoverBg, border: 'none', borderRadius: '8px', padding: '8px 10px', cursor: 'pointer', fontSize: '14px' }}>
+          <div style={{ display: 'flex', gap: '6px' }}>
+            <button 
+              onClick={toggleDarkMode} 
+              style={{ 
+                background: hoverBg, 
+                border: 'none', 
+                borderRadius: '8px', 
+                padding: '6px 8px', 
+                cursor: 'pointer', 
+                fontSize: '14px',
+                transition: 'all 0.2s ease',
+                color: textColor
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = hoverBgDark}
+              onMouseLeave={e => e.currentTarget.style.background = hoverBg}
+            >
               {darkMode ? '☀️' : '🌙'}
             </button>
-            <button onClick={handleLogout} style={{ background: hoverBg, border: 'none', borderRadius: '8px', padding: '8px 10px', cursor: 'pointer', fontSize: '14px', color: '#ef4444' }}>
+            <button 
+              onClick={handleLogout} 
+              style={{ 
+                background: hoverBg, 
+                border: 'none', 
+                borderRadius: '8px', 
+                padding: '6px 8px', 
+                cursor: 'pointer', 
+                fontSize: '14px', 
+                color: '#ef4444',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
+              onMouseLeave={e => e.currentTarget.style.background = hoverBg}
+            >
               🚪
             </button>
           </div>
         </div>
         
-        {/* Children Content */}
-        <div style={{ padding: isMobile ? '16px' : '24px' }}>{children}</div>
+        {/* ===== CHILDREN CONTENT ===== */}
+        <div style={{ 
+          padding: isMobile ? '12px' : '24px',
+          minHeight: 'calc(100vh - 60px)'
+        }}>
+          {children}
+        </div>
       </div>
 
-      {/* Mobile Menu Overlay */}
+      {/* ===== MOBILE MENU OVERLAY ===== */}
       {mobileMenuOpen && (
         <div style={{
           position: 'fixed',
@@ -441,20 +631,25 @@ function Sidebar({ children }) {
           right: 0,
           bottom: 0,
           background: 'rgba(0,0,0,0.6)',
-          backdropFilter: 'blur(4px)',
+          backdropFilter: 'blur(8px)',
           zIndex: 150,
           display: 'flex',
           animation: 'fadeIn 0.2s ease'
-        }}>
+        }}
+        onClick={() => setMobileMenuOpen(false)}>
           <div style={{
             width: '280px',
             background: sidebarBg,
             height: '100%',
             overflowY: 'auto',
-            animation: 'slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-          }}>
+            animation: 'slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            boxShadow: '4px 0 30px rgba(0,0,0,0.2)'
+          }}
+          onClick={(e) => e.stopPropagation()}>
+            
+            {/* Mobile Header */}
             <div style={{
-              padding: '20px',
+              padding: '16px 20px',
               borderBottom: `1px solid ${sidebarBorder}`,
               display: 'flex',
               justifyContent: 'space-between',
@@ -462,11 +657,28 @@ function Sidebar({ children }) {
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 {restaurantLogo && !logoError && restaurantLogo !== '' ? (
-                  <img src={restaurantLogo} alt={restaurantName} style={{ width: '32px', height: '32px', borderRadius: '8px', objectFit: 'contain' }} />
+                  <img 
+                    src={restaurantLogo} 
+                    alt={restaurantName} 
+                    style={{ 
+                      width: '32px', 
+                      height: '32px', 
+                      borderRadius: '8px', 
+                      objectFit: 'contain',
+                      background: '#fff',
+                      padding: '2px'
+                    }} 
+                  />
                 ) : (
                   <span style={{ fontSize: '28px' }}>🏪</span>
                 )}
-                <span style={{ fontWeight: 'bold', fontSize: '16px', color: textColor }}>{restaurantName}</span>
+                <span style={{ 
+                  fontWeight: 'bold', 
+                  fontSize: '16px', 
+                  color: textColor 
+                }}>
+                  {restaurantName}
+                </span>
               </div>
               <button 
                 onClick={() => setMobileMenuOpen(false)} 
@@ -475,15 +687,19 @@ function Sidebar({ children }) {
                   border: 'none', 
                   fontSize: '20px', 
                   cursor: 'pointer',
-                  padding: '6px 12px',
+                  padding: '4px 10px',
                   borderRadius: '8px',
-                  color: textMuted
+                  color: textMuted,
+                  transition: 'all 0.2s ease'
                 }}
+                onMouseEnter={e => e.currentTarget.style.background = hoverBgDark}
+                onMouseLeave={e => e.currentTarget.style.background = hoverBg}
               >
                 ✕
               </button>
             </div>
             
+            {/* User Info */}
             <div style={{
               padding: '16px 20px',
               borderBottom: `1px solid ${sidebarBorder}`,
@@ -499,16 +715,30 @@ function Sidebar({ children }) {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '22px'
+                fontSize: '22px',
+                boxShadow: '0 4px 12px rgba(59,130,246,0.3)'
               }}>
                 {getRoleIcon()}
               </div>
               <div>
-                <div style={{ fontWeight: 'bold', color: textColor }}>{user?.name || user?.username || 'Staff'}</div>
-                <div style={{ fontSize: '11px', color: textMuted }}>{getRoleText()}</div>
+                <div style={{ 
+                  fontWeight: 'bold', 
+                  color: textColor,
+                  fontSize: '14px'
+                }}>
+                  {user?.name || user?.username || 'Staff'}
+                </div>
+                <div style={{ 
+                  fontSize: '11px', 
+                  color: textMuted,
+                  marginTop: '2px'
+                }}>
+                  {getRoleText()}
+                </div>
               </div>
             </div>
             
+            {/* Menu */}
             <nav style={{ padding: '16px' }}>
               {filteredMenu.map((item) => (
                 <button
@@ -522,100 +752,161 @@ function Sidebar({ children }) {
                     display: 'flex',
                     alignItems: 'center',
                     gap: '12px',
-                    padding: '12px 16px',
+                    padding: '10px 14px',
                     marginBottom: '4px',
                     background: isActive(item.path) ? activeBg : 'transparent',
                     color: isActive(item.path) ? activeColor : textColor,
                     border: 'none',
-                    borderRadius: '12px',
+                    borderRadius: '10px',
                     cursor: 'pointer',
                     fontSize: '14px',
-                    transition: 'all 0.2s ease'
+                    fontWeight: isActive(item.path) ? '600' : '400',
+                    transition: 'all 0.2s ease',
+                    position: 'relative'
+                  }}
+                  onMouseEnter={e => {
+                    if (!isActive(item.path)) {
+                      e.currentTarget.style.background = hoverBg
+                    }
+                  }}
+                  onMouseLeave={e => {
+                    if (!isActive(item.path)) {
+                      e.currentTarget.style.background = 'transparent'
+                    }
                   }}
                 >
+                  {isActive(item.path) && (
+                    <div style={{
+                      position: 'absolute',
+                      left: 0,
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      width: '3px',
+                      height: '24px',
+                      background: activeColor,
+                      borderRadius: '0 4px 4px 0'
+                    }} />
+                  )}
                   <span style={{ fontSize: '20px' }}>{item.icon}</span>
                   <span>{getLabel(item)}</span>
                 </button>
               ))}
             </nav>
             
-            <div style={{ padding: '16px', borderTop: `1px solid ${sidebarBorder}` }}>
+            {/* Bottom Actions */}
+            <div style={{ 
+              padding: '16px', 
+              borderTop: `1px solid ${sidebarBorder}`,
+              marginTop: 'auto'
+            }}>
               <button 
                 onClick={toggleDarkMode} 
                 style={{ 
                   width: '100%', 
-                  padding: '10px', 
+                  padding: '10px 14px', 
                   textAlign: 'left', 
                   background: 'none', 
                   border: 'none', 
                   cursor: 'pointer',
-                  borderRadius: '8px',
+                  borderRadius: '10px',
                   transition: 'all 0.2s ease',
-                  color: textColor
+                  color: textColor,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px'
                 }}
+                onMouseEnter={e => e.currentTarget.style.background = hoverBg}
+                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
               >
-                {darkMode ? '☀️ ' + t('light_mode') : '🌙 ' + t('dark_mode')}
+                <span style={{ fontSize: '18px' }}>{darkMode ? '☀️' : '🌙'}</span>
+                {darkMode ? t('light_mode') : t('dark_mode')}
               </button>
+              
               <button 
                 onClick={() => setLanguage(language === 'bm' ? 'en' : 'bm')} 
                 style={{ 
                   width: '100%', 
-                  padding: '10px', 
+                  padding: '10px 14px', 
                   textAlign: 'left', 
                   background: 'none', 
                   border: 'none', 
                   cursor: 'pointer',
-                  borderRadius: '8px',
+                  borderRadius: '10px',
                   marginTop: '4px',
                   transition: 'all 0.2s ease',
-                  color: textColor
+                  color: textColor,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px'
                 }}
+                onMouseEnter={e => e.currentTarget.style.background = hoverBg}
+                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
               >
-                {language === 'bm' ? '🇺🇸 ' + t('english') : '🇲🇾 ' + t('bahasa')}
+                <span style={{ fontSize: '18px' }}>
+                  {language === 'bm' ? '🇺🇸' : '🇲🇾'}
+                </span>
+                {language === 'bm' ? t('english') : t('bahasa')}
               </button>
+              
               <button 
                 onClick={handleLogout} 
                 style={{ 
                   width: '100%', 
-                  padding: '10px', 
+                  padding: '10px 14px', 
                   textAlign: 'left', 
                   background: 'none', 
                   border: 'none', 
                   cursor: 'pointer', 
                   color: '#ef4444',
-                  borderRadius: '8px',
+                  borderRadius: '10px',
                   marginTop: '8px',
-                  transition: 'all 0.2s ease'
+                  transition: 'all 0.2s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px'
                 }}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
               >
-                🚪 {t('logout')}
+                <span style={{ fontSize: '18px' }}>🚪</span>
+                {t('logout')}
               </button>
             </div>
           </div>
         </div>
       )}
 
+      {/* ========================================================== */}
+      {/* STYLES */}
+      {/* ========================================================== */}
       <style>
         {`
           @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
           }
+          
           @keyframes slideIn {
             from { transform: translateX(-100%); }
             to { transform: translateX(0); }
           }
           
           ::-webkit-scrollbar {
-            width: 6px;
+            width: 4px;
           }
+          
           ::-webkit-scrollbar-track {
-            background: ${darkMode ? '#2a2a3e' : '#e2e8f0'};
+            background: ${darkMode ? '#1a1a2e' : '#e2e8f0'};
             border-radius: 10px;
           }
+          
           ::-webkit-scrollbar-thumb {
-            background: ${darkMode ? '#555' : '#94a3b8'};
+            background: ${darkMode ? '#3d3d5c' : '#94a3b8'};
             border-radius: 10px;
+          }
+          
+          ::-webkit-scrollbar-thumb:hover {
+            background: ${darkMode ? '#4d4d6c' : '#64748b'};
           }
         `}
       </style>

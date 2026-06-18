@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-
-import { cloudflare } from "@cloudflare/vite-plugin";
+import { cloudflare } from "@cloudflare/vite-plugin"
 
 export default defineConfig({
   plugins: [react(), cloudflare()],
@@ -14,5 +13,9 @@ export default defineConfig({
         manualChunks: undefined
       }
     }
+  },
+  // 👇 Tambah ini untuk PostCSS
+  css: {
+    postcss: './postcss.config.js',
   }
 })

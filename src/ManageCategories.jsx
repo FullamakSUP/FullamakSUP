@@ -20,9 +20,10 @@ import {
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 
-// Sortable Category Item Component
-function SortableCategoryItem({ category, onEdit, onDelete, isSub = false }) {
-  const { darkMode } = useTheme()
+// ============================================================
+// SORTABLE CATEGORY ITEM
+// ============================================================
+function SortableCategoryItem({ category, onEdit, onDelete, isSub = false, darkMode }) {
   const {
     attributes,
     listeners,
@@ -96,32 +97,47 @@ function SortableCategoryItem({ category, onEdit, onDelete, isSub = false }) {
           )}
         </div>
         <div style={{ display: 'flex', gap: '6px' }}>
-          <button onClick={() => onEdit(category)} style={{
-            background: '#f59e0b',
-            color: 'white',
-            padding: '4px 12px',
-            border: 'none',
-            borderRadius: '16px',
-            cursor: 'pointer',
-            fontSize: '12px',
-            fontWeight: 'bold'
-          }}>✏️</button>
-          <button onClick={() => onDelete(category.id, category.name)} style={{
-            background: '#ef4444',
-            color: 'white',
-            padding: '4px 12px',
-            border: 'none',
-            borderRadius: '16px',
-            cursor: 'pointer',
-            fontSize: '12px',
-            fontWeight: 'bold'
-          }}>🗑️</button>
+          <button 
+            onClick={() => onEdit(category)} 
+            style={{
+              background: '#f59e0b',
+              color: 'white',
+              padding: '4px 12px',
+              border: 'none',
+              borderRadius: '16px',
+              cursor: 'pointer',
+              fontSize: '12px',
+              fontWeight: 'bold',
+              transition: 'all 0.2s'
+            }}
+          >
+            ✏️
+          </button>
+          <button 
+            onClick={() => onDelete(category.id, category.name)} 
+            style={{
+              background: '#ef4444',
+              color: 'white',
+              padding: '4px 12px',
+              border: 'none',
+              borderRadius: '16px',
+              cursor: 'pointer',
+              fontSize: '12px',
+              fontWeight: 'bold',
+              transition: 'all 0.2s'
+            }}
+          >
+            🗑️
+          </button>
         </div>
       </div>
     </div>
   )
 }
 
+// ============================================================
+// MAIN COMPONENT
+// ============================================================
 function ManageCategories() {
   const { darkMode } = useTheme()
   const { language } = useLanguage()
@@ -139,43 +155,58 @@ function ManageCategories() {
 
   // DnD Sensors
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 5 },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   )
 
-  // Translations
+  // ============================================================
+  // COMPLETE TRANSLATIONS
+  // ============================================================
   const translations = {
+    // Header
     manage_categories: { en: '📂 Manage Categories', ms: '📂 Urus Kategori' },
     manage_categories_sub: { en: 'Drag & drop to reorder categories', ms: 'Seret & lepas untuk susun kategori' },
+    drag_hint: { en: '⠿ Drag to reorder', ms: '⠿ Seret untuk susun' },
+    
+    // Labels
     main_categories: { en: '📁 Main Categories', ms: '📁 Kategori Utama' },
     sub_categories: { en: '📂 Sub Categories', ms: '📂 Sub Kategori' },
-    add_category: { en: '+ Add Main Category', ms: '+ Tambah Kategori Utama' },
-    add_sub_category: { en: '+ Add Sub Category', ms: '+ Tambah Sub Kategori' },
+    main: { en: 'Main Category', ms: 'Kategori Utama' },
+    sub: { en: 'Sub Category', ms: 'Sub Kategori' },
+    
+    // Buttons
+    add_category: { en: '➕ Add Main Category', ms: '➕ Tambah Kategori Utama' },
+    add_sub_category: { en: '➕ Add Sub Category', ms: '➕ Tambah Sub Kategori' },
     edit_category: { en: '✏️ Edit Category', ms: '✏️ Edit Kategori' },
     name: { en: 'Name', ms: 'Nama' },
     icon: { en: 'Icon', ms: 'Ikon' },
     parent_category: { en: 'Parent Category', ms: 'Kategori Induk' },
-    main: { en: 'Main Category', ms: 'Kategori Utama' },
-    sub: { en: 'Sub Category', ms: 'Sub Kategori' },
-    no_categories: { en: 'No categories yet. Click "Add Main Category" to start.', ms: 'Tiada kategori. Klik "Tambah Kategori Utama" untuk mula.' },
-    no_sub_categories: { en: 'No sub categories. Click "Add Sub Category" to start.', ms: 'Tiada sub kategori. Klik "Tambah Sub Kategori" untuk mula.' },
     delete: { en: 'Delete', ms: 'Hapus' },
     edit: { en: 'Edit', ms: 'Edit' },
     save: { en: 'Save', ms: 'Simpan' },
     cancel: { en: 'Cancel', ms: 'Batal' },
     add: { en: 'Add', ms: 'Tambah' },
     close: { en: 'Close', ms: 'Tutup' },
-    cannot_delete_with_sub: { en: 'Cannot delete category with sub categories. Delete sub categories first.', ms: 'Tidak boleh hapus kategori yang ada sub kategori. Hapus sub kategori dahulu.' },
+    
+    // Empty states
+    no_categories: { en: 'No categories yet. Click "Add Main Category" to start.', ms: 'Tiada kategori. Klik "Tambah Kategori Utama" untuk mula.' },
+    no_sub_categories: { en: 'No sub categories. Click "Add Sub Category" to start.', ms: 'Tiada sub kategori. Klik "Tambah Sub Kategori" untuk mula.' },
+    
+    // Messages
+    cannot_delete_with_sub: { en: '⚠️ Cannot delete category with sub categories. Delete sub categories first.', ms: '⚠️ Tidak boleh hapus kategori yang ada sub kategori. Hapus sub kategori dahulu.' },
     confirm_delete: { en: 'Delete this category?', ms: 'Hapus kategori ini?' },
     required: { en: 'required', ms: 'diperlukan' },
-    category_added: { en: 'Category added successfully!', ms: 'Kategori berjaya ditambah!' },
-    category_updated: { en: 'Category updated successfully!', ms: 'Kategori berjaya dikemaskini!' },
-    category_deleted: { en: 'Category deleted successfully!', ms: 'Kategori berjaya dihapus!' },
+    category_added: { en: '✅ Category added successfully!', ms: '✅ Kategori berjaya ditambah!' },
+    category_updated: { en: '✅ Category updated successfully!', ms: '✅ Kategori berjaya dikemaskini!' },
+    category_deleted: { en: '✅ Category deleted successfully!', ms: '✅ Kategori berjaya dihapus!' },
+    order_updated: { en: '✅ Category order updated!', ms: '✅ Urutan kategori dikemaskini!' },
     select_parent: { en: '-- Select Parent Category --', ms: '-- Pilih Kategori Induk --' },
     sub_count: { en: 'sub categories', ms: 'sub kategori' },
-    order_updated: { en: 'Category order updated!', ms: 'Urutan kategori dikemaskini!' }
+    error: { en: 'Error', ms: 'Ralat' },
   }
 
   const translate = (key) => {
@@ -183,7 +214,9 @@ function ManageCategories() {
     return language === 'en' ? translations[key].en : translations[key].ms
   }
 
-  // Check if mobile
+  // ============================================================
+  // CHECK MOBILE
+  // ============================================================
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
@@ -193,7 +226,9 @@ function ManageCategories() {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  // Theme colors
+  // ============================================================
+  // THEME COLORS
+  // ============================================================
   const bgColor = darkMode ? '#0a0a14' : '#f1f5f9'
   const cardBg = darkMode ? 'rgba(22, 22, 40, 0.95)' : 'rgba(255, 255, 255, 0.95)'
   const textColor = darkMode ? '#e8edf5' : '#1e293b'
@@ -213,6 +248,9 @@ function ManageCategories() {
       : '0 8px 32px rgba(0, 0, 0, 0.06)'
   }
 
+  // ============================================================
+  // MODAL STYLES
+  // ============================================================
   const inputStyle = {
     width: '100%',
     padding: isMobile ? '10px 14px' : '12px 16px',
@@ -224,6 +262,14 @@ function ManageCategories() {
     fontSize: isMobile ? '14px' : '15px',
     transition: 'all 0.2s',
     boxSizing: 'border-box'
+  }
+
+  const labelStyle = {
+    display: 'block',
+    fontWeight: 'bold',
+    marginBottom: '6px',
+    fontSize: isMobile ? '13px' : '14px',
+    color: textColor
   }
 
   const modalOverlayStyle = {
@@ -263,6 +309,34 @@ function ManageCategories() {
     textAlign: 'center'
   }
 
+  const buttonPrimaryStyle = {
+    flex: 1,
+    background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+    color: 'white',
+    padding: isMobile ? '12px' : '14px',
+    border: 'none',
+    borderRadius: '12px',
+    cursor: 'pointer',
+    fontWeight: 'bold',
+    fontSize: isMobile ? '14px' : '15px',
+    transition: 'all 0.2s'
+  }
+
+  const buttonSecondaryStyle = {
+    flex: 1,
+    background: darkMode ? '#475569' : '#64748b',
+    color: 'white',
+    padding: isMobile ? '12px' : '14px',
+    border: 'none',
+    borderRadius: '12px',
+    cursor: 'pointer',
+    fontSize: isMobile ? '14px' : '15px',
+    transition: 'all 0.2s'
+  }
+
+  // ============================================================
+  // LOAD CATEGORIES
+  // ============================================================
   useEffect(() => {
     loadCategories()
   }, [])
@@ -277,15 +351,15 @@ function ManageCategories() {
     setLoading(false)
   }
 
-  // Get main categories (parent_id = null)
+  // ============================================================
+  // HELPERS
+  // ============================================================
   const mainCategories = categories.filter(cat => cat.parent_id === null)
   
-  // Get sub categories for a main category
   const getSubCategories = (parentId) => {
     return categories.filter(cat => cat.parent_id === parentId)
   }
 
-  // Toggle sub categories visibility
   const toggleSubCategories = (categoryId) => {
     setExpandedCategories(prev => ({
       ...prev,
@@ -293,16 +367,25 @@ function ManageCategories() {
     }))
   }
 
-  // ==================== DRAG & DROP FUNCTIONS ====================
+  // Available icons
+  const availableIcons = [
+    '📁', '📂', '🍽️', '🍚', '🍜', '🥘', '🍛', '🍲', '🥗', '🍔', 
+    '🌮', '🥪', '🥤', '☕', '🍵', '🧋', '🍹', '🍺', '🍷', '🧃',
+    '🥛', '🧊', '🍰', '🧁', '🍩', '🍪', '🍫', '🍭', '🍬', '🍦',
+    '🍧', '🍨', '🥩', '🍗', '🍖', '🥓', '🍳', '🥚', '🧈', '🧀',
+    '🥐', '🥖', '🏷️', '⭐', '🔥', '💫', '✨', '🌟', '🌈', '🎯'
+  ]
+
+  // ============================================================
+  // DRAG & DROP FUNCTIONS
+  // ============================================================
   
-  // Handle drag end for main categories
   async function handleDragEnd(event) {
     const { active, over } = event
     
     if (!over) return
     if (active.id === over.id) return
     
-    // Get main categories
     const mainCats = mainCategories
     
     const oldIndex = mainCats.findIndex(cat => cat.id === active.id)
@@ -310,16 +393,13 @@ function ManageCategories() {
     
     if (oldIndex === -1 || newIndex === -1) return
     
-    // Reorder array
     const newOrder = arrayMove(mainCats, oldIndex, newIndex)
     
-    // Update sort_order for all main categories
     const updates = newOrder.map((cat, index) => ({
       id: cat.id,
       sort_order: index
     }))
     
-    // Update local state optimistically
     const updatedCategories = categories.map(cat => {
       const update = updates.find(u => u.id === cat.id)
       if (update) {
@@ -329,7 +409,6 @@ function ManageCategories() {
     })
     setCategories(updatedCategories)
     
-    // Update database
     try {
       for (const update of updates) {
         await supabase
@@ -341,12 +420,10 @@ function ManageCategories() {
       setTimeout(() => setMessage(''), 2000)
     } catch (error) {
       console.error('Error updating order:', error)
-      // Reload to revert
       loadCategories()
     }
   }
 
-  // Handle drag end for sub categories
   async function handleSubDragEnd(event, parentId) {
     const { active, over } = event
     
@@ -367,7 +444,6 @@ function ManageCategories() {
       sort_order: index
     }))
     
-    // Update local state
     const updatedCategories = categories.map(cat => {
       const update = updates.find(u => u.id === cat.id)
       if (update) {
@@ -392,9 +468,12 @@ function ManageCategories() {
     }
   }
 
+  // ============================================================
+  // CRUD FUNCTIONS
+  // ============================================================
   async function addCategory() {
     if (!formData.name) {
-      setMessage('⚠️ ' + translate('name') + ' ' + translate('required'))
+      setMessage(`⚠️ ${translate('name')} ${translate('required')}`)
       setTimeout(() => setMessage(''), 2000)
       return
     }
@@ -409,9 +488,9 @@ function ManageCategories() {
       }])
 
     if (error) {
-      setMessage('❌ Error: ' + error.message)
+      setMessage(`❌ ${translate('error')}: ${error.message}`)
     } else {
-      setMessage('✅ ' + translate('category_added'))
+      setMessage(translate('category_added'))
       setShowAddModal(false)
       setFormData({ name: '', icon: '📁', parent_id: null })
       loadCategories()
@@ -421,7 +500,7 @@ function ManageCategories() {
 
   async function updateCategory() {
     if (!formData.name) {
-      setMessage('⚠️ ' + translate('name') + ' ' + translate('required'))
+      setMessage(`⚠️ ${translate('name')} ${translate('required')}`)
       setTimeout(() => setMessage(''), 2000)
       return
     }
@@ -436,9 +515,9 @@ function ManageCategories() {
       .eq('id', selectedCategory.id)
 
     if (error) {
-      setMessage('❌ Error: ' + error.message)
+      setMessage(`❌ ${translate('error')}: ${error.message}`)
     } else {
-      setMessage('✅ ' + translate('category_updated'))
+      setMessage(translate('category_updated'))
       setShowEditModal(false)
       setSelectedCategory(null)
       setFormData({ name: '', icon: '📁', parent_id: null })
@@ -450,7 +529,7 @@ function ManageCategories() {
   async function deleteCategory(id, name) {
     const hasSub = categories.some(cat => cat.parent_id === id)
     if (hasSub) {
-      setMessage('⚠️ ' + translate('cannot_delete_with_sub'))
+      setMessage(translate('cannot_delete_with_sub'))
       setTimeout(() => setMessage(''), 3000)
       return
     }
@@ -463,9 +542,9 @@ function ManageCategories() {
       .eq('id', id)
 
     if (error) {
-      setMessage('❌ Error: ' + error.message)
+      setMessage(`❌ ${translate('error')}: ${error.message}`)
     } else {
-      setMessage('✅ ' + translate('category_deleted'))
+      setMessage(translate('category_deleted'))
       loadCategories()
     }
     setTimeout(() => setMessage(''), 2000)
@@ -481,15 +560,9 @@ function ManageCategories() {
     setShowEditModal(true)
   }
 
-  // Available icons
-  const availableIcons = [
-    '📁', '📂', '🍽️', '🍚', '🍜', '🥘', '🍛', '🍲', '🥗', '🍔', 
-    '🌮', '🥪', '🥤', '☕', '🍵', '🧋', '🍹', '🍺', '🍷', '🧃',
-    '🥛', '🧊', '🍰', '🧁', '🍩', '🍪', '🍫', '🍭', '🍬', '🍦',
-    '🍧', '🍨', '🥩', '🍗', '🍖', '🥓', '🍳', '🥚', '🧈', '🧀',
-    '🥐', '🥖', '🏷️', '⭐', '🔥', '💫', '✨'
-  ]
-
+  // ============================================================
+  // LOADING STATE
+  // ============================================================
   if (loading) {
     return (
       <Sidebar>
@@ -509,6 +582,9 @@ function ManageCategories() {
     )
   }
 
+  // ============================================================
+  // RENDER
+  // ============================================================
   return (
     <Sidebar>
       <div style={{
@@ -518,7 +594,7 @@ function ManageCategories() {
         background: bgColor,
         minHeight: '100vh'
       }}>
-        {/* Header */}
+        {/* ===== HEADER ===== */}
         <div style={{ marginBottom: '24px' }}>
           <h1 style={{
             color: textColor,
@@ -534,13 +610,20 @@ function ManageCategories() {
             fontSize: isMobile ? '13px' : '15px'
           }}>
             {translate('manage_categories_sub')}
-            <span style={{ marginLeft: '8px', background: '#3b82f6', color: 'white', padding: '2px 8px', borderRadius: '12px', fontSize: '10px' }}>
-              ⠿ Drag to reorder
+            <span style={{ 
+              marginLeft: '8px', 
+              background: '#3b82f6', 
+              color: 'white', 
+              padding: '2px 10px', 
+              borderRadius: '12px', 
+              fontSize: '10px' 
+            }}>
+              {translate('drag_hint')}
             </span>
           </p>
         </div>
 
-        {/* Message */}
+        {/* ===== MESSAGE ===== */}
         {message && (
           <div style={{
             background: message.includes('✅')
@@ -561,7 +644,7 @@ function ManageCategories() {
           </div>
         )}
 
-        {/* Action Buttons */}
+        {/* ===== ACTION BUTTONS ===== */}
         <div style={{
           display: 'flex',
           justifyContent: 'flex-end',
@@ -591,7 +674,7 @@ function ManageCategories() {
           </button>
         </div>
 
-        {/* Categories List - WITH DRAG & DROP */}
+        {/* ===== CATEGORIES LIST ===== */}
         {mainCategories.length === 0 ? (
           <div style={{
             textAlign: 'center',
@@ -621,15 +704,16 @@ function ManageCategories() {
                   
                   return (
                     <div key={cat.id}>
-                      {/* Main Category - Sortable */}
+                      {/* Main Category */}
                       <SortableCategoryItem
                         category={cat}
                         onEdit={openEditModal}
                         onDelete={deleteCategory}
                         isSub={false}
+                        darkMode={darkMode}
                       />
                       
-                      {/* Sub Categories */}
+                      {/* Sub Categories - WITH DRAG & DROP */}
                       {isExpanded && subCats.length > 0 && (
                         <div style={{
                           marginLeft: isMobile ? '16px' : '32px',
@@ -655,6 +739,7 @@ function ManageCategories() {
                                   onEdit={openEditModal}
                                   onDelete={deleteCategory}
                                   isSub={true}
+                                  darkMode={darkMode}
                                 />
                               ))}
                             </SortableContext>
@@ -715,7 +800,9 @@ function ManageCategories() {
           </DndContext>
         )}
 
+        {/* ========================================================== */}
         {/* ADD MODAL */}
+        {/* ========================================================== */}
         {showAddModal && (
           <div style={modalOverlayStyle}>
             <div style={modalContentStyle}>
@@ -723,6 +810,7 @@ function ManageCategories() {
                 {formData.parent_id ? translate('add_sub_category') : translate('add_category')}
               </h2>
               
+              <label style={labelStyle}>{translate('name')} *</label>
               <input
                 type="text"
                 placeholder={translate('name')}
@@ -731,84 +819,51 @@ function ManageCategories() {
                 style={inputStyle}
               />
               
-              <div style={{ marginBottom: '12px' }}>
-                <label style={{
-                  display: 'block',
-                  fontWeight: 'bold',
-                  marginBottom: '6px',
-                  fontSize: isMobile ? '13px' : '14px',
-                  color: textColor
-                }}>
-                  {translate('icon')}
-                </label>
-                <div style={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: '6px',
-                  padding: '8px',
-                  background: secondaryBg,
-                  borderRadius: '12px',
-                  maxHeight: '120px',
-                  overflowY: 'auto'
-                }}>
-                  {availableIcons.map(icon => (
-                    <button
-                      key={icon}
-                      onClick={() => setFormData({ ...formData, icon })}
-                      style={{
-                        padding: '6px 10px',
-                        background: formData.icon === icon ? '#3b82f6' : 'transparent',
-                        border: formData.icon === icon ? 'none' : `1px solid ${borderColor}`,
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                        fontSize: isMobile ? '18px' : '22px',
-                        transition: 'all 0.2s'
-                      }}
-                    >
-                      {icon}
-                    </button>
-                  ))}
-                </div>
+              <label style={labelStyle}>{translate('icon')}</label>
+              <div style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '6px',
+                padding: '8px',
+                background: secondaryBg,
+                borderRadius: '12px',
+                maxHeight: '120px',
+                overflowY: 'auto',
+                marginBottom: '12px'
+              }}>
+                {availableIcons.map(icon => (
+                  <button
+                    key={icon}
+                    onClick={() => setFormData({ ...formData, icon })}
+                    style={{
+                      padding: '6px 10px',
+                      background: formData.icon === icon ? '#3b82f6' : 'transparent',
+                      border: formData.icon === icon ? 'none' : `1px solid ${borderColor}`,
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontSize: isMobile ? '18px' : '22px',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    {icon}
+                  </button>
+                ))}
               </div>
 
-              <div style={{ marginBottom: '12px' }}>
-                <label style={{
-                  display: 'block',
-                  fontWeight: 'bold',
-                  marginBottom: '6px',
-                  fontSize: isMobile ? '13px' : '14px',
-                  color: textColor
-                }}>
-                  {translate('parent_category')}
-                </label>
-                <select
-                  value={formData.parent_id || ''}
-                  onChange={(e) => setFormData({ ...formData, parent_id: e.target.value || null })}
-                  style={inputStyle}
-                >
-                  <option value="">{translate('main')}</option>
-                  {mainCategories.map(cat => (
-                    <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>
-                  ))}
-                </select>
-              </div>
+              <label style={labelStyle}>{translate('parent_category')}</label>
+              <select
+                value={formData.parent_id || ''}
+                onChange={(e) => setFormData({ ...formData, parent_id: e.target.value || null })}
+                style={inputStyle}
+              >
+                <option value="">{translate('main')}</option>
+                {mainCategories.map(cat => (
+                  <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>
+                ))}
+              </select>
 
               <div style={{ display: 'flex', gap: '10px' }}>
-                <button
-                  onClick={addCategory}
-                  style={{
-                    flex: 1,
-                    background: 'linear-gradient(135deg, #22c55e, #16a34a)',
-                    color: 'white',
-                    padding: isMobile ? '12px' : '14px',
-                    border: 'none',
-                    borderRadius: '12px',
-                    cursor: 'pointer',
-                    fontWeight: 'bold',
-                    fontSize: isMobile ? '14px' : '15px',
-                    transition: 'all 0.2s'
-                  }}
-                >
+                <button onClick={addCategory} style={buttonPrimaryStyle}>
                   {translate('add')}
                 </button>
                 <button
@@ -816,17 +871,7 @@ function ManageCategories() {
                     setShowAddModal(false)
                     setFormData({ name: '', icon: '📁', parent_id: null })
                   }}
-                  style={{
-                    flex: 1,
-                    background: '#64748b',
-                    color: 'white',
-                    padding: isMobile ? '12px' : '14px',
-                    border: 'none',
-                    borderRadius: '12px',
-                    cursor: 'pointer',
-                    fontSize: isMobile ? '14px' : '15px',
-                    transition: 'all 0.2s'
-                  }}
+                  style={buttonSecondaryStyle}
                 >
                   {translate('cancel')}
                 </button>
@@ -835,12 +880,15 @@ function ManageCategories() {
           </div>
         )}
 
+        {/* ========================================================== */}
         {/* EDIT MODAL */}
+        {/* ========================================================== */}
         {showEditModal && selectedCategory && (
           <div style={modalOverlayStyle}>
             <div style={modalContentStyle}>
               <h2 style={modalTitleStyle}>{translate('edit_category')}</h2>
               
+              <label style={labelStyle}>{translate('name')} *</label>
               <input
                 type="text"
                 placeholder={translate('name')}
@@ -849,87 +897,54 @@ function ManageCategories() {
                 style={inputStyle}
               />
               
-              <div style={{ marginBottom: '12px' }}>
-                <label style={{
-                  display: 'block',
-                  fontWeight: 'bold',
-                  marginBottom: '6px',
-                  fontSize: isMobile ? '13px' : '14px',
-                  color: textColor
-                }}>
-                  {translate('icon')}
-                </label>
-                <div style={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: '6px',
-                  padding: '8px',
-                  background: secondaryBg,
-                  borderRadius: '12px',
-                  maxHeight: '120px',
-                  overflowY: 'auto'
-                }}>
-                  {availableIcons.map(icon => (
-                    <button
-                      key={icon}
-                      onClick={() => setFormData({ ...formData, icon })}
-                      style={{
-                        padding: '6px 10px',
-                        background: formData.icon === icon ? '#3b82f6' : 'transparent',
-                        border: formData.icon === icon ? 'none' : `1px solid ${borderColor}`,
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                        fontSize: isMobile ? '18px' : '22px',
-                        transition: 'all 0.2s'
-                      }}
-                    >
-                      {icon}
-                    </button>
-                  ))}
-                </div>
+              <label style={labelStyle}>{translate('icon')}</label>
+              <div style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '6px',
+                padding: '8px',
+                background: secondaryBg,
+                borderRadius: '12px',
+                maxHeight: '120px',
+                overflowY: 'auto',
+                marginBottom: '12px'
+              }}>
+                {availableIcons.map(icon => (
+                  <button
+                    key={icon}
+                    onClick={() => setFormData({ ...formData, icon })}
+                    style={{
+                      padding: '6px 10px',
+                      background: formData.icon === icon ? '#3b82f6' : 'transparent',
+                      border: formData.icon === icon ? 'none' : `1px solid ${borderColor}`,
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontSize: isMobile ? '18px' : '22px',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    {icon}
+                  </button>
+                ))}
               </div>
 
-              <div style={{ marginBottom: '12px' }}>
-                <label style={{
-                  display: 'block',
-                  fontWeight: 'bold',
-                  marginBottom: '6px',
-                  fontSize: isMobile ? '13px' : '14px',
-                  color: textColor
-                }}>
-                  {translate('parent_category')}
-                </label>
-                <select
-                  value={formData.parent_id || ''}
-                  onChange={(e) => setFormData({ ...formData, parent_id: e.target.value || null })}
-                  style={inputStyle}
-                >
-                  <option value="">{translate('main')}</option>
-                  {mainCategories
-                    .filter(cat => cat.id !== selectedCategory.id)
-                    .map(cat => (
-                      <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>
-                    ))
-                  }
-                </select>
-              </div>
+              <label style={labelStyle}>{translate('parent_category')}</label>
+              <select
+                value={formData.parent_id || ''}
+                onChange={(e) => setFormData({ ...formData, parent_id: e.target.value || null })}
+                style={inputStyle}
+              >
+                <option value="">{translate('main')}</option>
+                {mainCategories
+                  .filter(cat => cat.id !== selectedCategory.id)
+                  .map(cat => (
+                    <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>
+                  ))
+                }
+              </select>
 
               <div style={{ display: 'flex', gap: '10px' }}>
-                <button
-                  onClick={updateCategory}
-                  style={{
-                    flex: 1,
-                    background: 'linear-gradient(135deg, #22c55e, #16a34a)',
-                    color: 'white',
-                    padding: isMobile ? '12px' : '14px',
-                    border: 'none',
-                    borderRadius: '12px',
-                    cursor: 'pointer',
-                    fontWeight: 'bold',
-                    fontSize: isMobile ? '14px' : '15px',
-                    transition: 'all 0.2s'
-                  }}
-                >
+                <button onClick={updateCategory} style={buttonPrimaryStyle}>
                   {translate('save')}
                 </button>
                 <button
@@ -938,17 +953,7 @@ function ManageCategories() {
                     setSelectedCategory(null)
                     setFormData({ name: '', icon: '📁', parent_id: null })
                   }}
-                  style={{
-                    flex: 1,
-                    background: '#64748b',
-                    color: 'white',
-                    padding: isMobile ? '12px' : '14px',
-                    border: 'none',
-                    borderRadius: '12px',
-                    cursor: 'pointer',
-                    fontSize: isMobile ? '14px' : '15px',
-                    transition: 'all 0.2s'
-                  }}
+                  style={buttonSecondaryStyle}
                 >
                   {translate('cancel')}
                 </button>
@@ -957,6 +962,9 @@ function ManageCategories() {
           </div>
         )}
 
+        {/* ========================================================== */}
+        {/* STYLES */}
+        {/* ========================================================== */}
         <style>
           {`
             .spinner { 
@@ -1013,13 +1021,19 @@ function ManageCategories() {
               transition: all 0.2s; 
             }
             
-            button:hover { 
+            button:hover:not(:disabled) { 
               opacity: 0.88; 
               transform: scale(0.97); 
             }
             
-            button:active {
+            button:active:not(:disabled) {
               transform: scale(0.93);
+            }
+            
+            input:focus, select:focus { 
+              outline: none; 
+              border-color: #3b82f6;
+              box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
             }
           `}
         </style>
