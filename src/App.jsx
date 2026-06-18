@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useState, useEffect, Suspense, lazy } from 'react'
-import { ThemeProvider } from './context/ThemeContext'
-import { LanguageProvider } from './context/LanguageContext'
+import { ThemeProvider, useTheme } from './context/ThemeContext'  // 👈 Tambah useTheme
+import { LanguageProvider, useLanguage } from './context/LanguageContext'  // 👈 Tambah useLanguage
 import toast from 'react-hot-toast'
 
 // Lazy load components for better performance
@@ -69,6 +69,7 @@ function LoadingSpinner() {
 // ============================================================
 function AppWrapper() {
   const { darkMode } = useTheme()
+  const { language } = useLanguage()  // 👈 Tambah ini
   const location = useLocation()
   const [isMobile, setIsMobile] = useState(false)
 
