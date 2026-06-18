@@ -45,95 +45,74 @@ function CustomerMenu() {
   const [promoItems, setPromoItems] = useState([])
 
   // ============================================================
-  // COMPLETE TRANSLATIONS
+  // TRANSLATIONS
   // ============================================================
   const translations = {
-  // Header
-  scan_qr: { en: 'Scan QR to order', ms: 'Scan QR untuk pesan' },
-  table_no: { en: 'Table No.', ms: 'No. Meja' },
-  enter_table: { en: 'Please enter your table number', ms: 'Sila masukkan nombor meja' },
-  
-  // Promotions
-  promotions: { en: 'Active Promotions!', ms: 'Promosi Giat!' },
-  buy: { en: 'Buy', ms: 'Beli' },
-  get_free: { en: 'get', ms: 'dapat' },
-  free: { en: 'FREE', ms: 'PERCUMA' },
-  only: { en: 'Only', ms: 'Hanya' },
-  save: { en: 'Save', ms: 'Jimat' },
-  promo: { en: 'PROMO', ms: 'PROMOSI' },
-  promo_bundle: { en: 'Bundle Deal', ms: 'Tawaran Bundle' },
-  promo_set: { en: 'Set Menu', ms: 'Set Menu' },
-  promo_bogo: { en: 'Buy 1 Free 1', ms: 'Beli 1 Percuma 1' },
-  buy_promo: { en: 'Buy Promo', ms: 'Beli Promo' },
-  
-  // Cart
-  your_order: { en: 'Your Order', ms: 'Pesanan Anda' },
-  empty_cart_msg: { en: 'Your cart is empty', ms: 'Keranjang kosong' },
-  back_to_menu: { en: 'Back to Menu', ms: 'Kembali ke Menu' },
-  place_order: { en: 'Place Order', ms: 'Hantar Pesanan' },
-  table_required: { en: 'Table number required', ms: 'Nombor meja diperlukan' },
-  
-  // Order totals
-  subtotal: { en: 'Subtotal', ms: 'Subtotal' },
-  service: { en: 'Service', ms: 'Perkhidmatan' },
-  tax: { en: 'Tax', ms: 'Cukai' },
-  total: { en: 'Total', ms: 'Jumlah' },
-  total_items: { en: 'Total Items', ms: 'Jumlah Item' },
-  total_amount: { en: 'Total Amount', ms: 'Jumlah Bayaran' },
-  
-  // Customer info
-  your_name: { en: 'Your name', ms: 'Nama anda' },
-  phone_optional: { en: 'Phone (optional)', ms: 'Telefon (optional)' },
-  special_notes: { en: 'Special notes...', ms: 'Catatan khas...' },
-  
-  // Confirmation
-  confirm_order: { en: 'Confirm Order', ms: 'Sahkan Pesanan' },
-  review_order: { en: 'Please review your order before placing', ms: 'Sila semak semula pesanan anda sebelum menghantar' },
-  table: { en: 'Table', ms: 'Meja' },
-  customer: { en: 'Customer', ms: 'Pelanggan' },
-  guest: { en: 'Guest', ms: 'Tetamu' },
-  back: { en: 'Back', ms: 'Kembali' },
-  close: { en: 'Close', ms: 'Tutup' },
-  confirm: { en: 'Confirm', ms: 'Sahkan' },
-  
-  // Success
-  order_confirmed: { en: 'Order Confirmed!', ms: 'Pesanan Dikonfirmasi!' },
-  order_sent: { en: 'Your order has been sent to the kitchen', ms: 'Pesanan anda telah dihantar ke dapur' },
-  order_number: { en: 'Order Number', ms: 'Nombor Pesanan' },
-  copy: { en: 'Copy', ms: 'Salin' },
-  track_order: { en: 'Track Order', ms: 'Jejak Pesanan' },
-  new_order: { en: 'New Order', ms: 'Pesanan Baru' },
-  copied: { en: 'Copied!', ms: 'Disalin!' },
-  
-  // Drink options
-  drink_type: { en: 'Select drink type', ms: 'Pilih jenis minuman' },
-  hot: { en: 'Hot', ms: 'Panas' },
-  cold: { en: 'Cold', ms: 'Sejuk' },
-  takeaway: { en: 'Takeaway', ms: 'Bungkus' },
-  add_to_cart: { en: 'Add to Cart', ms: 'Tambah ke Keranjang' },
-  cancel: { en: 'Cancel', ms: 'Batal' },
-  
-  // Size options
-  choose_size: { en: 'Choose size / option', ms: 'Pilih saiz / pilihan' },
-  select_size: { en: 'Select Size', ms: 'Pilih Saiz' },
-  
-  // Menu
-  no_menu_category: { en: 'No menu items in this category', ms: 'Tiada menu dalam kategori ini' },
-  special_today: { en: 'Special Today', ms: 'Istimewa Hari Ini' },
-  add: { en: 'Add', ms: 'Tambah' },
-  added: { en: 'Added!', ms: 'Ditambah!' },
-  all: { en: 'All', ms: 'Semua' },
-  
-  // Real-time updates
-  menu_updated: { en: 'Menu updated!', ms: 'Menu dikemaskini!' },
-  category_updated: { en: 'Categories updated!', ms: 'Kategori dikemaskini!' },
-  promo_updated: { en: 'Promotions updated!', ms: 'Promosi dikemaskini!' },
-  live: { en: 'Live', ms: 'Langsung' },
-  
-  // Errors
-  empty_cart: { en: 'Your cart is empty', ms: 'Keranjang anda kosong' },
-  error_submit: { en: 'Error submitting order', ms: 'Ralat menghantar pesanan' },
-}
+    scan_qr: { en: 'Scan QR to order', ms: 'Scan QR untuk pesan' },
+    table_no: { en: 'Table No.', ms: 'No. Meja' },
+    enter_table: { en: 'Please enter your table number', ms: 'Sila masukkan nombor meja' },
+    promotions: { en: 'Active Promotions!', ms: 'Promosi Giat!' },
+    buy: { en: 'Buy', ms: 'Beli' },
+    get_free: { en: 'get', ms: 'dapat' },
+    free: { en: 'FREE', ms: 'PERCUMA' },
+    only: { en: 'Only', ms: 'Hanya' },
+    save: { en: 'Save', ms: 'Jimat' },
+    promo: { en: 'PROMO', ms: 'PROMOSI' },
+    promo_bundle: { en: 'Bundle Deal', ms: 'Tawaran Bundle' },
+    promo_set: { en: 'Set Menu', ms: 'Set Menu' },
+    promo_bogo: { en: 'Buy 1 Free 1', ms: 'Beli 1 Percuma 1' },
+    buy_promo: { en: 'Buy Promo', ms: 'Beli Promo' },
+    your_order: { en: 'Your Order', ms: 'Pesanan Anda' },
+    empty_cart_msg: { en: 'Your cart is empty', ms: 'Keranjang kosong' },
+    back_to_menu: { en: 'Back to Menu', ms: 'Kembali ke Menu' },
+    place_order: { en: 'Place Order', ms: 'Hantar Pesanan' },
+    table_required: { en: 'Table number required', ms: 'Nombor meja diperlukan' },
+    subtotal: { en: 'Subtotal', ms: 'Subtotal' },
+    service: { en: 'Service', ms: 'Perkhidmatan' },
+    tax: { en: 'Tax', ms: 'Cukai' },
+    total: { en: 'Total', ms: 'Jumlah' },
+    total_items: { en: 'Total Items', ms: 'Jumlah Item' },
+    total_amount: { en: 'Total Amount', ms: 'Jumlah Bayaran' },
+    your_name: { en: 'Your name', ms: 'Nama anda' },
+    phone_optional: { en: 'Phone (optional)', ms: 'Telefon (optional)' },
+    special_notes: { en: 'Special notes...', ms: 'Catatan khas...' },
+    confirm_order: { en: 'Confirm Order', ms: 'Sahkan Pesanan' },
+    review_order: { en: 'Please review your order before placing', ms: 'Sila semak semula pesanan anda sebelum menghantar' },
+    table: { en: 'Table', ms: 'Meja' },
+    customer: { en: 'Customer', ms: 'Pelanggan' },
+    guest: { en: 'Guest', ms: 'Tetamu' },
+    back: { en: 'Back', ms: 'Kembali' },
+    close: { en: 'Close', ms: 'Tutup' },
+    confirm: { en: 'Confirm', ms: 'Sahkan' },
+    order_confirmed: { en: 'Order Confirmed!', ms: 'Pesanan Dikonfirmasi!' },
+    order_sent: { en: 'Your order has been sent to the kitchen', ms: 'Pesanan anda telah dihantar ke dapur' },
+    order_number: { en: 'Order Number', ms: 'Nombor Pesanan' },
+    copy: { en: 'Copy', ms: 'Salin' },
+    track_order: { en: 'Track Order', ms: 'Jejak Pesanan' },
+    new_order: { en: 'New Order', ms: 'Pesanan Baru' },
+    copied: { en: 'Copied!', ms: 'Disalin!' },
+    drink_type: { en: 'Select drink type', ms: 'Pilih jenis minuman' },
+    hot: { en: 'Hot', ms: 'Panas' },
+    cold: { en: 'Cold', ms: 'Sejuk' },
+    takeaway: { en: 'Takeaway', ms: 'Bungkus' },
+    add_to_cart: { en: 'Add to Cart', ms: 'Tambah ke Keranjang' },
+    cancel: { en: 'Cancel', ms: 'Batal' },
+    choose_size: { en: 'Choose size / option', ms: 'Pilih saiz / pilihan' },
+    select_size: { en: 'Select Size', ms: 'Pilih Saiz' },
+    no_menu_category: { en: 'No menu items in this category', ms: 'Tiada menu dalam kategori ini' },
+    special_today: { en: 'Special Today', ms: 'Istimewa Hari Ini' },
+    add: { en: 'Add', ms: 'Tambah' },
+    added: { en: 'Added!', ms: 'Ditambah!' },
+    all: { en: 'All', ms: 'Semua' },
+    menu_updated: { en: 'Menu updated!', ms: 'Menu dikemaskini!' },
+    category_updated: { en: 'Categories updated!', ms: 'Kategori dikemaskini!' },
+    promo_updated: { en: 'Promotions updated!', ms: 'Promosi dikemaskini!' },
+    live: { en: 'Live', ms: 'Langsung' },
+    empty_cart: { en: 'Your cart is empty', ms: 'Keranjang anda kosong' },
+    error_submit: { en: 'Error submitting order', ms: 'Ralat menghantar pesanan' },
+    please_enter_table: { en: 'Please enter table number', ms: 'Sila masukkan nombor meja' },
+    select_size_btn: { en: 'Select Size', ms: 'Pilih Saiz' },
+  }
 
   const translate = (key) => {
     if (!translations[key]) return key
@@ -175,11 +154,9 @@ function CustomerMenu() {
     const table = params.get('table')
     if (table) setTableNumber(table)
 
-    // ===== REAL-TIME SUBSCRIPTIONS =====
     const menuSubscription = supabase
       .channel('customer-menu-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'menu' }, (payload) => {
-        console.log('🔄 Menu changed:', payload)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'menu' }, () => {
         loadMenu()
         toast.success(translate('menu_updated'), { duration: 1500 })
       })
@@ -187,8 +164,7 @@ function CustomerMenu() {
 
     const categorySubscription = supabase
       .channel('customer-category-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, (payload) => {
-        console.log('🔄 Categories changed:', payload)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, () => {
         loadCategories()
         toast.success(translate('category_updated'), { duration: 1500 })
       })
@@ -197,7 +173,6 @@ function CustomerMenu() {
     const drinkSubscription = supabase
       .channel('customer-drink-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'drink_options' }, () => {
-        console.log('🔄 Drink options changed')
         loadDrinkOptions()
       })
       .subscribe()
@@ -205,7 +180,6 @@ function CustomerMenu() {
     const promoSubscription = supabase
       .channel('customer-promo-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'promotions' }, () => {
-        console.log('🔄 Promotions changed')
         loadPromotions()
         toast.success(translate('promo_updated'), { duration: 1500 })
       })
@@ -214,7 +188,6 @@ function CustomerMenu() {
     const settingsSubscription = supabase
       .channel('customer-settings-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'settings' }, () => {
-        console.log('🔄 Settings changed')
         loadSpecialMenu()
         loadRestaurantInfo()
       })
@@ -293,6 +266,9 @@ function CustomerMenu() {
     }
   }
 
+  // ============================================================
+  // SPECIAL MENU - SYNC WITH MENU TABLE
+  // ============================================================
   async function loadSpecialMenu() {
     try {
       const { data: enabledData } = await supabase.from('settings').select('value').eq('key', 'special_menu_enabled').single()
@@ -303,8 +279,40 @@ function CustomerMenu() {
       
       const { data: itemsData } = await supabase.from('settings').select('value').eq('key', 'special_menu_items').single()
       if (itemsData) {
-        try { setSpecialMenuItems(JSON.parse(itemsData.value)) } 
-        catch (e) { setSpecialMenuItems([]) }
+        let items = []
+        try {
+          items = JSON.parse(itemsData.value)
+        } catch (e) {
+          items = []
+        }
+        
+        // SYNC PRICE WITH MENU TABLE
+        const syncedItems = []
+        for (const item of items) {
+          if (item.menu_id) {
+            const { data: menuItem } = await supabase
+              .from('menu')
+              .select('price, image_url, description, has_options')
+              .eq('id', item.menu_id)
+              .single()
+            
+            if (menuItem) {
+              syncedItems.push({
+                ...item,
+                price: menuItem.price,
+                image_url: menuItem.image_url || item.image_url,
+                description: menuItem.description || item.description,
+                has_options: menuItem.has_options
+              })
+            } else {
+              syncedItems.push(item)
+            }
+          } else {
+            syncedItems.push(item)
+          }
+        }
+        
+        setSpecialMenuItems(syncedItems)
       }
     } catch (err) {
       console.error('Error loading special menu:', err)
@@ -332,7 +340,7 @@ function CustomerMenu() {
         if (promo.type === 'set_menu' && promo.bundle_items && promo.bundle_price > 0) {
           items.push({
             id: `promo_set_${promo.id}`,
-            name: `🍽️ ${promo.name}`,
+            name: `${promo.name}`,
             price: promo.bundle_price,
             original_price: promo.bundle_items.reduce((sum, i) => sum + (i.price || 0), 0),
             items: promo.bundle_items,
@@ -345,7 +353,7 @@ function CustomerMenu() {
         if (promo.type === 'bundle' && promo.bundle_items && promo.bundle_price > 0) {
           items.push({
             id: `promo_bundle_${promo.id}`,
-            name: `📦 ${promo.name}`,
+            name: `${promo.name}`,
             price: promo.bundle_price,
             original_price: promo.bundle_items.reduce((sum, i) => sum + (i.price || 0), 0),
             items: promo.bundle_items,
@@ -358,7 +366,7 @@ function CustomerMenu() {
         if (promo.type === 'bogo' && promo.trigger_items && promo.free_items) {
           items.push({
             id: `promo_bogo_${promo.id}`,
-            name: `🎁 ${promo.name}`,
+            name: `${promo.name}`,
             price: promo.trigger_items[0]?.price || 0,
             original_price: promo.trigger_items[0]?.price || 0,
             trigger_item: promo.trigger_items[0],
@@ -410,15 +418,6 @@ function CustomerMenu() {
     if (foundCat && foundCat.icon) return foundCat.icon
     return '🍽️'
   }
-
-  // ============================================================
-  // CART FUNCTIONS
-  // ============================================================
-  const getSubtotal = () => cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-  const getServiceCharge = () => getSubtotal() * (serviceChargePercent / 100)
-  const getTax = () => getSubtotal() * (taxPercent / 100)
-  const getGrandTotal = () => getSubtotal() + getServiceCharge() + getTax()
-  const getCartItemCount = () => cart.reduce((sum, item) => sum + item.quantity, 0)
 
   // ============================================================
   // MENU OPTIONS FUNCTIONS
@@ -495,9 +494,9 @@ function CustomerMenu() {
     setTimeout(() => setAddingItem(null), 300)
     
     let optionLabel = ''
-    if (selectedOption === 'Panas') optionLabel = '☕ ' + translate('hot')
-    else if (selectedOption === 'Sejuk') optionLabel = '🧊 ' + translate('cold')
-    else if (selectedOption === 'Bungkus') optionLabel = '📦 ' + translate('takeaway')
+    if (selectedOption === 'Panas') optionLabel = translate('hot')
+    else if (selectedOption === 'Sejuk') optionLabel = translate('cold')
+    else if (selectedOption === 'Bungkus') optionLabel = translate('takeaway')
     
     setCart([...cart, { 
       id: `${selectedDrink.id}_${selectedOption}_${Date.now()}`, 
@@ -559,7 +558,7 @@ function CustomerMenu() {
       }
       const freeItem = { 
         id: `free_${promoItem.promo_id}_${Date.now()}`,
-        name: `${promoItem.free_item.name} 🎁 (${translate('free')})`,
+        name: `${promoItem.free_item.name} (${translate('free')})`,
         price: 0,
         quantity: 1,
         is_free: true,
@@ -569,7 +568,7 @@ function CustomerMenu() {
         category: promoItem.free_item.category || 'Makanan'
       }
       setCart([...cart, triggerItem, freeItem])
-      toast.success(`🎁 ${promoItem.trigger_item.name} + ${translate('free')} ${promoItem.free_item.name}!`)
+      toast.success(`${promoItem.trigger_item.name} + ${translate('free')} ${promoItem.free_item.name}!`)
     }
     
     if (promoItem.type === 'set_menu' || promoItem.type === 'bundle') {
@@ -588,7 +587,7 @@ function CustomerMenu() {
       
       const promoLineItem = {
         id: `promo_line_${promoItem.promo_id}_${Date.now()}`,
-        name: `✨ [PROMO] ${promoItem.name}`,
+        name: `[PROMO] ${promoItem.name}`,
         price: promoItem.price,
         quantity: 1,
         is_free: false,
@@ -599,7 +598,7 @@ function CustomerMenu() {
       }
       
       setCart([...cart, ...bundleItems, promoLineItem])
-      toast.success(`✨ ${promoItem.name} ${translate('added')}! ${translate('save')} RM ${(promoItem.original_price - promoItem.price).toFixed(2)}`)
+      toast.success(`${promoItem.name} ${translate('added')}! ${translate('save')} RM ${(promoItem.original_price - promoItem.price).toFixed(2)}`)
     }
     
     setShowCart(true)
@@ -703,6 +702,15 @@ function CustomerMenu() {
   }
 
   // ============================================================
+  // CART HELPERS
+  // ============================================================
+  const getSubtotal = () => cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+  const getServiceCharge = () => getSubtotal() * (serviceChargePercent / 100)
+  const getTax = () => getSubtotal() * (taxPercent / 100)
+  const getGrandTotal = () => getSubtotal() + getServiceCharge() + getTax()
+  const getCartItemCount = () => cart.reduce((sum, item) => sum + item.quantity, 0)
+
+  // ============================================================
   // FILTERS
   // ============================================================
   const subCategoriesForMenu = getSubCategoriesForMenu()
@@ -750,141 +758,6 @@ function CustomerMenu() {
           }
           @keyframes spin { to { transform: rotate(360deg); } }
         `}</style>
-      </div>
-    )
-  }
-
-  // ============================================================
-  // SUCCESS STATE
-  // ============================================================
-  if (submitted) {
-    return (
-      <div style={{ 
-        minHeight: '100vh', 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        background: bgColor, 
-        padding: isMobile ? '16px' : '20px' 
-      }}>
-        <div style={{ 
-          background: cardBg, 
-          borderRadius: '28px', 
-          padding: isMobile ? '24px' : '32px', 
-          maxWidth: '400px', 
-          width: '100%', 
-          textAlign: 'center',
-          ...glassEffect
-        }}>
-          <div style={{ 
-            width: isMobile ? '60px' : '80px', 
-            height: isMobile ? '60px' : '80px', 
-            background: '#dcfce7', 
-            borderRadius: '50%', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            margin: '0 auto 16px auto' 
-          }}>
-            <span style={{ fontSize: isMobile ? '36px' : '48px' }}>✅</span>
-          </div>
-          <h1 style={{ 
-            color: '#16a34a', 
-            fontSize: isMobile ? '20px' : '24px', 
-            marginBottom: '6px', 
-            fontWeight: 'bold' 
-          }}>
-            {translate('order_confirmed')}
-          </h1>
-          <p style={{ 
-            color: textMuted, 
-            marginBottom: '16px', 
-            fontSize: isMobile ? '12px' : '14px' 
-          }}>
-            {translate('order_sent')}
-          </p>
-          <div style={{ 
-            background: secondaryBg, 
-            borderRadius: '14px', 
-            padding: '12px', 
-            marginBottom: '20px' 
-          }}>
-            <p style={{ 
-              color: textMuted, 
-              fontSize: '10px', 
-              marginBottom: '4px' 
-            }}>
-              {translate('order_number')}:
-            </p>
-            <div style={{ 
-              fontSize: isMobile ? '16px' : '20px', 
-              fontWeight: 'bold', 
-              letterSpacing: '1px', 
-              color: textColor, 
-              fontFamily: 'monospace', 
-              wordBreak: 'break-all' 
-            }}>
-              {submittedOrderNumber}
-            </div>
-          </div>
-          <div style={{ 
-            display: 'flex', 
-            gap: '10px', 
-            justifyContent: 'center', 
-            marginBottom: '12px', 
-            flexWrap: 'wrap' 
-          }}>
-            <button 
-              onClick={() => { 
-                navigator.clipboard.writeText(submittedOrderNumber)
-                toast.success(translate('copied')) 
-              }} 
-              style={{ 
-                background: '#3b82f6', 
-                color: 'white', 
-                padding: isMobile ? '8px 16px' : '10px 20px', 
-                border: 'none', 
-                borderRadius: '40px', 
-                cursor: 'pointer', 
-                fontSize: isMobile ? '12px' : '14px', 
-                fontWeight: 'bold' 
-              }}
-            >
-              {translate('copy')}
-            </button>
-            <button 
-              onClick={() => window.open(`/track?order=${submittedOrderNumber}`, '_blank')} 
-              style={{ 
-                background: '#22c55e', 
-                color: 'white', 
-                padding: isMobile ? '8px 16px' : '10px 20px', 
-                border: 'none', 
-                borderRadius: '40px', 
-                cursor: 'pointer', 
-                fontSize: isMobile ? '12px' : '14px', 
-                fontWeight: 'bold' 
-              }}
-            >
-              {translate('track_order')}
-            </button>
-          </div>
-          <button 
-            onClick={() => window.location.reload()} 
-            style={{ 
-              background: 'linear-gradient(135deg, #f59e0b, #ea580c)', 
-              color: 'white', 
-              padding: isMobile ? '12px' : '14px', 
-              border: 'none', 
-              borderRadius: '40px', 
-              cursor: 'pointer', 
-              fontSize: isMobile ? '14px' : '16px', 
-              fontWeight: 'bold', 
-              width: '100%' 
-            }}
-          >
-            {translate('new_order')}
-          </button>
-        </div>
       </div>
     )
   }
@@ -1016,7 +889,8 @@ function CustomerMenu() {
                   outline: 'none', 
                   fontSize: isMobile ? '14px' : '18px', 
                   fontWeight: 'bold', 
-                  background: 'transparent' 
+                  background: 'transparent',
+                  color: darkMode ? '#e8edf5' : '#1e293b',
                 }} 
               />
               <span style={{ fontSize: isMobile ? '18px' : '24px' }}>🪑</span>
@@ -1050,9 +924,177 @@ function CustomerMenu() {
         <span>🔄 {translate('live')}</span>
       </div>
 
+      {/* ===== SPECIAL MENU BANNER ===== */}
+      {specialMenuEnabled && specialMenuItems.length > 0 && (
+        <div style={{ maxWidth: '1280px', margin: '16px auto', padding: isMobile ? '0 12px' : '0 20px' }}>
+          <div style={{ 
+            background: 'linear-gradient(135deg, #fef3c7, #fde68a)', 
+            borderRadius: '20px', 
+            padding: isMobile ? '12px 16px' : '20px',
+            border: '2px solid #f59e0b',
+            boxShadow: '0 4px 16px rgba(245,158,11,0.2)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+              <span style={{ fontSize: isMobile ? '24px' : '32px' }}>⭐</span>
+              <h2 style={{ 
+                margin: 0, 
+                color: '#92400e', 
+                fontSize: isMobile ? '16px' : '20px', 
+                fontWeight: 'bold' 
+              }}>
+                {specialMenuTitle}
+              </h2>
+              <span style={{ 
+                background: '#ef4444', 
+                color: 'white', 
+                padding: '2px 10px', 
+                borderRadius: '20px', 
+                fontSize: isMobile ? '9px' : '11px',
+                fontWeight: 'bold'
+              }}>
+                🔥 HOT
+              </span>
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              {specialMenuItems.slice(0, isMobile ? 6 : 10).map((item, idx) => {
+                const hasSizeOptions = item.has_options === true
+                const isAdding = addingItem === `special_${item.id}`
+                
+                return (
+                  <div 
+                    key={idx} 
+                    style={{ 
+                      background: 'white', 
+                      borderRadius: '50px', 
+                      padding: isMobile ? '4px 12px' : '8px 20px', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '8px', 
+                      boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
+                      transition: 'all 0.2s',
+                      cursor: hasSizeOptions ? 'pointer' : 'default',
+                      border: hasSizeOptions ? '2px solid #f59e0b' : 'none'
+                    }}
+                    onClick={() => {
+                      if (hasSizeOptions && item.menu_id) {
+                        loadMenuOptions(item.menu_id).then(options => {
+                          if (options && options.length > 0) {
+                            setSelectedSizeItem({ ...item, id: item.menu_id, price: item.price })
+                            setMenuOptions(options)
+                            setShowSizeModal(true)
+                          }
+                        })
+                      }
+                    }}
+                  >
+                    {item.image_url ? (
+                      <img 
+                        src={item.image_url} 
+                        alt={item.name} 
+                        style={{ 
+                          width: isMobile ? '24px' : '32px', 
+                          height: isMobile ? '24px' : '32px', 
+                          borderRadius: '6px', 
+                          objectFit: 'cover' 
+                        }} 
+                      />
+                    ) : (
+                      <span>⭐</span>
+                    )}
+                    <span style={{ 
+                      fontWeight: 'bold', 
+                      fontSize: isMobile ? '12px' : '14px' 
+                    }}>
+                      {item.name}
+                    </span>
+                    
+                    {hasSizeOptions ? (
+                      <span style={{ 
+                        color: '#f59e0b', 
+                        fontWeight: 'bold', 
+                        fontSize: isMobile ? '10px' : '12px',
+                        background: '#fef3c7',
+                        padding: '2px 8px',
+                        borderRadius: '20px'
+                      }}>
+                        📏 {translate('select_size_btn')}
+                      </span>
+                    ) : (
+                      <span style={{ 
+                        color: '#16a34a', 
+                        fontWeight: 'bold', 
+                        background: '#dcfce7', 
+                        padding: '2px 8px', 
+                        borderRadius: '20px', 
+                        fontSize: isMobile ? '11px' : '13px' 
+                      }}>
+                        RM {item.price}
+                      </span>
+                    )}
+                    
+                    {item.description && (
+                      <div style={{ 
+                        fontSize: isMobile ? '8px' : '9px', 
+                        color: '#64748b', 
+                        fontStyle: 'italic', 
+                        marginLeft: '4px' 
+                      }}>
+                        📝 {item.description}
+                      </div>
+                    )}
+                    
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        if (hasSizeOptions && item.menu_id) {
+                          loadMenuOptions(item.menu_id).then(options => {
+                            if (options && options.length > 0) {
+                              setSelectedSizeItem({ ...item, id: item.menu_id, price: item.price })
+                              setMenuOptions(options)
+                              setShowSizeModal(true)
+                            }
+                          })
+                        } else {
+                          addSpecialToCart(item)
+                        }
+                      }} 
+                      style={{ 
+                        background: isAdding ? '#22c55e' : (hasSizeOptions ? '#f59e0b' : '#22c55e'), 
+                        color: 'white', 
+                        border: 'none', 
+                        borderRadius: '30px', 
+                        padding: isMobile ? '2px 10px' : '4px 16px', 
+                        cursor: 'pointer', 
+                        fontWeight: 'bold', 
+                        fontSize: isMobile ? '10px' : '12px',
+                        minWidth: '28px'
+                      }}
+                    >
+                      {isAdding ? '✓' : (hasSizeOptions ? '📏' : '+')}
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+            
+            {specialMenuItems.length > (isMobile ? 6 : 10) && (
+              <div style={{ 
+                textAlign: 'center', 
+                marginTop: '10px',
+                color: '#78350f',
+                fontSize: isMobile ? '11px' : '13px',
+                opacity: 0.7
+              }}>
+                + {specialMenuItems.length - (isMobile ? 6 : 10)} {language === 'bm' ? 'lagi item istimewa' : 'more special items'} 🎉
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* ===== PROMO BANNER ===== */}
       {activePromos.length > 0 && (
-        <div style={{ maxWidth: '1280px', margin: '-16px auto 0 auto', padding: isMobile ? '0 12px' : '0 20px' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: isMobile ? '0 12px' : '0 20px' }}>
           <div style={{ 
             background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)', 
             borderRadius: '20px', 
@@ -1112,98 +1154,6 @@ function CustomerMenu() {
                       {translate('only')} <strong>RM {promo.bundle_price}</strong>! ({translate('save')} RM {(promo.bundle_items?.reduce((s, i) => s + (i.price || 0), 0) - (promo.bundle_price || 0)).toFixed(2)})
                     </div>
                   )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ===== SPECIAL MENU ===== */}
-      {specialMenuEnabled && specialMenuItems.length > 0 && (
-        <div style={{ maxWidth: '1280px', margin: '16px auto', padding: isMobile ? '0 12px' : '0 20px' }}>
-          <div style={{ 
-            background: 'linear-gradient(135deg, #fef3c7, #fde68a)', 
-            borderRadius: '20px', 
-            padding: isMobile ? '12px 16px' : '20px' 
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-              <span style={{ fontSize: isMobile ? '20px' : '28px' }}>⭐</span>
-              <h2 style={{ 
-                margin: 0, 
-                color: '#92400e', 
-                fontSize: isMobile ? '14px' : '18px', 
-                fontWeight: 'bold' 
-              }}>
-                {specialMenuTitle}
-              </h2>
-            </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-              {specialMenuItems.slice(0, isMobile ? 6 : 10).map((item, idx) => (
-                <div key={idx} style={{ 
-                  background: 'white', 
-                  borderRadius: '50px', 
-                  padding: isMobile ? '4px 12px' : '8px 20px', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '8px', 
-                  boxShadow: '0 1px 4px rgba(0,0,0,0.1)' 
-                }}>
-                  {item.image_url ? (
-                    <img 
-                      src={item.image_url} 
-                      alt={item.name} 
-                      style={{ 
-                        width: isMobile ? '24px' : '32px', 
-                        height: isMobile ? '24px' : '32px', 
-                        borderRadius: '6px', 
-                        objectFit: 'cover' 
-                      }} 
-                    />
-                  ) : (
-                    <span>⭐</span>
-                  )}
-                  <span style={{ 
-                    fontWeight: 'bold', 
-                    fontSize: isMobile ? '12px' : '14px' 
-                  }}>
-                    {item.name}
-                  </span>
-                  <span style={{ 
-                    color: '#16a34a', 
-                    fontWeight: 'bold', 
-                    background: '#dcfce7', 
-                    padding: '2px 8px', 
-                    borderRadius: '20px', 
-                    fontSize: isMobile ? '11px' : '13px' 
-                  }}>
-                    RM {item.price}
-                  </span>
-                  {item.description && (
-                    <div style={{ 
-                      fontSize: isMobile ? '8px' : '9px', 
-                      color: '#64748b', 
-                      fontStyle: 'italic', 
-                      marginLeft: '4px' 
-                    }}>
-                      📝 {item.description}
-                    </div>
-                  )}
-                  <button 
-                    onClick={() => addSpecialToCart(item)} 
-                    style={{ 
-                      background: '#22c55e', 
-                      color: 'white', 
-                      border: 'none', 
-                      borderRadius: '30px', 
-                      padding: isMobile ? '2px 10px' : '4px 16px', 
-                      cursor: 'pointer', 
-                      fontWeight: 'bold', 
-                      fontSize: isMobile ? '10px' : '12px' 
-                    }}
-                  >
-                    +
-                  </button>
                 </div>
               ))}
             </div>
@@ -1328,7 +1278,7 @@ function CustomerMenu() {
                       borderRadius: '20px', 
                       fontWeight: 'bold' 
                     }}>
-                      {translate('select_size')}
+                      {translate('select_size_btn')}
                     </div>
                   )}
                   {hasImage ? (
@@ -1365,7 +1315,6 @@ function CustomerMenu() {
                     {item.name}
                   </h3>
                   
-                  {/* DESCRIPTION */}
                   {hasDescription && (
                     <div style={{ 
                       fontSize: isMobile ? '10px' : '12px', 
@@ -1454,7 +1403,7 @@ function CustomerMenu() {
                       color: '#f59e0b', 
                       marginBottom: '6px' 
                     }}>
-                      {translate('select_size')}
+                      {translate('select_size_btn')}
                     </div>
                   )}
                   
@@ -1469,7 +1418,7 @@ function CustomerMenu() {
                     textAlign: 'center',
                     fontSize: isMobile ? '11px' : '13px'
                   }}>
-                    {isAdding ? translate('added') : (isPromoItem ? translate('buy_promo') : (hasSizeOptions ? translate('select_size') : translate('add')))}
+                    {isAdding ? translate('added') : (isPromoItem ? translate('buy_promo') : (hasSizeOptions ? translate('select_size_btn') : translate('add')))}
                   </div>
                 </div>
               </div>
@@ -1495,10 +1444,6 @@ function CustomerMenu() {
           </div>
         )}
       </div>
-
-      {/* ========================================================== */}
-      {/* MODALS */}
-      {/* ========================================================== */}
 
       {/* ===== SIZE OPTIONS MODAL ===== */}
       {showSizeModal && selectedSizeItem && (
