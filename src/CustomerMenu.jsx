@@ -48,92 +48,92 @@ function CustomerMenu() {
   // COMPLETE TRANSLATIONS
   // ============================================================
   const translations = {
-    // Header
-    scan_qr: { en: 'Scan QR to order', ms: 'Scan QR untuk pesan' },
-    table_no: { en: 'Table No.', ms: 'No. Meja' },
-    enter_table: { en: 'Please enter your table number', ms: 'Sila masukkan nombor meja' },
-    
-    // Promotions
-    promotions: { en: '🔥 Active Promotions!', ms: '🔥 Promosi Giat!' },
-    buy: { en: 'Buy', ms: 'Beli' },
-    get_free: { en: 'get', ms: 'dapat' },
-    free: { en: 'FREE', ms: 'PERCUMA' },
-    only: { en: 'Only', ms: 'Hanya' },
-    save: { en: 'Save', ms: 'Jimat' },
-    promo: { en: 'PROMO', ms: 'PROMOSI' },
-    promo_bundle: { en: 'Bundle', ms: 'Bundle' },
-    promo_set: { en: 'Set Menu', ms: 'Set Menu' },
-    promo_bogo: { en: 'Buy 1 Free 1', ms: 'Beli 1 Percuma 1' },
-    buy_promo: { en: '+ Buy Promo', ms: '+ Beli Promo' },
-    
-    // Cart
-    your_order: { en: '🛒 Your Order', ms: '🛒 Pesanan Anda' },
-    empty_cart_msg: { en: 'Your cart is empty', ms: 'Keranjang kosong' },
-    back_to_menu: { en: '⬅️ Back to Menu', ms: '⬅️ Kembali ke Menu' },
-    place_order: { en: '📤 Place Order →', ms: '📤 Hantar Pesanan →' },
-    table_required: { en: '📋 Please enter your table number', ms: '📋 Sila masukkan nombor meja' },
-    
-    // Order totals
-    subtotal: { en: 'Subtotal', ms: 'Subtotal' },
-    service: { en: 'Service', ms: 'Perkhidmatan' },
-    tax: { en: 'Tax', ms: 'Cukai' },
-    total: { en: 'Total', ms: 'Jumlah' },
-    total_items: { en: 'Total Items', ms: 'Jumlah Item' },
-    total_amount: { en: 'Total Amount', ms: 'Jumlah Bayaran' },
-    
-    // Customer info
-    your_name: { en: 'Your name', ms: 'Nama anda' },
-    phone_optional: { en: 'Phone (optional)', ms: 'Telefon (optional)' },
-    special_notes: { en: 'Special notes (e.g: less spicy, no onion)...', ms: 'Catatan khas (cth: kurang pedas, no onion)...' },
-    
-    // Confirmation
-    confirm_order: { en: 'Confirm Order', ms: 'Sahkan Pesanan' },
-    review_order: { en: 'Please review your order before placing', ms: 'Sila semak semula pesanan anda sebelum menghantar' },
-    table: { en: 'Table', ms: 'Meja' },
-    customer: { en: 'Customer', ms: 'Pelanggan' },
-    guest: { en: 'Guest', ms: 'Tetamu' },
-    back: { en: '⬅️ Back', ms: '⬅️ Kembali' },
-    close: { en: '❌ Close', ms: '❌ Tutup' },
-    confirm: { en: '✅ Confirm', ms: '✅ Sahkan' },
-    
-    // Success
-    order_confirmed: { en: 'Order Confirmed!', ms: 'Pesanan Disahkan!' },
-    order_sent: { en: 'Your order has been sent to the kitchen', ms: 'Pesanan anda telah dihantar ke dapur' },
-    order_number: { en: 'Order Number', ms: 'Nombor Pesanan' },
-    copy: { en: '📋 Copy', ms: '📋 Salin' },
-    track_order: { en: '🔍 Track Order', ms: '🔍 Jejak Pesanan' },
-    new_order: { en: 'New Order →', ms: 'Pesanan Baru →' },
-    copied: { en: 'Copied!', ms: 'Disalin!' },
-    
-    // Drink options
-    drink_type: { en: 'Select drink type', ms: 'Pilih jenis minuman' },
-    hot: { en: '🔥 Hot', ms: '🔥 Panas' },
-    cold: { en: '🧊 Cold', ms: '🧊 Sejuk' },
-    takeaway: { en: '📦 Takeaway', ms: '📦 Bungkus' },
-    add_to_cart: { en: '+ Add to Cart', ms: '+ Tambah ke Keranjang' },
-    cancel: { en: 'Cancel', ms: 'Batal' },
-    
-    // Size options
-    choose_size: { en: 'Choose size / option', ms: 'Pilih saiz / option' },
-    select_size: { en: '📏 Select Size', ms: '📏 Pilih Saiz' },
-    
-    // Menu
-    no_menu_category: { en: 'No menu items in this category', ms: 'Tiada menu dalam kategori ini' },
-    special_today: { en: 'Special Today', ms: 'Istimewa Hari Ini' },
-    add: { en: '+ Add', ms: '+ Tambah' },
-    added: { en: '✓ Added!', ms: '✓ Ditambah!' },
-    all: { en: 'All', ms: 'Semua' },
-    
-    // Real-time updates
-    menu_updated: { en: '🔄 Menu updated!', ms: '🔄 Menu dikemaskini!' },
-    category_updated: { en: '🔄 Categories updated!', ms: '🔄 Kategori dikemaskini!' },
-    promo_updated: { en: '🔄 Promotions updated!', ms: '🔄 Promosi dikemaskini!' },
-    live: { en: '🔄 Live', ms: '🔄 Langsung' },
-    
-    // Errors
-    empty_cart: { en: 'Your cart is empty', ms: 'Keranjang anda kosong' },
-    error_submit: { en: 'Error submitting order', ms: 'Ralat menghantar pesanan' },
-  }
+  // Header
+  scan_qr: { en: 'Scan QR to order', ms: 'Scan QR untuk pesan' },
+  table_no: { en: 'Table No.', ms: 'No. Meja' },
+  enter_table: { en: 'Please enter your table number', ms: 'Sila masukkan nombor meja' },
+  
+  // Promotions
+  promotions: { en: 'Active Promotions!', ms: 'Promosi Giat!' },
+  buy: { en: 'Buy', ms: 'Beli' },
+  get_free: { en: 'get', ms: 'dapat' },
+  free: { en: 'FREE', ms: 'PERCUMA' },
+  only: { en: 'Only', ms: 'Hanya' },
+  save: { en: 'Save', ms: 'Jimat' },
+  promo: { en: 'PROMO', ms: 'PROMOSI' },
+  promo_bundle: { en: 'Bundle Deal', ms: 'Tawaran Bundle' },
+  promo_set: { en: 'Set Menu', ms: 'Set Menu' },
+  promo_bogo: { en: 'Buy 1 Free 1', ms: 'Beli 1 Percuma 1' },
+  buy_promo: { en: 'Buy Promo', ms: 'Beli Promo' },
+  
+  // Cart
+  your_order: { en: 'Your Order', ms: 'Pesanan Anda' },
+  empty_cart_msg: { en: 'Your cart is empty', ms: 'Keranjang kosong' },
+  back_to_menu: { en: 'Back to Menu', ms: 'Kembali ke Menu' },
+  place_order: { en: 'Place Order', ms: 'Hantar Pesanan' },
+  table_required: { en: 'Table number required', ms: 'Nombor meja diperlukan' },
+  
+  // Order totals
+  subtotal: { en: 'Subtotal', ms: 'Subtotal' },
+  service: { en: 'Service', ms: 'Perkhidmatan' },
+  tax: { en: 'Tax', ms: 'Cukai' },
+  total: { en: 'Total', ms: 'Jumlah' },
+  total_items: { en: 'Total Items', ms: 'Jumlah Item' },
+  total_amount: { en: 'Total Amount', ms: 'Jumlah Bayaran' },
+  
+  // Customer info
+  your_name: { en: 'Your name', ms: 'Nama anda' },
+  phone_optional: { en: 'Phone (optional)', ms: 'Telefon (optional)' },
+  special_notes: { en: 'Special notes...', ms: 'Catatan khas...' },
+  
+  // Confirmation
+  confirm_order: { en: 'Confirm Order', ms: 'Sahkan Pesanan' },
+  review_order: { en: 'Please review your order before placing', ms: 'Sila semak semula pesanan anda sebelum menghantar' },
+  table: { en: 'Table', ms: 'Meja' },
+  customer: { en: 'Customer', ms: 'Pelanggan' },
+  guest: { en: 'Guest', ms: 'Tetamu' },
+  back: { en: 'Back', ms: 'Kembali' },
+  close: { en: 'Close', ms: 'Tutup' },
+  confirm: { en: 'Confirm', ms: 'Sahkan' },
+  
+  // Success
+  order_confirmed: { en: 'Order Confirmed!', ms: 'Pesanan Dikonfirmasi!' },
+  order_sent: { en: 'Your order has been sent to the kitchen', ms: 'Pesanan anda telah dihantar ke dapur' },
+  order_number: { en: 'Order Number', ms: 'Nombor Pesanan' },
+  copy: { en: 'Copy', ms: 'Salin' },
+  track_order: { en: 'Track Order', ms: 'Jejak Pesanan' },
+  new_order: { en: 'New Order', ms: 'Pesanan Baru' },
+  copied: { en: 'Copied!', ms: 'Disalin!' },
+  
+  // Drink options
+  drink_type: { en: 'Select drink type', ms: 'Pilih jenis minuman' },
+  hot: { en: 'Hot', ms: 'Panas' },
+  cold: { en: 'Cold', ms: 'Sejuk' },
+  takeaway: { en: 'Takeaway', ms: 'Bungkus' },
+  add_to_cart: { en: 'Add to Cart', ms: 'Tambah ke Keranjang' },
+  cancel: { en: 'Cancel', ms: 'Batal' },
+  
+  // Size options
+  choose_size: { en: 'Choose size / option', ms: 'Pilih saiz / pilihan' },
+  select_size: { en: 'Select Size', ms: 'Pilih Saiz' },
+  
+  // Menu
+  no_menu_category: { en: 'No menu items in this category', ms: 'Tiada menu dalam kategori ini' },
+  special_today: { en: 'Special Today', ms: 'Istimewa Hari Ini' },
+  add: { en: 'Add', ms: 'Tambah' },
+  added: { en: 'Added!', ms: 'Ditambah!' },
+  all: { en: 'All', ms: 'Semua' },
+  
+  // Real-time updates
+  menu_updated: { en: 'Menu updated!', ms: 'Menu dikemaskini!' },
+  category_updated: { en: 'Categories updated!', ms: 'Kategori dikemaskini!' },
+  promo_updated: { en: 'Promotions updated!', ms: 'Promosi dikemaskini!' },
+  live: { en: 'Live', ms: 'Langsung' },
+  
+  // Errors
+  empty_cart: { en: 'Your cart is empty', ms: 'Keranjang anda kosong' },
+  error_submit: { en: 'Error submitting order', ms: 'Ralat menghantar pesanan' },
+}
 
   const translate = (key) => {
     if (!translations[key]) return key

@@ -37,7 +37,7 @@ const formatOrderTime = (utcDateString) => {
 
 function CustomerDisplay() {
   const { darkMode, toggleDarkMode } = useTheme()
-  const { language, setLanguage, t } = useLanguage()
+  const { language, setLanguage } = useLanguage()
   const [menu, setMenu] = useState([])
   const [categories, setCategories] = useState([])
   const [tables, setTables] = useState([])
@@ -59,6 +59,7 @@ function CustomerDisplay() {
   const [searchMenu, setSearchMenu] = useState('')
   const [refreshing, setRefreshing] = useState(false)
   const [searchOrder, setSearchOrder] = useState('')
+  const [isMobile, setIsMobile] = useState(false)
   
   // Business hours
   const [businessHoursStart, setBusinessHoursStart] = useState('09:00')
@@ -69,15 +70,15 @@ function CustomerDisplay() {
   const [currentTime, setCurrentTime] = useState(new Date())
 
   // ============================================================
-  // COMPLETE TRANSLATIONS
+  // TRANSLATIONS
   // ============================================================
   const translations = {
     menu_pricing: { en: 'Menu & Pricing', ms: 'Menu & Harga' },
     open: { en: 'OPEN', ms: 'BUKA' },
     closed: { en: 'CLOSED', ms: 'TUTUP' },
     billing: { en: '💳 Billing', ms: '💳 Bil' },
-    take_away: { en: '🥡 Take Away', ms: '🥡 Bungkus' },
-    all_orders: { en: '📋 All Orders', ms: '📋 Semua Pesanan' },
+    take_away: { en: 'Take Away', ms: 'Bungkus' },
+    all_orders: { en: 'All Orders', ms: 'Semua Pesanan' },
     select_table: { en: 'Select Table', ms: 'Pilih Meja' },
     table_number: { en: 'Table', ms: 'Meja' },
     no_orders: { en: 'No orders', ms: 'Tiada pesanan' },
@@ -89,19 +90,19 @@ function CustomerDisplay() {
     cash: { en: 'Cash', ms: 'Tunai' },
     tng: { en: 'TnG', ms: 'TnG' },
     bank: { en: 'Bank', ms: 'Bank' },
-    record_payment: { en: '💰 Record Payment', ms: '💰 Rekod Bayaran' },
+    record_payment: { en: 'Record Payment', ms: 'Rekod Bayaran' },
     payment_received: { en: 'Payment received', ms: 'Bayaran diterima' },
-    btn_print: { en: '🖨️ Print', ms: '🖨️ Cetak' },
-    btn_pay: { en: '💰 Pay', ms: '💰 Bayar' },
-    btn_save: { en: '✅ Save', ms: '✅ Simpan' },
-    cancel: { en: '❌ Cancel', ms: '❌ Batal' },
-    close: { en: '❌ Close', ms: '❌ Tutup' },
-    print_all: { en: '🖨️ Print All', ms: '🖨️ Cetak Semua' },
-    find_order: { en: '🔍 Find order...', ms: '🔍 Cari pesanan...' },
+    btn_print: { en: 'Print', ms: 'Cetak' },
+    btn_pay: { en: 'Pay', ms: 'Bayar' },
+    btn_save: { en: 'Save', ms: 'Simpan' },
+    cancel: { en: 'Cancel', ms: 'Batal' },
+    close: { en: 'Close', ms: 'Tutup' },
+    print_all: { en: 'Print All', ms: 'Cetak Semua' },
+    find_order: { en: 'Find order...', ms: 'Cari pesanan...' },
     thank_you: { en: 'Thank you for dining with us!', ms: 'Terima kasih kerana makan di sini!' },
     error_updating: { en: 'Error updating order', ms: 'Ralat kemaskini pesanan' },
     all: { en: 'All', ms: 'Semua' },
-    special_today: { en: 'Special Menu Today', ms: 'Menu Istimewa Hari Ini' },
+    special_today: { en: 'Today\'s Special Menu', ms: 'Menu Istimewa Hari Ini' },
   }
 
   const t2 = (key) => {
@@ -110,24 +111,36 @@ function CustomerDisplay() {
   }
 
   // ============================================================
-  // THEME COLORS - OPTIMIZED FOR 1080p
+  // CHECK MOBILE
+  // ============================================================
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  // ============================================================
+  // THEME COLORS
   // ============================================================
   const bgColor = darkMode ? '#0a0a16' : '#f0f4f8'
-  const cardBg = darkMode ? 'rgba(25, 25, 45, 0.92)' : 'rgba(255, 255, 255, 0.92)'
-  const textColor = darkMode ? '#f1f5f9' : '#0f172a'
+  const cardBg = darkMode ? 'rgba(20, 20, 40, 0.95)' : 'rgba(255, 255, 255, 0.95)'
+  const textColor = darkMode ? '#e8edf5' : '#1e293b'
   const textMuted = darkMode ? '#94a3b8' : '#64748b'
-  const borderColor = darkMode ? 'rgba(71, 85, 105, 0.25)' : 'rgba(203, 213, 225, 0.5)'
+  const borderColor = darkMode ? 'rgba(71, 85, 105, 0.3)' : 'rgba(203, 213, 225, 0.5)'
   const modalBg = darkMode ? 'rgba(20, 20, 40, 0.98)' : 'rgba(255, 255, 255, 0.98)'
-  const secondaryBg = darkMode ? 'rgba(30, 30, 50, 0.7)' : 'rgba(248, 250, 252, 0.8)'
-  const inputBg = darkMode ? '#1a1a30' : '#ffffff'
+  const secondaryBg = darkMode ? 'rgba(30, 30, 50, 0.6)' : 'rgba(248, 250, 252, 0.8)'
+  const inputBg = darkMode ? '#1a1a2e' : '#ffffff'
   
   const glassEffect = {
     background: cardBg,
     backdropFilter: 'blur(16px)',
     border: `1px solid ${borderColor}`,
     boxShadow: darkMode 
-      ? '0 8px 40px rgba(0, 0, 0, 0.5)' 
-      : '0 8px 40px rgba(0, 0, 0, 0.06)'
+      ? '0 8px 40px rgba(0,0,0,0.5)' 
+      : '0 8px 40px rgba(0,0,0,0.06)'
   }
 
   // ============================================================
@@ -385,7 +398,7 @@ function CustomerDisplay() {
   }
 
   // ============================================================
-  // PRINT RECEIPT - FIXED DARK MODE FONT VISIBILITY
+  // PRINT RECEIPT
   // ============================================================
   const printReceiptDirect = (order) => {
     const subtotal = order.subtotal || order.total
@@ -407,10 +420,8 @@ function CustomerDisplay() {
       hour12: true
     })
     
-    // Get current theme for print
     const isDarkMode = darkMode
     
-    // Receipt HTML with dark/light mode support
     const receiptContent = `
       <!DOCTYPE html>
       <html>
@@ -661,7 +672,7 @@ function CustomerDisplay() {
   }
 
   // ============================================================
-  // MAIN RENDER - OPTIMIZED FOR 1080p (NO SCROLL)
+  // RENDER - OPTIMIZED FOR 1080p
   // ============================================================
   return (
     <div style={{ 
@@ -675,7 +686,7 @@ function CustomerDisplay() {
       flexDirection: 'column'
     }}>
       
-      {/* ===== HEADER - LOGO CENTER, CLOCK LEFT ===== */}
+      {/* ===== HEADER ===== */}
       <div style={{ 
         ...glassEffect, 
         borderRadius: '20px', 
@@ -737,7 +748,7 @@ function CustomerDisplay() {
           </div>
         </div>
 
-        {/* Center: Logo - LARGE */}
+        {/* Center: Logo */}
         <div style={{ 
           display: 'flex', 
           alignItems: 'center', 
@@ -850,61 +861,223 @@ function CustomerDisplay() {
         </div>
       </div>
 
-      {/* ===== SPECIAL MENU BANNER ===== */}
+      {/* ============================================================
+      SPECIAL MENU BANNER - BIG & EYE-CATCHING 
+      ============================================================ */}
       {specialMenuEnabled && specialMenuItems.length > 0 && (
         <div style={{ 
-          background: 'linear-gradient(135deg, #fef9c3, #fde047)', 
-          borderRadius: '16px', 
-          padding: '10px 20px', 
-          marginBottom: '14px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '8px',
+          background: 'linear-gradient(135deg, #fef3c7, #fde68a, #fcd34d)',
+          borderRadius: '24px', 
+          padding: isMobile ? '20px 16px' : '28px 32px', 
+          marginBottom: '20px',
+          boxShadow: '0 8px 32px rgba(245, 158, 11, 0.25)',
+          border: '2px solid #f59e0b',
+          position: 'relative',
+          overflow: 'hidden',
           flexShrink: 0
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span style={{ fontSize: '24px' }}>⭐</span>
-            <div>
-              <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#854d0e' }}>{specialMenuTitle}</div>
-              <div style={{ fontSize: '10px', color: '#713f12' }}>{t2('special_today')}</div>
+          
+          {/* Decorative background elements */}
+          <div style={{
+            position: 'absolute',
+            top: '-50%',
+            right: '-20%',
+            width: '300px',
+            height: '300px',
+            background: 'radial-gradient(circle, rgba(245,158,11,0.1) 0%, transparent 70%)',
+            borderRadius: '50%',
+            pointerEvents: 'none'
+          }} />
+          <div style={{
+            position: 'absolute',
+            bottom: '-40%',
+            left: '-10%',
+            width: '250px',
+            height: '250px',
+            background: 'radial-gradient(circle, rgba(251,191,36,0.08) 0%, transparent 70%)',
+            borderRadius: '50%',
+            pointerEvents: 'none'
+          }} />
+          
+          {/* Header Section */}
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between',
+            marginBottom: '16px',
+            flexWrap: 'wrap',
+            gap: '12px',
+            position: 'relative',
+            zIndex: 1
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <div style={{
+                fontSize: isMobile ? '36px' : '48px',
+                animation: 'pulse 2s ease-in-out infinite'
+              }}>
+                ⭐
+              </div>
+              <div>
+                <div style={{ 
+                  fontSize: isMobile ? '20px' : '28px', 
+                  fontWeight: 'bold', 
+                  color: '#92400e',
+                  textShadow: '0 2px 4px rgba(245,158,11,0.2)'
+                }}>
+                  {specialMenuTitle}
+                </div>
+                <div style={{ 
+                  fontSize: isMobile ? '11px' : '13px', 
+                  color: '#78350f',
+                  opacity: 0.8
+                }}>
+                  🌟 {t2('special_today')}
+                </div>
+              </div>
+            </div>
+            
+            {/* Badge "HOT" */}
+            <div style={{
+              background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+              color: 'white',
+              padding: '6px 20px',
+              borderRadius: '30px',
+              fontSize: isMobile ? '12px' : '14px',
+              fontWeight: 'bold',
+              boxShadow: '0 4px 12px rgba(239,68,68,0.3)',
+              animation: 'pulse 1.5s ease-in-out infinite'
+            }}>
+              🔥 {language === 'bm' ? 'ISTIMEWA' : 'SPECIAL'}
             </div>
           </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-            {specialMenuItems.slice(0, 6).map((item, idx) => (
-              <div key={idx} style={{ 
-                background: 'white', 
-                borderRadius: '30px', 
-                padding: '4px 14px', 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '6px', 
-                boxShadow: '0 2px 8px rgba(0,0,0,0.08)' 
-              }}>
-                {item.image_url ? (
-                  <img src={item.image_url} alt={item.name} style={{ width: '22px', height: '22px', borderRadius: '6px', objectFit: 'cover' }} />
-                ) : (
-                  <span>⭐</span>
-                )}
-                <span style={{ fontWeight: 'bold', fontSize: '12px', color: '#1a1a2e' }}>{item.name}</span>
-                <span style={{ 
-                  color: '#16a34a', 
-                  fontWeight: 'bold', 
-                  background: '#dcfce7', 
-                  padding: '1px 8px', 
-                  borderRadius: '20px', 
-                  fontSize: '11px' 
+          
+          {/* Special Items Grid - BIGGER */}
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: isMobile 
+              ? 'repeat(2, 1fr)' 
+              : 'repeat(auto-fill, minmax(220px, 1fr))',
+            gap: isMobile ? '12px' : '16px',
+            position: 'relative',
+            zIndex: 1
+          }}>
+            {specialMenuItems.slice(0, isMobile ? 6 : 8).map((item, idx) => (
+              <div 
+                key={idx} 
+                style={{ 
+                  background: 'rgba(255,255,255,0.85)',
+                  backdropFilter: 'blur(4px)',
+                  borderRadius: '16px', 
+                  padding: isMobile ? '12px 14px' : '16px 20px', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '12px',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                  border: '1px solid rgba(255,255,255,0.9)',
+                  transition: 'all 0.3s ease',
+                  cursor: 'default'
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.transform = 'translateY(-3px)'
+                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)'
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'
+                }}
+              >
+                {/* Image/Icon */}
+                <div style={{ flexShrink: 0 }}>
+                  {item.image_url ? (
+                    <img 
+                      src={item.image_url} 
+                      alt={item.name} 
+                      style={{ 
+                        width: isMobile ? '48px' : '60px', 
+                        height: isMobile ? '48px' : '60px', 
+                        borderRadius: '12px', 
+                        objectFit: 'cover',
+                        border: '2px solid #f59e0b'
+                      }} 
+                    />
+                  ) : (
+                    <div style={{ 
+                      width: isMobile ? '48px' : '60px', 
+                      height: isMobile ? '48px' : '60px', 
+                      background: 'linear-gradient(135deg, #fef3c7, #fde68a)',
+                      borderRadius: '12px', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      fontSize: isMobile ? '24px' : '30px',
+                      border: '2px solid #f59e0b'
+                    }}>
+                      ⭐
+                    </div>
+                  )}
+                </div>
+                
+                {/* Info */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ 
+                    fontWeight: 'bold', 
+                    fontSize: isMobile ? '13px' : '15px', 
+                    color: '#1e293b',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
+                  }}>
+                    {item.name}
+                  </div>
+                  {item.description && (
+                    <div style={{ 
+                      fontSize: isMobile ? '9px' : '11px', 
+                      color: '#64748b', 
+                      fontStyle: 'italic',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis'
+                    }}>
+                      📝 {item.description}
+                    </div>
+                  )}
+                </div>
+                
+                {/* Price - BIGGER & BOLDER */}
+                <div style={{ 
+                  flexShrink: 0,
+                  background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                  color: 'white',
+                  padding: isMobile ? '4px 12px' : '6px 16px',
+                  borderRadius: '30px',
+                  fontWeight: 'bold',
+                  fontSize: isMobile ? '13px' : '16px',
+                  boxShadow: '0 2px 8px rgba(34,197,94,0.3)'
                 }}>
                   RM {item.price}
-                </span>
+                </div>
               </div>
             ))}
           </div>
+          
+          {/* Footer - "More items" */}
+          {specialMenuItems.length > (isMobile ? 6 : 8) && (
+            <div style={{ 
+              textAlign: 'center', 
+              marginTop: '12px',
+              color: '#78350f',
+              fontSize: isMobile ? '11px' : '13px',
+              opacity: 0.7,
+              position: 'relative',
+              zIndex: 1
+            }}>
+              + {specialMenuItems.length - (isMobile ? 6 : 8)} {language === 'bm' ? 'lagi item istimewa' : 'more special items'} 🎉
+            </div>
+          )}
         </div>
       )}
 
-      {/* ===== MAIN CONTENT - FILLS REMAINING SPACE ===== */}
+      {/* ===== MAIN CONTENT ===== */}
       <div style={{ 
         flex: 1,
         display: 'flex',
@@ -1613,9 +1786,8 @@ function CustomerDisplay() {
           }
           
           @keyframes pulse {
-            0% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(0.8); }
-            100% { opacity: 1; transform: scale(1); }
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
           }
           
           ::-webkit-scrollbar { 

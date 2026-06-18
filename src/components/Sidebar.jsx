@@ -20,20 +20,20 @@ function Sidebar({ children }) {
   const user = userStr ? JSON.parse(userStr) : null
 
   // ============================================================
-  // COMPLETE TRANSLATIONS
+  // COMPLETE TRANSLATIONS - TANPA EMOJI (emoji dah ada dalam icon)
   // ============================================================
   const translations = {
     // Navigation
-    dashboard: { en: '📊 Dashboard', ms: '📊 Papan Pemuka' },
-    pos: { en: '🧾 POS', ms: '🧾 POS' },
-    kitchen: { en: '🍳 Kitchen', ms: '🍳 Dapur' },
-    manage_menu: { en: '📋 Manage Menu', ms: '📋 Urus Menu' },
-    manage_categories: { en: '📂 Categories', ms: '📂 Kategori' },
-    manage_staff: { en: '👥 Staff', ms: '👥 Staff' },
-    manage_tables: { en: '🪑 Tables', ms: '🪑 Meja' },
-    table_qrs: { en: '📱 Table QR', ms: '📱 QR Meja' },
-    system_settings: { en: '⚙️ Settings', ms: '⚙️ Tetapan' },
-    reports: { en: '📈 Reports', ms: '📈 Laporan' },
+    dashboard: { en: 'Dashboard', ms: 'Papan Pemuka' },
+    pos: { en: 'POS', ms: 'POS' },
+    kitchen: { en: 'Kitchen', ms: 'Dapur' },
+    manage_menu: { en: 'Manage Menu', ms: 'Urus Menu' },
+    manage_categories: { en: 'Categories', ms: 'Kategori' },
+    manage_staff: { en: 'Staff', ms: 'Staff' },
+    manage_tables: { en: 'Tables', ms: 'Meja' },
+    table_qrs: { en: 'Table QR', ms: 'QR Meja' },
+    system_settings: { en: 'Settings', ms: 'Tetapan' },
+    reports: { en: 'Reports', ms: 'Laporan' },
     
     // User
     admin: { en: 'Admin', ms: 'Admin' },
@@ -41,11 +41,11 @@ function Sidebar({ children }) {
     kitchen_role: { en: 'Kitchen', ms: 'Dapur' },
     
     // Actions
-    logout: { en: '🚪 Logout', ms: '🚪 Log Keluar' },
-    light_mode: { en: '☀️ Light Mode', ms: '☀️ Mod Terang' },
-    dark_mode: { en: '🌙 Dark Mode', ms: '🌙 Mod Gelap' },
-    english: { en: '🇺🇸 English', ms: '🇺🇸 English' },
-    bahasa: { en: '🇲🇾 Bahasa Melayu', ms: '🇲🇾 Bahasa Melayu' },
+    logout: { en: 'Logout', ms: 'Log Keluar' },
+    light_mode: { en: 'Light Mode', ms: 'Mod Terang' },
+    dark_mode: { en: 'Dark Mode', ms: 'Mod Gelap' },
+    english: { en: 'English', ms: 'English' },
+    bahasa: { en: 'Bahasa Melayu', ms: 'Bahasa Melayu' },
   }
 
   const t = (key) => {
