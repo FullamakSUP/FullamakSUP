@@ -230,30 +230,21 @@ function ManageMenu() {
   // COMPLETE TRANSLATIONS
   // ============================================================
   const translations = {
-    // Header
-    manage_menu: { en: '📋 Manage Menu', ms: '📋 Urus Menu' },
+    manage_menu: { en: 'Manage Menu', ms: 'Urus Menu' },
     manage_menu_sub: { en: 'Drag & drop to reorder menu items', ms: 'Seret & lepas untuk susun menu' },
-    drag_hint: { en: '⠿ Drag to reorder', ms: '⠿ Seret untuk susun' },
-    
-    // Tabs
-    regular_menu: { en: '🍽️ Regular Menu', ms: '🍽️ Menu Biasa' },
-    special_menu: { en: '⭐ Special Menu', ms: '⭐ Menu Istimewa' },
-    promotions: { en: '🏷️ Promotions', ms: '🏷️ Promosi' },
-    
-    // Buttons
-    add_menu: { en: '➕ Add Menu', ms: '➕ Tambah Menu' },
-    add_drink: { en: '🥤 Add Drink', ms: '🥤 Tambah Minuman' },
-    add_promotion: { en: '➕ Add Promotion', ms: '➕ Tambah Promosi' },
-    edit_promotion: { en: '✏️ Edit Promotion', ms: '✏️ Edit Promosi' },
-    add_special: { en: '➕ Add Special Item', ms: '➕ Tambah Item Istimewa' },
-    edit_special: { en: '✏️ Edit Special Item', ms: '✏️ Edit Item Istimewa' },
-    
-    // Search & Filter
-    search_menu: { en: '🔍 Search menu...', ms: '🔍 Cari menu...' },
+    drag_hint: { en: 'Drag to reorder', ms: 'Seret untuk susun' },
+    regular_menu: { en: 'Regular Menu', ms: 'Menu Biasa' },
+    special_menu: { en: 'Special Menu', ms: 'Menu Istimewa' },
+    promotions: { en: 'Promotions', ms: 'Promosi' },
+    add_menu: { en: 'Add Menu', ms: 'Tambah Menu' },
+    add_drink: { en: 'Add Drink', ms: 'Tambah Minuman' },
+    add_promotion: { en: 'Add Promotion', ms: 'Tambah Promosi' },
+    edit_promotion: { en: 'Edit Promotion', ms: 'Edit Promosi' },
+    add_special: { en: 'Add Special Item', ms: 'Tambah Item Istimewa' },
+    edit_special: { en: 'Edit Special Item', ms: 'Edit Item Istimewa' },
+    search_menu: { en: 'Search menu...', ms: 'Cari menu...' },
     all: { en: 'All', ms: 'Semua' },
     no_menu: { en: 'No menu items found', ms: 'Tiada item menu dijumpai' },
-    
-    // Labels
     stock: { en: 'Stock', ms: 'Stok' },
     edit: { en: 'Edit', ms: 'Edit' },
     delete: { en: 'Delete', ms: 'Hapus' },
@@ -267,104 +258,89 @@ function ManageMenu() {
     showing: { en: 'Showing', ms: 'Menunjukkan' },
     of: { en: 'of', ms: 'daripada' },
     items: { en: 'items', ms: 'item' },
-    
-    // Drink Options
     hot: { en: 'Hot', ms: 'Panas' },
     cold: { en: 'Cold', ms: 'Sejuk' },
     takeaway: { en: 'Takeaway', ms: 'Bungkus' },
-    
-    // Special Menu
-    activate_special: { en: '⭐ Activate Special Menu', ms: '⭐ Aktifkan Menu Istimewa' },
+    activate_special: { en: 'Activate Special Menu', ms: 'Aktifkan Menu Istimewa' },
     activate_special_desc: { en: 'Display special menu on homepage', ms: 'Paparkan menu istimewa di laman utama' },
-    special_title: { en: '⭐ Special Menu Title', ms: '⭐ Tajuk Menu Istimewa' },
-    special_items: { en: '📋 Special Items', ms: '📋 Item Istimewa' },
+    special_title: { en: 'Special Menu Title', ms: 'Tajuk Menu Istimewa' },
+    special_items: { en: 'Special Items', ms: 'Item Istimewa' },
     no_special_items: { en: 'No special items. Click "Add" to start.', ms: 'Tiada item istimewa. Klik "Tambah" untuk mula.' },
-    
-    // Promotions
     no_promotions: { en: 'No promotions. Click "Add Promotion" to start.', ms: 'Tiada promosi. Klik "Tambah Promosi" untuk mula.' },
     active: { en: 'ACTIVE', ms: 'AKTIF' },
     inactive: { en: 'INACTIVE', ms: 'TIDAK AKTIF' },
-    disable: { en: '❌ Disable', ms: '❌ Lumpuhkan' },
-    enable: { en: '✅ Enable', ms: '✅ Aktifkan' },
-    
-    // Promotion Form
+    disable: { en: 'Disable', ms: 'Lumpuhkan' },
+    enable: { en: 'Enable', ms: 'Aktifkan' },
     promo_name: { en: 'Promotion Name *', ms: 'Nama Promosi *' },
     promo_type: { en: 'Promotion Type', ms: 'Jenis Promosi' },
     set_menu: { en: 'Set Menu', ms: 'Set Menu' },
     bundle: { en: 'Bundle', ms: 'Bundle' },
     bogo: { en: 'Buy 1 Free 1', ms: 'Beli 1 Percuma 1' },
-    trigger_item: { en: '🎁 Purchased Item', ms: '🎁 Item yang Dibeli' },
-    free_item: { en: '🎁 Free Item', ms: '🎁 Item Percuma' },
+    trigger_item: { en: 'Purchased Item', ms: 'Item yang Dibeli' },
+    free_item: { en: 'Free Item', ms: 'Item Percuma' },
     select_item: { en: '-- Select Item --', ms: '-- Pilih Item --' },
-    bundle_items: { en: '📦 Select Bundle Items', ms: '📦 Pilih Item dalam Promosi' },
-    promo_price: { en: '💰 Promotion Price (RM)', ms: '💰 Harga Promosi (RM)' },
-    start_date: { en: '📅 Start Date', ms: '📅 Tarikh Mula' },
-    end_date: { en: '📅 End Date', ms: '📅 Tarikh Akhir' },
-    promo_image: { en: '🖼️ Promotion Image', ms: '🖼️ Gambar Promosi' },
-    activate_promo: { en: '✅ Activate Promotion', ms: '✅ Aktifkan Promosi' },
+    bundle_items: { en: 'Select Bundle Items', ms: 'Pilih Item dalam Promosi' },
+    promo_price: { en: 'Promotion Price (RM)', ms: 'Harga Promosi (RM)' },
+    start_date: { en: 'Start Date', ms: 'Tarikh Mula' },
+    end_date: { en: 'End Date', ms: 'Tarikh Akhir' },
+    promo_image: { en: 'Promotion Image', ms: 'Gambar Promosi' },
+    activate_promo: { en: 'Activate Promotion', ms: 'Aktifkan Promosi' },
     no_items_available: { en: 'No items available - add menu items first', ms: 'Tiada item - tambah menu terlebih dahulu' },
     items_available: { en: 'items available. Tap checkbox to select.', ms: 'item tersedia. Ketik kotak untuk pilih.' },
-    
-    // Size Options
-    size_options: { en: '⚙️ Size Options', ms: '⚙️ Pilihan Saiz' },
-    add_size: { en: '➕ Add New Size', ms: '➕ Tambah Saiz Baru' },
-    edit_size: { en: '✏️ Edit Size', ms: '✏️ Edit Saiz' },
+    size_options: { en: 'Size Options', ms: 'Pilihan Saiz' },
+    add_size: { en: 'Add New Size', ms: 'Tambah Saiz Baru' },
+    edit_size: { en: 'Edit Size', ms: 'Edit Saiz' },
     size_name: { en: 'Name (e.g: Small, Medium, Large)', ms: 'Nama (cth: Kecil, Sederhana, Besar)' },
     size_price: { en: 'Price (RM)', ms: 'Harga (RM)' },
     absolute_price: { en: 'Absolute Price', ms: 'Harga Mutlak' },
     sort_order: { en: 'Sort Order', ms: 'Urutan' },
-    size_list: { en: '📋 Size List', ms: '📋 Senarai Saiz' },
+    size_list: { en: 'Size List', ms: 'Senarai Saiz' },
     no_sizes: { en: 'No size options available.', ms: 'Tiada pilihan saiz.' },
-    
-    // Add Drink
-    add_drink_title: { en: '🥤 Add Drink (Hot/Cold/Takeaway)', ms: '🥤 Tambah Minuman (Panas/Sejuk/Bungkus)' },
+    add_drink_title: { en: 'Add Drink (Hot/Cold/Takeaway)', ms: 'Tambah Minuman (Panas/Sejuk/Bungkus)' },
     drink_name: { en: 'Drink Name', ms: 'Nama Minuman' },
-    hot_price: { en: '🔥 Hot Price', ms: '🔥 Harga Panas' },
-    cold_price: { en: '🧊 Cold Price', ms: '🧊 Harga Sejuk' },
-    takeaway_price: { en: '📦 Takeaway Price', ms: '📦 Harga Bungkus' },
-    
-    // Edit Menu
-    edit_menu: { en: '✏️ Edit Menu', ms: '✏️ Edit Menu' },
+    hot_price: { en: 'Hot Price', ms: 'Harga Panas' },
+    cold_price: { en: 'Cold Price', ms: 'Harga Sejuk' },
+    takeaway_price: { en: 'Takeaway Price', ms: 'Harga Bungkus' },
+    edit_menu: { en: 'Edit Menu', ms: 'Edit Menu' },
     select_category: { en: 'Select Category', ms: 'Pilih Kategori' },
     preview: { en: 'Preview', ms: 'Pratonton' },
     stock_qty: { en: 'Stock Quantity', ms: 'Kuantiti Stok' },
-    has_size_options: { en: '⚙️ Has size options', ms: '⚙️ Ada pilihan saiz' },
+    has_size_options: { en: 'Has size options', ms: 'Ada pilihan saiz' },
     name: { en: 'Name', ms: 'Nama' },
     price: { en: 'Price', ms: 'Harga' },
     description: { en: 'Description', ms: 'Keterangan' },
     image: { en: 'Image', ms: 'Gambar' },
     category: { en: 'Category', ms: 'Kategori' },
-    
-    // Messages
-    order_updated: { en: '✅ Menu order updated!', ms: '✅ Urutan menu dikemaskini!' },
-    category_order_updated: { en: '✅ Category order updated!', ms: '✅ Urutan kategori dikemaskini!' },
+    order_updated: { en: 'Menu order updated!', ms: 'Urutan menu dikemaskini!' },
+    category_order_updated: { en: 'Category order updated!', ms: 'Urutan kategori dikemaskini!' },
     already_exists: { en: 'already exists!', ms: 'sudah wujud!' },
     confirm_delete: { en: 'Are you sure you want to delete', ms: 'Adakah anda pasti mahu padam' },
     confirm_delete_image: { en: 'Are you sure you want to delete this image?', ms: 'Adakah anda pasti mahu padam gambar ini?' },
     price_updated: { en: 'price updated!', ms: 'harga dikemaskini!' },
     stock_updated_to: { en: 'stock updated to', ms: 'stok dikemaskini kepada' },
-    option_added: { en: '✅ Size option added!', ms: '✅ Pilihan saiz ditambah!' },
-    option_updated: { en: '✅ Size option updated!', ms: '✅ Pilihan saiz dikemaskini!' },
-    option_deleted: { en: '✅ Size option deleted!', ms: '✅ Pilihan saiz dipadam!' },
-    menu_added: { en: '✅ Menu item added!', ms: '✅ Item menu ditambah!' },
-    menu_updated: { en: '✅ Menu item updated!', ms: '✅ Item menu dikemaskini!' },
-    special_added: { en: '✅ Special item added!', ms: '✅ Item istimewa ditambah!' },
-    special_updated: { en: '✅ Special item updated!', ms: '✅ Item istimewa dikemaskini!' },
-    promo_added: { en: '✅ Promotion added!', ms: '✅ Promosi ditambah!' },
-    promo_updated: { en: '✅ Promotion updated!', ms: '✅ Promosi dikemaskini!' },
-    promo_disabled: { en: '✅ Promotion disabled!', ms: '✅ Promosi dilumpuhkan!' },
-    promo_enabled: { en: '✅ Promotion enabled!', ms: '✅ Promosi diaktifkan!' },
+    option_added: { en: 'Size option added!', ms: 'Pilihan saiz ditambah!' },
+    option_updated: { en: 'Size option updated!', ms: 'Pilihan saiz dikemaskini!' },
+    option_deleted: { en: 'Size option deleted!', ms: 'Pilihan saiz dipadam!' },
+    menu_added: { en: 'Menu item added!', ms: 'Item menu ditambah!' },
+    menu_updated: { en: 'Menu item updated!', ms: 'Item menu dikemaskini!' },
+    special_added: { en: 'Special item added!', ms: 'Item istimewa ditambah!' },
+    special_updated: { en: 'Special item updated!', ms: 'Item istimewa dikemaskini!' },
+    promo_added: { en: 'Promotion added!', ms: 'Promosi ditambah!' },
+    promo_updated: { en: 'Promotion updated!', ms: 'Promosi dikemaskini!' },
+    promo_disabled: { en: 'Promotion disabled!', ms: 'Promosi dilumpuhkan!' },
+    promo_enabled: { en: 'Promotion enabled!', ms: 'Promosi diaktifkan!' },
     deleted: { en: 'deleted!', ms: 'dipadam!' },
-    image_deleted: { en: '✅ Image deleted!', ms: '✅ Gambar dipadam!' },
-    image_delete_fail: { en: '❌ Failed to delete image!', ms: '❌ Gagal padam gambar!' },
-    upload_fail: { en: '❌ Upload failed!', ms: '❌ Muat naik gagal!' },
-    upload_success: { en: '✅ Upload successful', ms: '✅ Muat naik berjaya' },
+    image_deleted: { en: 'Image deleted!', ms: 'Gambar dipadam!' },
+    image_delete_fail: { en: 'Failed to delete image!', ms: 'Gagal padam gambar!' },
+    upload_fail: { en: 'Upload failed!', ms: 'Muat naik gagal!' },
+    upload_success: { en: 'Upload successful', ms: 'Muat naik berjaya' },
     required: { en: 'is required!', ms: 'diperlukan!' },
     and: { en: 'and', ms: 'dan' },
     error: { en: 'Error', ms: 'Ralat' },
-    invalid_price: { en: '⚠️ Please enter a valid price!', ms: '⚠️ Sila masukkan harga yang sah!' },
-    drink_added: { en: '✅ Drink added successfully!', ms: '✅ Minuman berjaya ditambah!' },
+    invalid_price: { en: 'Please enter a valid price!', ms: 'Sila masukkan harga yang sah!' },
+    drink_added: { en: 'Drink added successfully!', ms: 'Minuman berjaya ditambah!' },
     no_items_found: { en: 'No items found', ms: 'Tiada item dijumpai' },
+    price_sync: { en: 'Price will sync with menu item', ms: 'Harga akan diselaraskan dengan item menu' },
   }
 
   const translate = (key) => {
@@ -373,17 +349,17 @@ function ManageMenu() {
   }
 
   // ============================================================
-  // THEME COLORS
+  // THEME COLORS - FIXED FOR VISIBILITY
   // ============================================================
-  const bgColor = darkMode ? '#0f172a' : '#f1f5f9'
-  const cardBg = darkMode ? 'rgba(30, 41, 59, 0.95)' : 'rgba(255, 255, 255, 0.95)'
-  const textColor = darkMode ? '#e2e8f0' : '#1e293b'
+  const bgColor = darkMode ? '#0a0a16' : '#f1f5f9'
+  const cardBg = darkMode ? 'rgba(20, 20, 40, 0.95)' : 'rgba(255, 255, 255, 0.95)'
+  const textColor = darkMode ? '#e8edf5' : '#1e293b'
   const textMuted = darkMode ? '#94a3b8' : '#64748b'
   const borderColor = darkMode ? 'rgba(71, 85, 105, 0.4)' : 'rgba(203, 213, 225, 0.5)'
   const secondaryBg = darkMode ? 'rgba(51, 65, 85, 0.6)' : 'rgba(248, 250, 252, 0.9)'
-  const inputBg = darkMode ? '#1e293b' : '#ffffff'
-  const inputBorder = darkMode ? '#475569' : '#cbd5e1'
-  const inputText = darkMode ? '#e2e8f0' : '#1e293b'
+  const inputBg = darkMode ? '#1a1a2e' : '#ffffff'
+  const inputBorder = darkMode ? '#3d3d5c' : '#cbd5e1'
+  const inputText = darkMode ? '#e8edf5' : '#1e293b'
   const glassBorder = darkMode ? 'rgba(71, 85, 105, 0.2)' : 'rgba(203, 213, 225, 0.4)'
   
   const glassEffect = {
@@ -396,7 +372,7 @@ function ManageMenu() {
   }
 
   // ============================================================
-  // MODAL STYLES - FIXED FOR DARK MODE READABILITY
+  // MODAL STYLES
   // ============================================================
   const modalOverlayStyle = {
     position: 'fixed',
@@ -611,8 +587,36 @@ function ManageMenu() {
       
       const { data: itemsData } = await supabase.from('settings').select('value').eq('key', 'special_menu_items').single()
       if (itemsData) { 
-        try { setSpecialItems(JSON.parse(itemsData.value)) } 
-        catch (e) { setSpecialItems([]) } 
+        try { 
+          const items = JSON.parse(itemsData.value)
+          // Sync prices with menu table
+          const syncedItems = []
+          for (const item of items) {
+            if (item.menu_id) {
+              const { data: menuItem } = await supabase
+                .from('menu')
+                .select('price, image_url, description, has_options')
+                .eq('id', item.menu_id)
+                .single()
+              if (menuItem) {
+                syncedItems.push({
+                  ...item,
+                  price: menuItem.price,
+                  image_url: menuItem.image_url || item.image_url,
+                  description: menuItem.description || item.description,
+                  has_options: menuItem.has_options
+                })
+              } else {
+                syncedItems.push(item)
+              }
+            } else {
+              syncedItems.push(item)
+            }
+          }
+          setSpecialItems(syncedItems)
+        } catch (e) { 
+          setSpecialItems([]) 
+        } 
       }
     } catch (err) {
       console.error('Error loading special menu:', err)
@@ -1067,32 +1071,89 @@ function ManageMenu() {
   }
 
   // ============================================================
-  // SPECIAL MENU FUNCTIONS
+  // SPECIAL MENU FUNCTIONS - SYNC WITH MENU TABLE
   // ============================================================
   async function addSpecialItem() {
     if (!specialFormData.name || !specialFormData.price) { 
       setMessage(`⚠️ ${translate('name')} ${translate('and')} ${translate('price')} ${translate('required')}`)
       return 
     }
+    
     let imageUrl = specialFormData.image_url
     if (specialFormData.image_file) {
       const uploadedUrl = await uploadImage(specialFormData.image_file, 'special')
       if (uploadedUrl) imageUrl = uploadedUrl
     }
-    const newItem = { 
-      id: Date.now(), name: specialFormData.name, price: parseFloat(specialFormData.price),
-      stock: parseInt(specialFormData.stock) || 0, image_url: imageUrl || null, description: specialFormData.description || '' 
+    
+    // Check if item exists in menu table
+    const { data: existingMenu } = await supabase
+      .from('menu')
+      .select('id, name, price, image_url')
+      .eq('name', specialFormData.name)
+      .maybeSingle()
+    
+    let menuItemId
+    
+    if (existingMenu) {
+      // Update existing menu item
+      menuItemId = existingMenu.id
+      await supabase
+        .from('menu')
+        .update({ 
+          price: parseFloat(specialFormData.price),
+          image_url: imageUrl || existingMenu.image_url,
+          description: specialFormData.description || existingMenu.description
+        })
+        .eq('id', menuItemId)
+    } else {
+      // Create new menu item
+      const { data: newMenu, error: menuError } = await supabase
+        .from('menu')
+        .insert([{ 
+          name: specialFormData.name, 
+          price: parseFloat(specialFormData.price), 
+          category: 'Istimewa',
+          stock: parseInt(specialFormData.stock) || 0, 
+          image_url: imageUrl || null,
+          description: specialFormData.description || '',
+          has_options: false,
+          sort_order: 0
+        }])
+        .select()
+      
+      if (menuError) {
+        setMessage(`❌ ${translate('error')}: ${menuError.message}`)
+        return
+      }
+      menuItemId = newMenu[0].id
     }
+    
+    const newItem = { 
+      id: Date.now(), 
+      name: specialFormData.name, 
+      price: parseFloat(specialFormData.price),
+      stock: parseInt(specialFormData.stock) || 0, 
+      image_url: imageUrl || null, 
+      description: specialFormData.description || '',
+      menu_id: menuItemId
+    }
+    
     const updatedItems = [...specialItems, newItem]
     setSpecialItems(updatedItems)
-    const { error } = await supabase.from('settings').upsert({ key: 'special_menu_items', value: JSON.stringify(updatedItems) }, { onConflict: 'key' })
+    
+    const { error } = await supabase
+      .from('settings')
+      .upsert({ key: 'special_menu_items', value: JSON.stringify(updatedItems) }, { onConflict: 'key' })
+    
     if (error) { 
       setMessage(`❌ ${translate('error')}: ${error.message}`) 
     } else { 
       setMessage(translate('special_added'))
       setShowAddSpecialModal(false)
       setSpecialFormData({ name: '', price: '', stock: '', image_url: '', image_file: null, description: '' })
-      loadSpecialMenu() 
+      loadSpecialMenu()
+      loadMenu()
+      loadAvailableMenu()
     }
     setTimeout(() => setMessage(''), 2000)
   }
@@ -1102,19 +1163,45 @@ function ManageMenu() {
       setMessage(`⚠️ ${translate('name')} ${translate('and')} ${translate('price')} ${translate('required')}`)
       return 
     }
+    
     let imageUrl = specialFormData.image_url
     if (specialFormData.image_file) {
       const uploadedUrl = await uploadImage(specialFormData.image_file, 'special')
       if (uploadedUrl) imageUrl = uploadedUrl
     }
+    
     const updatedItems = specialItems.map(item => 
       item.id === selectedSpecialItem.id 
-        ? { ...item, name: specialFormData.name, price: parseFloat(specialFormData.price),
-            stock: parseInt(specialFormData.stock) || 0, image_url: imageUrl, description: specialFormData.description } 
+        ? { 
+            ...item, 
+            name: specialFormData.name, 
+            price: parseFloat(specialFormData.price),
+            stock: parseInt(specialFormData.stock) || 0, 
+            image_url: imageUrl || item.image_url, 
+            description: specialFormData.description || item.description
+          } 
         : item
     )
     setSpecialItems(updatedItems)
-    const { error } = await supabase.from('settings').upsert({ key: 'special_menu_items', value: JSON.stringify(updatedItems) }, { onConflict: 'key' })
+    
+    // Update in menu table
+    const specialItem = updatedItems.find(item => item.id === selectedSpecialItem.id)
+    if (specialItem && specialItem.menu_id) {
+      await supabase
+        .from('menu')
+        .update({ 
+          name: specialItem.name,
+          price: specialItem.price,
+          image_url: specialItem.image_url,
+          description: specialItem.description
+        })
+        .eq('id', specialItem.menu_id)
+    }
+    
+    const { error } = await supabase
+      .from('settings')
+      .upsert({ key: 'special_menu_items', value: JSON.stringify(updatedItems) }, { onConflict: 'key' })
+    
     if (error) { 
       setMessage(`❌ ${translate('error')}: ${error.message}`) 
     } else { 
@@ -1122,7 +1209,9 @@ function ManageMenu() {
       setShowEditSpecialModal(false)
       setSelectedSpecialItem(null)
       setSpecialFormData({ name: '', price: '', stock: '', image_url: '', image_file: null, description: '' })
-      loadSpecialMenu() 
+      loadSpecialMenu()
+      loadMenu()
+      loadAvailableMenu()
     }
     setTimeout(() => setMessage(''), 2000)
   }
@@ -1640,7 +1729,7 @@ function ManageMenu() {
           </p>
         </div>
 
-        {/* TABS - CLEAN, NO DOUBLE ICONS */}
+        {/* TABS */}
         <div style={{ 
           display: 'flex', 
           gap: '6px', 
@@ -1708,7 +1797,6 @@ function ManageMenu() {
         {/* ========================================================== */}
         {activeTab === 'regular' && (
           <>
-            {/* Action Buttons */}
             <div style={{ 
               display: 'flex', 
               justifyContent: 'flex-end', 
@@ -1752,7 +1840,6 @@ function ManageMenu() {
               </button>
             </div>
 
-            {/* Message */}
             {message && (
               <div style={{ 
                 background: message.includes('✅') || message.includes('✔') 
@@ -1773,7 +1860,6 @@ function ManageMenu() {
               </div>
             )}
 
-            {/* Search Bar */}
             <div style={{ marginBottom: '20px' }}>
               <div style={{ 
                 ...glassEffect, 
@@ -1819,7 +1905,6 @@ function ManageMenu() {
               </div>
             </div>
 
-            {/* Category Filters */}
             <div style={{ 
               display: 'flex', 
               gap: '8px', 
@@ -1875,7 +1960,6 @@ function ManageMenu() {
               </DndContext>
             </div>
 
-            {/* Menu Grid */}
             {filteredMenu.length === 0 ? (
               <div style={{ 
                 textAlign: 'center', 
@@ -1931,14 +2015,12 @@ function ManageMenu() {
                                 position: 'relative'
                               }}
                             >
-                              {/* Row 1: Image + Info */}
                               <div style={{ 
                                 display: 'flex', 
                                 gap: '14px', 
                                 alignItems: 'center',
                                 flexDirection: isMobile ? 'column' : 'row'
                               }}>
-                                {/* Image */}
                                 <div style={{ flexShrink: 0 }}>
                                   {hasImage ? (
                                     <div style={{ position: 'relative' }}>
@@ -1993,7 +2075,6 @@ function ManageMenu() {
                                   )}
                                 </div>
 
-                                {/* Info */}
                                 <div style={{ flex: 1, minWidth: 0 }}>
                                   <div style={{ 
                                     fontWeight: 'bold', 
@@ -2050,7 +2131,6 @@ function ManageMenu() {
                                   )}
                                 </div>
 
-                                {/* Stock + Actions */}
                                 <div style={{ 
                                   display: 'flex', 
                                   flexDirection: 'column', 
@@ -2162,7 +2242,6 @@ function ManageMenu() {
                                 </div>
                               </div>
 
-                              {/* Drink Options */}
                               {hasDrinkOptions && (
                                 <div style={{ 
                                   marginTop: '4px', 
@@ -2176,7 +2255,6 @@ function ManageMenu() {
                                   borderRadius: '12px',
                                   padding: '10px'
                                 }}>
-                                  {/* Panas */}
                                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                     <span style={{ fontSize: isMobile ? '11px' : '12px', color: '#f97316', fontWeight: 'bold' }}>🔥</span>
                                     <input 
@@ -2214,7 +2292,6 @@ function ManageMenu() {
                                     </button>
                                   </div>
 
-                                  {/* Sejuk */}
                                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                     <span style={{ fontSize: isMobile ? '11px' : '12px', color: '#06b6d4', fontWeight: 'bold' }}>🧊</span>
                                     <input 
@@ -2252,7 +2329,6 @@ function ManageMenu() {
                                     </button>
                                   </div>
 
-                                  {/* Bungkus */}
                                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                     <span style={{ fontSize: isMobile ? '11px' : '12px', color: '#8b5cf6', fontWeight: 'bold' }}>📦</span>
                                     <input 
@@ -2460,6 +2536,11 @@ function ManageMenu() {
                               {item.description && (
                                 <div style={{ fontSize: '10px', color: textMuted, fontStyle: 'italic' }}>
                                   📝 {item.description}
+                                </div>
+                              )}
+                              {item.menu_id && (
+                                <div style={{ fontSize: '9px', color: '#3b82f6' }}>
+                                  🔗 {translate('price_sync')}
                                 </div>
                               )}
                             </div>
@@ -2678,7 +2759,7 @@ function ManageMenu() {
         )}
 
         {/* ========================================================== */}
-        {/* MODALS - FIXED DARK MODE READABILITY */}
+        {/* MODALS */}
         {/* ========================================================== */}
         
         {/* ADD MENU MODAL */}

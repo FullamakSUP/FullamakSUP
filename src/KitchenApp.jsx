@@ -11,40 +11,40 @@ function KitchenApp() {
   const { language } = useLanguage()
   
   // ============================================================
-  // COMPLETE TRANSLATIONS
+  // COMPLETE TRANSLATIONS - TANPA EMOJI
   // ============================================================
   const translations = {
     // Header
-    kitchen_title: { en: '🍳 Digital Kitchen', ms: '🍳 Dapur Digital' },
+    kitchen_title: { en: 'Digital Kitchen', ms: 'Dapur Digital' },
     kitchen_subtitle: { en: 'Manage food & drink orders', ms: 'Urus pesanan makanan & minuman' },
     
     // Buttons
-    sound_on: { en: '🔔 Sound: ON', ms: '🔔 Bunyi: ON' },
-    sound_off: { en: '🔔 Sound: OFF', ms: '🔔 Bunyi: OFF' },
-    refresh: { en: '🔄 Refresh', ms: '🔄 Muat Semula' },
-    refresh_data: { en: '🔄 Refresh Data', ms: '🔄 Muat Semula Data' },
-    complete_all: { en: '✅ Complete All', ms: '✅ Selesaikan Semua' },
-    go_to_settings: { en: '⚙️ Go to Settings', ms: '⚙️ Pergi ke Tetapan' },
+    sound_on: { en: 'Sound: ON', ms: 'Bunyi: ON' },
+    sound_off: { en: 'Sound: OFF', ms: 'Bunyi: OFF' },
+    refresh: { en: 'Refresh', ms: 'Muat Semula' },
+    refresh_data: { en: 'Refresh Data', ms: 'Muat Semula Data' },
+    complete_all: { en: 'Complete All', ms: 'Selesaikan Semua' },
+    go_to_settings: { en: 'Go to Settings', ms: 'Pergi ke Tetapan' },
     
     // Search & Filter
-    search_orders: { en: '🔍 Search orders...', ms: '🔍 Cari pesanan...' },
-    all_orders: { en: '🍽️ All', ms: '🍽️ Semua' },
-    dine_in: { en: '🏠 Dine-in', ms: '🏠 Dine-in' },
-    take_away: { en: '🥡 Take Away', ms: '🥡 Bungkus' },
+    search_orders: { en: 'Search orders...', ms: 'Cari pesanan...' },
+    all_orders: { en: 'All', ms: 'Semua' },
+    dine_in: { en: 'Dine-in', ms: 'Dine-in' },
+    take_away: { en: 'Take Away', ms: 'Bungkus' },
     
     // Alerts
     new_orders: { en: 'New Orders', ms: 'Pesanan Baru' },
     process_immediately: { en: 'Process immediately!', ms: 'Proses segera!' },
-    new_order_alert: { en: '🍳 New Order!', ms: '🍳 Pesanan Baru!' },
-    order_ready_alert: { en: '✅ Order Ready!', ms: '✅ Pesanan Sedia!' },
+    new_order_alert: { en: 'New Order!', ms: 'Pesanan Baru!' },
+    order_ready_alert: { en: 'Order Ready!', ms: 'Pesanan Sedia!' },
     order_ready_desc: { en: 'Order is ready for pickup', ms: 'Pesanan sedia untuk diambil' },
     
     // Tabs
-    food_kitchen: { en: '🍳 Food', ms: '🍳 Makanan' },
-    drink_kitchen: { en: '🥤 Drinks', ms: '🥤 Minuman' },
-    preparing_orders: { en: '🔪 Cooking', ms: '🔪 Sedang Masak' },
-    ready_orders: { en: '✅ Ready', ms: '✅ Sedia' },
-    completed_orders: { en: '📜 Done', ms: '📜 Selesai' },
+    food_kitchen: { en: 'Food', ms: 'Makanan' },
+    drink_kitchen: { en: 'Drinks', ms: 'Minuman' },
+    preparing_orders: { en: 'Cooking', ms: 'Sedang Masak' },
+    ready_orders: { en: 'Ready', ms: 'Sedia' },
+    completed_orders: { en: 'Done', ms: 'Selesai' },
     
     // Empty states
     no_food_orders: { en: 'No food orders waiting', ms: 'Tiada pesanan makanan menunggu' },
@@ -54,26 +54,26 @@ function KitchenApp() {
     no_completed_orders: { en: 'No completed orders', ms: 'Tiada pesanan selesai' },
     
     // Status actions
-    start_cooking: { en: '🔪 Start Cooking', ms: '🔪 Mula Masak' },
-    finish_cooking: { en: '✅ Finish Cooking', ms: '✅ Selesai Masak' },
-    complete: { en: '✅ Complete', ms: '✅ Selesai' },
-    cancelled: { en: '❌ Cancelled', ms: '❌ Dibatalkan' },
+    start_cooking: { en: 'Start Cooking', ms: 'Mula Masak' },
+    finish_cooking: { en: 'Finish Cooking', ms: 'Selesai Masak' },
+    complete: { en: 'Complete', ms: 'Selesai' },
+    cancelled: { en: 'Cancelled', ms: 'Dibatalkan' },
     
     // Messages
-    error_updating: { en: '❌ Error updating order!', ms: '❌ Ralat kemaskini pesanan!' },
+    error_updating: { en: 'Error updating order!', ms: 'Ralat kemaskini pesanan!' },
     no_orders_to_complete: { en: 'No orders to complete', ms: 'Tiada pesanan untuk diselesaikan' },
     orders_completed: { en: 'orders completed!', ms: 'pesanan selesai!' },
     confirm_complete_all: { en: 'Complete all orders?', ms: 'Selesaikan semua pesanan?' },
-    cooking_started: { en: '🔪 Cooking started!', ms: '🔪 Mula memasak!' },
-    cooking_finished: { en: '✅ Cooking finished!', ms: '✅ Selesai memasak!' },
-    order_completed: { en: '✅ Order completed!', ms: '✅ Pesanan selesai!' },
-    order_cancelled: { en: '❌ Order cancelled!', ms: '❌ Pesanan dibatalkan!' },
+    cooking_started: { en: 'Cooking started!', ms: 'Mula memasak!' },
+    cooking_finished: { en: 'Cooking finished!', ms: 'Selesai memasak!' },
+    order_completed: { en: 'Order completed!', ms: 'Pesanan selesai!' },
+    order_cancelled: { en: 'Order cancelled!', ms: 'Pesanan dibatalkan!' },
     
     // Labels
     waiting: { en: 'Waiting', ms: 'Menunggu' },
     total: { en: 'Total', ms: 'Jumlah' },
     note: { en: 'Note', ms: 'Nota' },
-    cancel: { en: '❌ Cancel', ms: '❌ Batal' },
+    cancel: { en: 'Cancel', ms: 'Batal' },
     table: { en: 'Table', ms: 'Meja' },
     just_now: { en: 'Just now', ms: 'Baru sahaja' },
     guest: { en: 'Guest', ms: 'Tetamu' },
@@ -81,13 +81,12 @@ function KitchenApp() {
     items: { en: 'items', ms: 'item' },
     
     // Disabled state
-    kitchen_disabled: { en: '🍳 Digital Kitchen Disabled', ms: '🍳 Dapur Digital Dimatikan' },
+    kitchen_disabled: { en: 'Digital Kitchen Disabled', ms: 'Dapur Digital Dimatikan' },
     kitchen_disabled_desc: { en: 'Please enable digital kitchen in Settings page', ms: 'Sila aktifkan dapur digital di halaman Tetapan' },
     
     // Time
-    minutes: { en: 'min', ms: 'min' },
-    hours: { en: 'h', ms: 'j' },
-    just_now: { en: 'Just now', ms: 'Baru sahaja' },
+    minutes_short: { en: 'min', ms: 'min' },
+    hours_short: { en: 'h', ms: 'j' },
   }
 
   const t = (key) => {
@@ -128,23 +127,23 @@ function KitchenApp() {
   // ============================================================
   // THEME COLORS
   // ============================================================
-  const bgColor = darkMode ? '#0f0f1a' : '#f8fafc'
-  const cardBg = darkMode ? 'rgba(30, 30, 45, 0.95)' : 'rgba(255, 255, 255, 0.95)'
-  const textColor = darkMode ? '#f1f5f9' : '#1e293b'
+  const bgColor = darkMode ? '#0a0a16' : '#f8fafc'
+  const cardBg = darkMode ? 'rgba(20, 20, 40, 0.95)' : 'rgba(255, 255, 255, 0.95)'
+  const textColor = darkMode ? '#e8edf5' : '#1e293b'
   const textMuted = darkMode ? '#94a3b8' : '#64748b'
-  const borderColor = darkMode ? 'rgba(71, 85, 105, 0.3)' : 'rgba(203, 213, 225, 0.6)'
+  const borderColor = darkMode ? 'rgba(71, 85, 105, 0.3)' : 'rgba(203, 213, 225, 0.5)'
   const priceColor = darkMode ? '#4ade80' : '#22c55e'
   const borderLeftFood = '#ef4444'
   const borderLeftDrink = '#06b6d4'
-  const secondaryBg = darkMode ? 'rgba(30, 30, 45, 0.6)' : 'rgba(248, 250, 252, 0.8)'
+  const secondaryBg = darkMode ? 'rgba(30, 30, 50, 0.6)' : 'rgba(248, 250, 252, 0.8)'
   
   const glassEffect = {
     background: cardBg,
-    backdropFilter: 'blur(12px)',
+    backdropFilter: 'blur(16px)',
     border: `1px solid ${borderColor}`,
     boxShadow: darkMode 
-      ? '0 8px 32px rgba(0, 0, 0, 0.4)' 
-      : '0 8px 32px rgba(0, 0, 0, 0.06)',
+      ? '0 8px 40px rgba(0,0,0,0.5)' 
+      : '0 8px 40px rgba(0,0,0,0.06)',
     transition: 'all 0.3s ease'
   }
 
@@ -235,7 +234,7 @@ function KitchenApp() {
             
             sendNotification(
               t('new_order_alert'),
-              `${orderType} - ${itemTypes.join(' & ')} (${payload.new.items?.length} ${t('items')})`,
+              `${orderType} - ${itemTypes.join(' & ')} (${payload.new.items?.length} items)`,
               '/kitchen'
             )
             
@@ -436,11 +435,11 @@ function KitchenApp() {
     const now = new Date()
     const diffMinutes = Math.floor((now - created) / 60000)
     if (diffMinutes < 1) return t('just_now')
-    if (diffMinutes < 60) return `${diffMinutes} ${t('minutes')}`
+    if (diffMinutes < 60) return `${diffMinutes} ${t('minutes_short')}`
     const hours = Math.floor(diffMinutes / 60)
     const minutes = diffMinutes % 60
-    if (minutes === 0) return `${hours}${t('hours')}`
-    return `${hours}${t('hours')} ${minutes}m`
+    if (minutes === 0) return `${hours}${t('hours_short')}`
+    return `${hours}${t('hours_short')} ${minutes}m`
   }
 
   const getWaitingColor = (createdAt) => {
@@ -797,7 +796,6 @@ function KitchenApp() {
   // ============================================================
   const totalNew = foodOrders.length + drinkOrders.length
 
-  // Tab configuration
   const tabs = [
     { id: 'food', label: t('food_kitchen'), icon: '🍳', color: '#ef4444', count: foodOrders.length },
     { id: 'drink', label: t('drink_kitchen'), icon: '🥤', color: '#06b6d4', count: drinkOrders.length },
