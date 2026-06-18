@@ -37,89 +37,7 @@ function Dashboard() {
   const { darkMode } = useTheme()
   const { language } = useLanguage()
   
-  // ============================================================
-  // COMPLETE TRANSLATIONS
-  // ============================================================
-  const translations = {
-    // Header
-    dashboard: { en: '📊 Dashboard', ms: '📊 Papan Pemuka' },
-    summary: { en: 'Summary', ms: 'Ringkasan' },
-    last_updated: { en: 'Last updated', ms: 'Kemaskini terakhir' },
-    
-    // Cards
-    today_sales: { en: 'Today\'s Sales', ms: 'Jualan Hari Ini' },
-    total_orders: { en: 'Total Orders', ms: 'Jumlah Pesanan' },
-    active_tables: { en: 'Active Tables', ms: 'Meja Aktif' },
-    popular_items: { en: 'Popular Items', ms: 'Item Popular' },
-    
-    // Charts
-    sales_trend: { en: 'Sales Trend', ms: 'Trend Jualan' },
-    payment_breakdown: { en: 'Payment Breakdown', ms: 'Pecahan Bayaran' },
-    peak_hours: { en: 'Peak Hours', ms: 'Waktu Sibuk' },
-    top_categories: { en: 'Top Categories', ms: 'Kategori Teratas' },
-    recent_orders: { en: 'Recent Orders', ms: 'Pesanan Terkini' },
-    
-    // Payment Methods
-    cash: { en: 'Cash', ms: 'Tunai' },
-    tng: { en: 'TnG', ms: 'TnG' },
-    bank: { en: 'Bank', ms: 'Bank' },
-    
-    // Status
-    paid: { en: 'Paid', ms: 'Sudah Bayar' },
-    unpaid: { en: 'Unpaid', ms: 'Belum Bayar' },
-    left: { en: 'left', ms: 'tinggal' },
-    times: { en: 'times', ms: 'kali' },
-    tables: { en: 'tables', ms: 'meja' },
-    items: { en: 'items', ms: 'item' },
-    orders: { en: 'orders', ms: 'pesanan' },
-    
-    // Date Range
-    today: { en: 'Today', ms: 'Hari Ini' },
-    week: { en: 'Week', ms: 'Minggu' },
-    month: { en: 'Month', ms: 'Bulan' },
-    chart: { en: 'Chart', ms: 'Carta' },
-    
-    // Actions
-    refresh_data: { en: '🔄 Refresh Data', ms: '🔄 Muat Semula' },
-    auto_refresh: { en: 'Auto Refresh', ms: 'Auto Muat Semula' },
-    auto_refresh_notify: { en: '🔄 Auto refreshed!', ms: '🔄 Auto muat semula!' },
-    export_excel: { en: '📎 Export Excel', ms: '📎 Eksport Excel' },
-    export_pdf: { en: '📄 Export PDF', ms: '📄 Eksport PDF' },
-    
-    // Alerts
-    low_stock_alert: { en: '⚠️ Low Stock Alert', ms: '⚠️ Amaran Stok Rendah' },
-    out_of_stock: { en: 'Out of Stock', ms: 'Habis Stok' },
-    
-    // Labels
-    id: { en: 'ID', ms: 'ID' },
-    customer_name: { en: 'Customer', ms: 'Pelanggan' },
-    table_number: { en: 'Table', ms: 'Meja' },
-    total: { en: 'Total', ms: 'Jumlah' },
-    payment_method: { en: 'Payment Method', ms: 'Kaedah Bayaran' },
-    status: { en: 'Status', ms: 'Status' },
-    date: { en: 'Date', ms: 'Tarikh' },
-    take_away: { en: 'Take Away', ms: 'Bungkus' },
-    table: { en: 'Table', ms: 'Meja' },
-    sales: { en: 'Sales', ms: 'Jualan' },
-    guest: { en: 'Guest', ms: 'Tetamu' },
-    
-    // Messages
-    loading: { en: 'Loading...', ms: 'Memuatkan...' },
-    no_data: { en: 'No data available', ms: 'Tiada data' },
-    error_updating: { en: 'Error updating data!', ms: 'Ralat mengemaskini data!' },
-    excel_exported: { en: 'Excel exported successfully!', ms: 'Excel berjaya dieksport!' },
-    pdf_exported: { en: 'PDF exported successfully!', ms: 'PDF berjaya dieksport!' },
-    export_failed: { en: 'Export failed!', ms: 'Eksport gagal!' },
-  }
-
-  const t = (key) => {
-    if (!translations[key]) return key
-    return language === 'en' ? translations[key].en : translations[key].ms
-  }
-
-  // ============================================================
-  // STATE
-  // ============================================================
+  // ===== STATE =====
   const [todaySales, setTodaySales] = useState(0)
   const [todayOrders, setTodayOrders] = useState(0)
   const [activeTables, setActiveTables] = useState(0)
@@ -139,26 +57,94 @@ function Dashboard() {
   const [topCategoriesData, setTopCategoriesData] = useState({ labels: [], counts: [] })
   const [exporting, setExporting] = useState(false)
   const [logoError, setLogoError] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)  // 👈 TAMBAH INI
   
   const dashboardRef = useRef(null)
 
-  // ============================================================
-  // THEME COLORS
-  // ============================================================
-  const bgColor = darkMode ? '#0f0f1a' : '#f1f5f9'
-  const cardBg = darkMode ? 'rgba(30, 30, 46, 0.95)' : 'rgba(255, 255, 255, 0.95)'
-  const textColor = darkMode ? '#f1f5f9' : '#0f172a'
+  // ===== CHECK MOBILE =====
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  // ===== TRANSLATIONS =====
+  const translations = {
+    dashboard: { en: '📊 Dashboard', ms: '📊 Papan Pemuka' },
+    summary: { en: 'Summary', ms: 'Ringkasan' },
+    today_sales: { en: "Today's Sales", ms: 'Jualan Hari Ini' },
+    total_orders: { en: 'Total Orders', ms: 'Jumlah Pesanan' },
+    active_tables: { en: 'Active Tables', ms: 'Meja Aktif' },
+    popular_items: { en: 'Popular Items', ms: 'Item Popular' },
+    sales_trend: { en: 'Sales Trend', ms: 'Trend Jualan' },
+    payment_breakdown: { en: 'Payment Breakdown', ms: 'Pecahan Bayaran' },
+    peak_hours: { en: 'Peak Hours', ms: 'Waktu Sibuk' },
+    top_categories: { en: 'Top Categories', ms: 'Kategori Teratas' },
+    recent_orders: { en: 'Recent Orders', ms: 'Pesanan Terkini' },
+    cash: { en: 'Cash', ms: 'Tunai' },
+    tng: { en: 'TnG', ms: 'TnG' },
+    bank: { en: 'Bank', ms: 'Bank' },
+    paid: { en: 'Paid', ms: 'Sudah Bayar' },
+    unpaid: { en: 'Unpaid', ms: 'Belum Bayar' },
+    left: { en: 'left', ms: 'tinggal' },
+    times: { en: 'times', ms: 'kali' },
+    tables: { en: 'tables', ms: 'meja' },
+    items: { en: 'items', ms: 'item' },
+    orders: { en: 'orders', ms: 'pesanan' },
+    today: { en: 'Today', ms: 'Hari Ini' },
+    week: { en: 'Week', ms: 'Minggu' },
+    month: { en: 'Month', ms: 'Bulan' },
+    chart: { en: 'Chart', ms: 'Carta' },
+    refresh_data: { en: '🔄 Refresh Data', ms: '🔄 Muat Semula' },
+    auto_refresh: { en: 'Auto Refresh', ms: 'Auto Muat Semula' },
+    auto_refresh_notify: { en: '🔄 Auto refreshed!', ms: '🔄 Auto muat semula!' },
+    export_excel: { en: '📎 Export Excel', ms: '📎 Eksport Excel' },
+    export_pdf: { en: '📄 Export PDF', ms: '📄 Eksport PDF' },
+    low_stock_alert: { en: '⚠️ Low Stock Alert', ms: '⚠️ Amaran Stok Rendah' },
+    out_of_stock: { en: 'Out of Stock', ms: 'Habis Stok' },
+    id: { en: 'ID', ms: 'ID' },
+    customer_name: { en: 'Customer', ms: 'Pelanggan' },
+    table_number: { en: 'Table', ms: 'Meja' },
+    total: { en: 'Total', ms: 'Jumlah' },
+    payment_method: { en: 'Payment Method', ms: 'Kaedah Bayaran' },
+    status: { en: 'Status', ms: 'Status' },
+    date: { en: 'Date', ms: 'Tarikh' },
+    take_away: { en: 'Take Away', ms: 'Bungkus' },
+    table: { en: 'Table', ms: 'Meja' },
+    sales: { en: 'Sales', ms: 'Jualan' },
+    guest: { en: 'Guest', ms: 'Tetamu' },
+    loading_text: { en: 'Loading...', ms: 'Memuatkan...' },
+    no_data: { en: 'No data available', ms: 'Tiada data' },
+    error_updating: { en: 'Error updating data!', ms: 'Ralat mengemaskini data!' },
+    excel_exported: { en: 'Excel exported successfully!', ms: 'Excel berjaya dieksport!' },
+    pdf_exported: { en: 'PDF exported successfully!', ms: 'PDF berjaya dieksport!' },
+    export_failed: { en: 'Export failed!', ms: 'Eksport gagal!' },
+    last_updated: { en: 'Last updated', ms: 'Kemaskini terakhir' },
+  }
+
+  const t = (key) => {
+    if (!translations[key]) return key
+    return language === 'en' ? translations[key].en : translations[key].ms
+  }
+
+  // ===== THEME COLORS =====
+  const bgColor = darkMode ? '#0a0a16' : '#f1f5f9'
+  const cardBg = darkMode ? 'rgba(20, 20, 40, 0.95)' : 'rgba(255, 255, 255, 0.95)'
+  const textColor = darkMode ? '#e8edf5' : '#1e293b'
   const textMuted = darkMode ? '#94a3b8' : '#64748b'
-  const borderColor = darkMode ? 'rgba(71, 85, 105, 0.3)' : 'rgba(203, 213, 225, 0.6)'
-  const secondaryBg = darkMode ? 'rgba(30, 30, 46, 0.8)' : 'rgba(248, 250, 252, 0.9)'
+  const borderColor = darkMode ? 'rgba(71, 85, 105, 0.3)' : 'rgba(203, 213, 225, 0.5)'
+  const secondaryBg = darkMode ? 'rgba(30, 30, 50, 0.6)' : 'rgba(248, 250, 252, 0.8)'
   
-  const glassEffect = { 
-    background: cardBg, 
-    backdropFilter: 'blur(12px)', 
-    border: `1px solid ${borderColor}`, 
+  const glassEffect = {
+    background: cardBg,
+    backdropFilter: 'blur(16px)',
+    border: `1px solid ${borderColor}`,
     boxShadow: darkMode 
-      ? '0 8px 32px rgba(0, 0, 0, 0.4)' 
-      : '0 8px 32px rgba(0, 0, 0, 0.08)' 
+      ? '0 8px 40px rgba(0,0,0,0.5)' 
+      : '0 8px 40px rgba(0,0,0,0.06)'
   }
 
   // Chart colors
@@ -178,16 +164,14 @@ function Dashboard() {
     redBorder: '#ef4444',
   }
 
-  // ============================================================
-  // LOAD RESTAURANT INFO
-  // ============================================================
+  // ===== LOAD FUNCTIONS =====
   async function loadRestaurantInfo() {
     try {
       const { data: nameData } = await supabase.from('settings').select('value').eq('key', 'restaurant_name').single()
-      if (nameData?.value) setRestaurantName(nameData.value)
+      if (nameData) setRestaurantName(nameData.value)
       
       const { data: logoData } = await supabase.from('settings').select('value').eq('key', 'logo_url').single()
-      if (logoData?.value) {
+      if (logoData && logoData.value) {
         setLogoUrl(logoData.value)
         setLogoError(false)
       } else {
@@ -198,9 +182,6 @@ function Dashboard() {
     }
   }
 
-  // ============================================================
-  // GET DATE RANGE
-  // ============================================================
   function getDateRangeDates(range) {
     const today = new Date()
     const dates = []
@@ -223,13 +204,9 @@ function Dashboard() {
     return dates
   }
 
-  // ============================================================
-  // LOAD DASHBOARD DATA
-  // ============================================================
   async function loadDashboard() {
     setLoading(true)
     try {
-      // Load customer orders
       const { data: customerOrders } = await supabase
         .from('customer_orders')
         .select('*')
@@ -237,7 +214,6 @@ function Dashboard() {
       
       const allOrders = customerOrders || []
       
-      // Filter by date range
       const dateRangeList = getDateRangeDates(dateRange)
       const filteredOrders = allOrders.filter(o => 
         o.payment_status === 'paid' && 
@@ -245,7 +221,6 @@ function Dashboard() {
         dateRangeList.includes(o.created_at.split('T')[0])
       )
       
-      // Today's sales & orders
       const todaySalesTotal = filteredOrders.reduce((sum, o) => sum + (o.total || 0), 0)
       setTodaySales(todaySalesTotal)
       setTodayOrders(filteredOrders.length)
@@ -410,9 +385,7 @@ function Dashboard() {
     setLoading(false)
   }
 
-  // ============================================================
-  // EFFECTS
-  // ============================================================
+  // ===== EFFECTS =====
   useEffect(() => {
     loadRestaurantInfo()
     loadDashboard()
@@ -438,11 +411,9 @@ function Dashboard() {
     return () => { if (interval) clearInterval(interval) }
   }, [autoRefresh, dateRange])
 
-  // ============================================================
-  // EXPORT FUNCTIONS
-  // ============================================================
+  // ===== EXPORT FUNCTIONS =====
   const handleManualRefresh = async () => {
-    toast.loading(t('loading'), { duration: 1000 })
+    toast.loading(t('loading_text'), { duration: 1000 })
     await loadRestaurantInfo()
     await loadDashboard()
     toast.success(t('refresh_data'))
@@ -500,9 +471,7 @@ function Dashboard() {
     setExporting(false)
   }
 
-  // ============================================================
-  // CHART OPTIONS
-  // ============================================================
+  // ===== CHART OPTIONS =====
   const barChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -635,9 +604,7 @@ function Dashboard() {
     }] 
   }
 
-  // ============================================================
-  // LOADING STATE
-  // ============================================================
+  // ===== LOADING STATE =====
   if (loading) {
     return (
       <Sidebar>
@@ -654,9 +621,7 @@ function Dashboard() {
     )
   }
 
-  // ============================================================
-  // RENDER
-  // ============================================================
+  // ===== RENDER =====
   return (
     <Sidebar>
       <div ref={dashboardRef}>
