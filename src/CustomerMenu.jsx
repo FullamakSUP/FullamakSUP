@@ -132,7 +132,7 @@ function CustomerMenu() {
   }, [])
 
   // ============================================================
-  // THEME COLORS
+  // THEME COLORS - FIXED FOR DARK MODE VISIBILITY
   // ============================================================
   const bgColor = darkMode ? '#0a0a16' : '#fefce8'
   const cardBg = darkMode ? 'rgba(20, 20, 40, 0.95)' : 'rgba(255, 255, 255, 0.98)'
@@ -1161,7 +1161,7 @@ function CustomerMenu() {
         </div>
       )}
 
-      {/* ===== CATEGORY FILTERS ===== */}
+      {/* ===== CATEGORY FILTERS - FIXED DARK MODE ===== */}
       <div style={{ maxWidth: '1280px', margin: '16px auto', padding: isMobile ? '0 12px' : '0 20px' }}>
         <div style={{ 
           display: 'flex', 
@@ -1180,8 +1180,8 @@ function CustomerMenu() {
                 onClick={() => setSelectedCategory(cat)} 
                 style={{ 
                   padding: isMobile ? '6px 14px' : '10px 20px', 
-                  background: selectedCategory === cat ? '#f59e0b' : 'white', 
-                  color: selectedCategory === cat ? 'white' : '#1e293b', 
+                  background: selectedCategory === cat ? '#f59e0b' : (darkMode ? '#1a1a2e' : 'white'), 
+                  color: selectedCategory === cat ? 'white' : (darkMode ? '#e8edf5' : '#1e293b'), 
                   border: selectedCategory === cat ? 'none' : `1px solid ${borderColor}`, 
                   borderRadius: '50px', 
                   cursor: 'pointer', 
@@ -1200,7 +1200,7 @@ function CustomerMenu() {
         </div>
       </div>
 
-      {/* ===== MENU GRID ===== */}
+      {/* ===== MENU GRID - FIXED DARK MODE ===== */}
       <div style={{ maxWidth: '1280px', margin: '0 auto', padding: isMobile ? '0 12px 24px 12px' : '0 20px 40px 20px' }}>
         <div style={{ 
           display: 'grid', 
@@ -1223,7 +1223,7 @@ function CustomerMenu() {
               <div 
                 key={item.id} 
                 style={{ 
-                  background: isClicked ? '#dcfce7' : (isPromoItem ? '#f3e8ff' : 'white'),
+                  background: isClicked ? '#dcfce7' : (isPromoItem ? '#f3e8ff' : (darkMode ? '#1a1a2e' : 'white')),
                   borderRadius: isMobile ? '18px' : '24px', 
                   overflow: 'hidden', 
                   boxShadow: isClicked 
@@ -1246,7 +1246,7 @@ function CustomerMenu() {
               >
                 {/* Image / Icon */}
                 <div style={{ 
-                  background: isPromoItem ? '#f3e8ff' : '#fef3c7', 
+                  background: isPromoItem ? '#f3e8ff' : (darkMode ? '#2a2a3e' : '#fef3c7'), 
                   padding: isMobile ? '16px' : '20px', 
                   textAlign: 'center', 
                   position: 'relative' 
@@ -1304,13 +1304,13 @@ function CustomerMenu() {
                   )}
                 </div>
                 
-                {/* Info */}
+                {/* Info - FIXED DARK MODE */}
                 <div style={{ padding: isMobile ? '12px' : '16px', textAlign: 'center' }}>
                   <h3 style={{ 
                     margin: '0 0 6px 0', 
                     fontSize: isMobile ? '13px' : '15px', 
                     fontWeight: 'bold', 
-                    color: textColor 
+                    color: darkMode ? '#e8edf5' : '#1e293b'
                   }}>
                     {item.name}
                   </h3>
@@ -1318,10 +1318,10 @@ function CustomerMenu() {
                   {hasDescription && (
                     <div style={{ 
                       fontSize: isMobile ? '10px' : '12px', 
-                      color: textMuted, 
+                      color: darkMode ? '#94a3b8' : '#64748b',
                       fontStyle: 'italic',
                       marginBottom: '6px',
-                      background: secondaryBg,
+                      background: darkMode ? 'rgba(30,30,50,0.6)' : secondaryBg,
                       padding: '4px 8px',
                       borderRadius: '8px',
                       border: `1px solid ${borderColor}`
@@ -1444,6 +1444,10 @@ function CustomerMenu() {
           </div>
         )}
       </div>
+
+      {/* ========================================================== */}
+      {/* MODALS - SAME AS BEFORE */}
+      {/* ========================================================== */}
 
       {/* ===== SIZE OPTIONS MODAL ===== */}
       {showSizeModal && selectedSizeItem && (
