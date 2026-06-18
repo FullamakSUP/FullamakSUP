@@ -49,6 +49,7 @@ function StaffApp() {
   const [selectedDrinkItem, setSelectedDrinkItem] = useState(null)
   const [selectedDrinkOption, setSelectedDrinkOption] = useState('Panas')
   
+  // Size/Options Modal State
   const [showSizeModal, setShowSizeModal] = useState(false)
   const [selectedSizeItem, setSelectedSizeItem] = useState(null)
   const [menuOptions, setMenuOptions] = useState([])
@@ -61,124 +62,130 @@ function StaffApp() {
   
   const [audio, setAudio] = useState(null)
   
+  // Pagination for history
   const [historyPage, setHistoryPage] = useState(1)
   const historyItemsPerPage = 10
 
-  // ========== COMPLETE TRANSLATIONS ==========
+  // ========== TRANSLATIONS - TANPA EMOJI ==========
   const translations = {
-    // Tabs - Short & Clean
-    tab_pos: { en: '🧾 POS', ms: '🧾 POS' },
-    tab_new: { en: '🆕 Baru', ms: '🆕 Baru' },
-    tab_unpaid: { en: '💰 Belum Bayar', ms: '💰 Belum Bayar' },
-    tab_history: { en: '📜 Sejarah', ms: '📜 Sejarah' },
+    // General
+    new_order: { en: 'New Order', ms: 'Pesanan Baru' },
+    take_away: { en: 'Take Away', ms: 'Bungkus' },
+    table: { en: 'Table', ms: 'Meja' },
+    empty_cart: { en: 'Cart is empty', ms: 'Keranjang kosong' },
+    cancelled: { en: 'Cancelled', ms: 'Dibatalkan' },
+    payment_received: { en: 'Payment received', ms: 'Bayaran diterima' },
+    record_payment: { en: 'Record Payment', ms: 'Rekod Bayaran' },
+    
+    // Tabs - TANPA EMOJI (emoji ada dalam icon)
+    tab_pos: { en: 'POS', ms: 'POS' },
+    tab_new: { en: 'Baru', ms: 'Baru' },
+    tab_unpaid: { en: 'Belum Bayar', ms: 'Belum Bayar' },
+    tab_history: { en: 'Sejarah', ms: 'Sejarah' },
     
     // Order Types
-    dine_in: { en: '🍽️ Makan di Sini', ms: '🍽️ Makan di Sini' },
-    takeaway: { en: '🥡 Bungkus', ms: '🥡 Bungkus' },
+    dine_in: { en: 'Dine In', ms: 'Makan di Sini' },
+    takeaway: { en: 'Take Away', ms: 'Bungkus' },
     
     // Labels
-    table: { en: 'Meja', ms: 'Meja' },
-    name: { en: 'Nama', ms: 'Nama' },
-    phone: { en: 'Telefon', ms: 'Telefon' },
-    customer: { en: 'Pelanggan', ms: 'Pelanggan' },
-    total: { en: 'Jumlah', ms: 'Jumlah' },
+    table_no: { en: 'Table', ms: 'Meja' },
+    name: { en: 'Name', ms: 'Nama' },
+    phone: { en: 'Phone', ms: 'Telefon' },
+    customer: { en: 'Customer', ms: 'Pelanggan' },
+    total: { en: 'Total', ms: 'Jumlah' },
     subtotal: { en: 'Subtotal', ms: 'Subtotal' },
-    service: { en: 'Caj Perkhidmatan', ms: 'Caj Perkhidmatan' },
-    tax: { en: 'Cukai', ms: 'Cukai' },
-    method: { en: 'Kaedah', ms: 'Kaedah' },
-    time: { en: 'Masa', ms: 'Masa' },
-    action: { en: 'Tindakan', ms: 'Tindakan' },
-    order_no: { en: 'No Pesanan', ms: 'No Pesanan' },
-    items: { en: 'item', ms: 'item' },
-    type: { en: 'Jenis', ms: 'Jenis' },
+    service: { en: 'Service Charge', ms: 'Caj Perkhidmatan' },
+    tax: { en: 'Tax', ms: 'Cukai' },
+    method: { en: 'Method', ms: 'Kaedah' },
+    time: { en: 'Time', ms: 'Masa' },
+    action: { en: 'Action', ms: 'Tindakan' },
+    id: { en: 'ID', ms: 'ID' },
+    type: { en: 'Type', ms: 'Jenis' },
     
     // Status
-    pending: { en: 'Tertunda', ms: 'Tertunda' },
-    preparing: { en: 'Sedang Siap', ms: 'Sedang Siap' },
-    ready: { en: 'Sedia', ms: 'Sedia' },
-    paid: { en: 'Dibayar', ms: 'Dibayar' },
-    unpaid: { en: 'Belum Bayar', ms: 'Belum Bayar' },
+    pending: { en: 'Pending', ms: 'Tertunda' },
+    preparing: { en: 'Preparing', ms: 'Sedang Siap' },
+    ready: { en: 'Ready', ms: 'Sedia' },
+    paid: { en: 'Paid', ms: 'Dibayar' },
+    unpaid: { en: 'Unpaid', ms: 'Belum Bayar' },
     
     // Buttons
-    accept_cook: { en: '✅ Terima & Masak', ms: '✅ Terima & Masak' },
-    accept_ready: { en: '✅ Terima (Sedia)', ms: '✅ Terima (Sedia)' },
-    cancel: { en: '❌ Batal', ms: '❌ Batal' },
-    save: { en: '✅ Simpan', ms: '✅ Simpan' },
-    close: { en: '❌ Tutup', ms: '❌ Tutup' },
-    add: { en: 'Tambah', ms: 'Tambah' },
-    added: { en: 'Ditambah!', ms: 'Ditambah!' },
-    place_order: { en: '💾 Hantar Pesanan', ms: '💾 Hantar Pesanan' },
-    record_payment: { en: '💰 Rekod Bayaran', ms: '💰 Rekod Bayaran' },
-    select_size: { en: '📏 Pilih Saiz', ms: '📏 Pilih Saiz' },
-    reprint: { en: '🧾 Cetak Semula', ms: '🧾 Cetak Semula' },
+    accept_cook: { en: 'Accept & Cook', ms: 'Terima & Masak' },
+    accept_ready: { en: 'Accept (Ready)', ms: 'Terima (Sedia)' },
+    cancel: { en: 'Cancel', ms: 'Batal' },
+    save: { en: 'Save', ms: 'Simpan' },
+    close: { en: 'Close', ms: 'Tutup' },
+    add: { en: 'Add', ms: 'Tambah' },
+    added: { en: 'Added!', ms: 'Ditambah!' },
+    place_order: { en: 'Place Order', ms: 'Hantar Pesanan' },
+    record_payment_btn: { en: 'Record Payment', ms: 'Rekod Bayaran' },
+    select_size: { en: 'Select Size', ms: 'Pilih Saiz' },
     
     // Drink Options
-    drink_type: { en: 'Pilih jenis minuman', ms: 'Pilih jenis minuman' },
-    hot: { en: '🔥 Panas', ms: '🔥 Panas' },
-    cold: { en: '🧊 Sejuk', ms: '🧊 Sejuk' },
-    takeaway_drink: { en: '📦 Bungkus', ms: '📦 Bungkus' },
-    add_to_cart: { en: '➕ Tambah ke Keranjang', ms: '➕ Tambah ke Keranjang' },
+    drink_type: { en: 'Select drink type', ms: 'Pilih jenis minuman' },
+    hot: { en: 'Hot', ms: 'Panas' },
+    cold: { en: 'Cold', ms: 'Sejuk' },
+    takeaway_drink: { en: 'Takeaway', ms: 'Bungkus' },
+    add_to_cart: { en: 'Add to Cart', ms: 'Tambah ke Keranjang' },
     
     // Messages
-    start_cooking: { en: '✅ Mula memasak!', ms: '✅ Mula memasak!' },
-    order_accepted: { en: '✅ Pesanan diterima! Sedia untuk bayar.', ms: '✅ Pesanan diterima! Sedia untuk bayar.' },
-    new_orders_alert: { en: '🔔 Klik untuk proses', ms: '🔔 Klik untuk proses' },
-    no_new_orders: { en: 'Tiada pesanan baru', ms: 'Tiada pesanan baru' },
-    no_unpaid: { en: 'Tiada pesanan belum bayar', ms: 'Tiada pesanan belum bayar' },
-    no_history: { en: 'Tiada sejarah', ms: 'Tiada sejarah' },
-    empty_cart: { en: 'Keranjang kosong', ms: 'Keranjang kosong' },
-    payment_received: { en: 'Bayaran diterima', ms: 'Bayaran diterima' },
+    start_cooking: { en: 'Started cooking!', ms: 'Mula memasak!' },
+    order_accepted: { en: 'Order accepted! Ready for payment.', ms: 'Pesanan diterima! Sedia untuk bayar.' },
+    new_orders_alert: { en: 'Click to process', ms: 'Klik untuk proses' },
+    no_new_orders: { en: 'No new orders', ms: 'Tiada pesanan baru' },
+    no_unpaid: { en: 'No unpaid orders', ms: 'Tiada pesanan belum bayar' },
+    no_history: { en: 'No history', ms: 'Tiada sejarah' },
     
     // Payment Methods
-    cash: { en: '💵 Tunai', ms: '💵 Tunai' },
-    tng: { en: '📱 TnG', ms: '📱 TnG' },
-    bank: { en: '🏦 Bank', ms: '🏦 Bank' },
+    cash: { en: 'Cash', ms: 'Tunai' },
+    tng: { en: 'TnG', ms: 'TnG' },
+    bank: { en: 'Bank', ms: 'Bank' },
     
     // Size Modal
-    choose_size: { en: 'Pilih saiz / pilihan', ms: 'Pilih saiz / pilihan' },
+    choose_size: { en: 'Choose size / option', ms: 'Pilih saiz / pilihan' },
     
     // Staff
-    guest: { en: 'Tetamu', ms: 'Tetamu' },
-    all: { en: 'Semua', ms: 'Semua' },
-    walk_in: { en: 'Berjalan Masuk', ms: 'Berjalan Masuk' },
-    no_table: { en: 'Tiada Meja', ms: 'Tiada Meja' },
-    processing: { en: 'Memproses...', ms: 'Memproses...' },
-    refresh: { en: 'Muat Semula', ms: 'Muat Semula' },
-    test_sound: { en: 'Uji Bunyi', ms: 'Uji Bunyi' },
+    no_orders: { en: 'No orders', ms: 'Tiada pesanan' },
+    guest: { en: 'Guest', ms: 'Tetamu' },
+    all: { en: 'All', ms: 'Semua' },
+    walk_in: { en: 'Walk-in', ms: 'Berjalan Masuk' },
+    no_table: { en: 'No table', ms: 'Tiada meja' },
+    processing: { en: 'Processing...', ms: 'Memproses...' },
+    refresh: { en: 'Refresh', ms: 'Muat Semula' },
+    test_sound: { en: 'Test Sound', ms: 'Uji Bunyi' },
     
     // Cart
-    cart: { en: 'Keranjang', ms: 'Keranjang' },
-    grand_total: { en: 'Jumlah Keseluruhan', ms: 'Jumlah Keseluruhan' },
+    cart: { en: 'Cart', ms: 'Keranjang' },
+    grand_total: { en: 'Grand Total', ms: 'Jumlah Keseluruhan' },
     
     // Description
-    description: { en: 'Keterangan', ms: 'Keterangan' },
+    description: { en: 'Description', ms: 'Keterangan' },
     
     // Pagination
-    first: { en: 'Pertama', ms: 'Pertama' },
-    prev: { en: 'Sebelum', ms: 'Sebelum' },
-    next: { en: 'Seterusnya', ms: 'Seterusnya' },
-    last: { en: 'Terakhir', ms: 'Terakhir' },
+    first: { en: 'First', ms: 'Pertama' },
+    prev: { en: 'Prev', ms: 'Sebelum' },
+    next: { en: 'Next', ms: 'Seterusnya' },
+    last: { en: 'Last', ms: 'Terakhir' },
     
     // Settings
-    kitchen_on: { en: 'Dapur ON', ms: 'Dapur ON' },
-    kitchen_off: { en: 'Dapur OFF', ms: 'Dapur OFF' },
-    auto_complete: { en: 'Auto Siap', ms: 'Auto Siap' },
+    kitchen_on: { en: 'Kitchen ON', ms: 'Dapur ON' },
+    kitchen_off: { en: 'Kitchen OFF', ms: 'Dapur OFF' },
+    auto_complete: { en: 'Auto Complete', ms: 'Auto Siap' },
     min: { en: 'min', ms: 'min' },
     
     // Order
-    new_order: { en: 'Pesanan Baru', ms: 'Pesanan Baru' },
-    cancelled: { en: 'Dibatalkan', ms: 'Dibatalkan' },
-    accepted: { en: 'Diterima', ms: 'Diterima' },
+    accepted: { en: 'Accepted', ms: 'Diterima' },
     
     // Receipt
-    receipt: { en: 'Resit', ms: 'Resit' },
-    print: { en: 'Cetak', ms: 'Cetak' },
+    receipt: { en: 'Receipt', ms: 'Resit' },
+    print: { en: 'Print', ms: 'Cetak' },
+    reprint: { en: 'Reprint', ms: 'Cetak Semula' },
     
     // Validation
-    please_enter_table: { en: 'Sila masukkan nombor meja', ms: 'Sila masukkan nombor meja' },
-    order_sent: { en: 'Pesanan dihantar ke dapur!', ms: 'Pesanan dihantar ke dapur!' },
-    error: { en: 'Ralat', ms: 'Ralat' },
-    data_refreshed: { en: 'Data telah direfresh!', ms: 'Data telah direfresh!' }
+    please_enter_table: { en: 'Please enter table number', ms: 'Sila masukkan nombor meja' },
+    order_sent: { en: 'Order sent to kitchen!', ms: 'Pesanan dihantar ke dapur!' },
+    error: { en: 'Error', ms: 'Ralat' },
+    data_refreshed: { en: 'Data refreshed!', ms: 'Data telah direfresh!' },
   }
 
   const t = (key) => {
@@ -215,11 +222,11 @@ function StaffApp() {
       : '0 8px 32px rgba(0, 0, 0, 0.08)'
   }
 
-  // Get drink option label
+  // Get drink option label with translations
   const getDrinkOptionLabel = (optionType) => {
-    if (optionType === 'Panas') return t('hot')
-    if (optionType === 'Sejuk') return t('cold')
-    if (optionType === 'Bungkus') return t('takeaway_drink')
+    if (optionType === 'Panas') return `☕ ${t('hot')}`
+    if (optionType === 'Sejuk') return `🧊 ${t('cold')}`
+    if (optionType === 'Bungkus') return `📦 ${t('takeaway_drink')}`
     return optionType
   }
 
@@ -293,7 +300,7 @@ function StaffApp() {
           
           sendNotification(
             '🆕 New Order Received!',
-            `${orderTypeLabel} - ${payload.new.customer_name || t('guest')} (${payload.new.items?.length} ${t('items')})`,
+            `${orderTypeLabel} - ${payload.new.customer_name || t('guest')} (${payload.new.items?.length} items)`,
             '/staff'
           )
         }
@@ -332,26 +339,88 @@ function StaffApp() {
     }
   }, [soundEnabled, audio])
 
+  // ===== REMINDER NOTIFICATION EVERY 5 SECONDS =====
   useEffect(() => {
     let interval
+    let reminderCount = 0
+    
     if (customerOrders.length > 0 && activeTab !== 'orders') {
+      // Play sound immediately when there are new orders
       if (soundEnabled && audio) {
         audio.currentTime = 0
         audio.play().catch(e => console.log('Reminder sound failed:', e))
       }
-      toast(`🔔 ${customerOrders.length} ${t('new_order')}! ${t('new_orders_alert')}`, { duration: 3000, icon: '🔔' })
+      
+      // Show initial toast
+      toast(
+        `🔔 ${customerOrders.length} ${t('new_order')}! ${t('new_orders_alert')}`,
+        { 
+          duration: 3000, 
+          icon: '🔔',
+          style: {
+            background: '#ef4444',
+            color: 'white',
+            fontWeight: 'bold'
+          }
+        }
+      )
+      
+      // Send push notification for reminder
+      sendNotification(
+        `🔔 ${customerOrders.length} New Orders Waiting!`,
+        `Please process ${customerOrders.length} pending orders`,
+        '/staff'
+      )
+      
+      // Set interval for reminders every 5 seconds
       interval = setInterval(() => {
+        reminderCount++
+        
+        // Only send reminder if still have pending orders and not on orders tab
         if (customerOrders.length > 0 && activeTab !== 'orders') {
+          // Play sound
           if (soundEnabled && audio) {
             audio.currentTime = 0
             audio.play().catch(e => console.log('Reminder sound failed:', e))
           }
-          toast(`🔔 Still ${customerOrders.length} ${t('new_order')}! Please process.`, { duration: 3000, icon: '🔔' })
+          
+          // Show toast with reminder count
+          toast(
+            `🔔 Still ${customerOrders.length} ${t('new_order')}! Please process. (${reminderCount})`,
+            { 
+              duration: 3000, 
+              icon: '🔔',
+              style: {
+                background: '#ef4444',
+                color: 'white',
+                fontWeight: 'bold'
+              }
+            }
+          )
+          
+          // Send push notification every 5 seconds
+          sendNotification(
+            `🔔 ${customerOrders.length} Orders Waiting!`,
+            `Please process pending orders (reminder ${reminderCount})`,
+            '/staff'
+          )
+          
+          // Update document title with count
+          document.title = `🔔 ${customerOrders.length} New Orders! - KedaiPOS`
+        } else {
+          // Reset reminder count when no pending orders or on orders tab
+          reminderCount = 0
+          document.title = 'KedaiPOS - Staf'
         }
-      }, 5000)
+      }, 5000) // Every 5 seconds
     }
-    return () => { if (interval) clearInterval(interval) }
-  }, [customerOrders.length, activeTab, soundEnabled, audio])
+    
+    return () => { 
+      if (interval) clearInterval(interval) 
+      // Reset title on unmount
+      document.title = 'KedaiPOS - Staf'
+    }
+  }, [customerOrders.length, activeTab, soundEnabled, audio, t])
 
   useEffect(() => {
     let interval
@@ -979,7 +1048,7 @@ function StaffApp() {
             <>
               <input 
                 type="number" 
-                placeholder={t('table')} 
+                placeholder={t('table_no')} 
                 value={tableNumber} 
                 onChange={(e) => setTableNumber(e.target.value)} 
                 style={{ 
@@ -1046,7 +1115,7 @@ function StaffApp() {
           )}
         </div>
 
-        {/* Tabs - Clean, No Double Icons */}
+        {/* Tabs - CLEAN, NO DOUBLE ICONS */}
         <div style={{ 
           display: 'flex', 
           gap: '4px', 
@@ -1058,10 +1127,10 @@ function StaffApp() {
           flexWrap: 'nowrap' 
         }}>
           {[
-            { id: 'pos', icon: '🧾', label: t('tab_pos') },
-            { id: 'orders', icon: '🆕', label: t('tab_new'), badge: customerOrders.length },
-            { id: 'unpaid', icon: '💰', label: t('tab_unpaid'), badge: unpaidOrders.length },
-            { id: 'history', icon: '📜', label: t('tab_history'), badge: 0 }
+            { id: 'pos', icon: '🧾', label: 'POS' },
+            { id: 'orders', icon: '🆕', label: 'Baru', badge: customerOrders.length },
+            { id: 'unpaid', icon: '💰', label: 'Belum Bayar', badge: unpaidOrders.length },
+            { id: 'history', icon: '📜', label: 'Sejarah', badge: 0 }
           ].map(tab => (
             <button 
               key={tab.id} 
@@ -1086,7 +1155,7 @@ function StaffApp() {
                 justifyContent: 'center', 
                 gap: '6px',
                 whiteSpace: 'nowrap',
-                minWidth: isMobile ? 'auto' : '120px'
+                minWidth: isMobile ? 'auto' : '80px'
               }}
             >
               <span style={{ fontSize: isMobile ? '14px' : '16px' }}>{tab.icon}</span>
@@ -1197,8 +1266,7 @@ function StaffApp() {
                         padding: isMobile ? '12px' : '18px', 
                         textAlign: 'center', 
                         cursor: 'pointer', 
-                        transition: 'transform 0.2s',
-                        ':hover': { transform: 'scale(1.02)' }
+                        transition: 'transform 0.2s'
                       }}>
                         {hasImage ? (
                           <img src={item.image_url} alt={item.name} style={{ 
@@ -1233,7 +1301,7 @@ function StaffApp() {
                           {item.name}
                         </h3>
                         
-                        {/* DESCRIPTION DISPLAY */}
+                        {/* 👇 DESCRIPTION DISPLAY */}
                         {hasDescription && (
                           <div style={{ 
                             fontSize: isMobile ? '9px' : '11px', 
@@ -1736,7 +1804,7 @@ function StaffApp() {
                           fontSize: isMobile ? '13px' : '14px' 
                         }}
                       >
-                        {t('record_payment')}
+                        {t('record_payment_btn')}
                       </button>
                     </div>
                   )
@@ -1792,7 +1860,7 @@ function StaffApp() {
                           color: textColor, 
                           fontSize: isMobile ? '10px' : '13px' 
                         }}>
-                          {t('order_no')}
+                          {t('id')}
                         </th>
                         <th style={{ 
                           padding: '10px', 
@@ -2056,17 +2124,17 @@ function StaffApp() {
                       key={opt.id} 
                       onClick={() => addToCartWithOption(selectedSizeItem, opt)} 
                       style={{ 
-                        padding: isMobile ? '12px 16px' : '14px 20px', 
-                        background: 'linear-gradient(135deg, #f59e0b, #ea580c)', 
-                        color: 'white', 
-                        border: 'none', 
-                        borderRadius: '50px', 
-                        cursor: 'pointer', 
-                        fontWeight: 'bold', 
-                        fontSize: isMobile ? '14px' : '16px', 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center' 
+                        padding: isMobile ? '12px 16px' : '14px 20px',
+                        background: 'linear-gradient(135deg, #f59e0b, #ea580c)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '50px',
+                        cursor: 'pointer',
+                        fontWeight: 'bold',
+                        fontSize: isMobile ? '14px' : '16px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
                       }}
                     >
                       <span>{opt.option_name}</span>
@@ -2095,7 +2163,7 @@ function StaffApp() {
           </div>
         )}
 
-        {/* Drink Options Modal */}
+        {/* Drink Options Modal - UPDATED with Bungkus */}
         {showDrinkModal && selectedDrinkItem && (
           <div style={{ 
             position: 'fixed', 
@@ -2144,6 +2212,7 @@ function StaffApp() {
                 flexWrap: 'wrap', 
                 justifyContent: 'center' 
               }}>
+                {/* Panas */}
                 {drinkOptions[selectedDrinkItem.name]?.some(o => o.type === 'Panas') && (
                   <button 
                     onClick={() => setSelectedDrinkOption('Panas')} 
@@ -2166,6 +2235,7 @@ function StaffApp() {
                   </button>
                 )}
                 
+                {/* Sejuk */}
                 {drinkOptions[selectedDrinkItem.name]?.some(o => o.type === 'Sejuk') && (
                   <button 
                     onClick={() => setSelectedDrinkOption('Sejuk')} 
@@ -2188,6 +2258,7 @@ function StaffApp() {
                   </button>
                 )}
                 
+                {/* Bungkus / Takeaway */}
                 {drinkOptions[selectedDrinkItem.name]?.some(o => o.type === 'Bungkus') && (
                   <button 
                     onClick={() => setSelectedDrinkOption('Bungkus')} 
@@ -2306,7 +2377,7 @@ function StaffApp() {
                   marginBottom: '6px', 
                   fontSize: isMobile ? '11px' : '13px' 
                 }}>
-                  <span>{t('order_no')}:</span>
+                  <span>{t('id')}:</span>
                   <span style={{ fontWeight: 'bold' }}>{selectedOrder.order_number || `ORD-${selectedOrder.id}`}</span>
                 </div>
                 <div style={{ 
@@ -2315,7 +2386,7 @@ function StaffApp() {
                   marginBottom: '6px', 
                   fontSize: isMobile ? '11px' : '13px' 
                 }}>
-                  <span>{t('table')}:</span>
+                  <span>{t('table_no')}:</span>
                   <span style={{ fontWeight: 'bold' }}>{selectedOrder.table_number || t('no_table')}</span>
                 </div>
                 <div style={{ 
