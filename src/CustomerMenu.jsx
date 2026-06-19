@@ -393,26 +393,13 @@ function CustomerMenu() {
   // HELPERS
   // ============================================================
   // ============================================================
-  // GET CATEGORIES - FORCE "Minuman" FIRST
+  // GET CATEGORIES - SHOW ALL (NO FILTER)
   // ============================================================
   const getCategoriesForMenu = () => {
-    // Get parent categories from database
-    const parentCats = categories
-      .filter(cat => cat.parent_id === null)
+    // SHOW ALL CATEGORIES - NO FILTER
+    return categories
       .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
       .map(cat => cat.name)
-    
-    // Hardcode "Minuman" - always show it first
-    const result = ['Minuman']
-    
-    // Add other parent categories (avoid duplicate)
-    parentCats.forEach(cat => {
-      if (cat !== 'Minuman' && !result.includes(cat)) {
-        result.push(cat)
-      }
-    })
-    
-    return result
   }
 
   const getDefaultIcon = (category) => {
@@ -726,13 +713,13 @@ function CustomerMenu() {
   const getCartItemCount = () => cart.reduce((sum, item) => sum + item.quantity, 0)
 
   // ============================================================
-  // FILTERS - FORCE "Minuman" FIRST
+  // FILTERS - SHOW ALL CATEGORIES
   // ============================================================
-  const displayCategories = getCategoriesForMenu()
+  const allCategories = getCategoriesForMenu()
   
-  // Build category names: 'All' + display categories
+  // Build category names: 'All' + ALL categories from database
   const categoryNames = ['All']
-  displayCategories.forEach(cat => categoryNames.push(cat))
+  allCategories.forEach(cat => categoryNames.push(cat))
   
   // Add Promo category if there are promotions
   if (promoItems.length > 0 && !categoryNames.includes('🔥 Promosi')) {
@@ -1183,7 +1170,7 @@ function CustomerMenu() {
         </div>
       )}
 
-      {/* ===== CATEGORY FILTERS - FORCE "Minuman" FIRST ===== */}
+      {/* ===== CATEGORY FILTERS - SHOW ALL ===== */}
       <div style={{ maxWidth: '1280px', margin: '16px auto', padding: isMobile ? '0 12px' : '0 20px' }}>
         <div style={{ 
           display: 'flex',

@@ -980,7 +980,7 @@ function StaffApp() {
         )}
 
         {/* ========================================================== */}
-        {/* POS TAB - WITH FIXED CATEGORIES (NO FILTER) */}
+        {/* POS TAB - WITH FIXED CATEGORIES (SHOW ALL) */}
         {/* ========================================================== */}
         {activeTab === 'pos' && (
           <>
@@ -993,9 +993,7 @@ function StaffApp() {
               🧾 KedaiPOS - {t('staff')} {orderType === 'take_away' ? `(${t('take_away')})` : `(${t('dine_in')})`}
             </h1>
             
-            {/* ========================================================== */}
-            {/* CATEGORY FILTERS - FIXED: SHOW ALL CATEGORIES (NO FILTER) */}
-            {/* ========================================================== */}
+            {/* CATEGORY FILTERS - FIXED: SHOW ALL CATEGORIES */}
             <div style={{ 
               display: 'flex', 
               gap: '8px', 
@@ -1308,7 +1306,7 @@ function StaffApp() {
         )}
 
         {/* ========================================================== */}
-        {/* ORDERS TAB - Same as before */}
+        {/* ORDERS TAB */}
         {/* ========================================================== */}
         {activeTab === 'orders' && (
           <div>
@@ -1466,7 +1464,7 @@ function StaffApp() {
         )}
 
         {/* ========================================================== */}
-        {/* UNPAID TAB - Same as before */}
+        {/* UNPAID TAB */}
         {/* ========================================================== */}
         {activeTab === 'unpaid' && (
           <div>
@@ -1632,7 +1630,7 @@ function StaffApp() {
         )}
 
         {/* ========================================================== */}
-        {/* HISTORY TAB - Same as before */}
+        {/* HISTORY TAB */}
         {/* ========================================================== */}
         {activeTab === 'history' && (
           <div>
