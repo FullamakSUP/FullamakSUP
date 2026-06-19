@@ -393,11 +393,13 @@ function CustomerMenu() {
   // HELPERS
   // ============================================================
   // ============================================================
-  // GET ALL CATEGORIES - FIXED: SHOW ALL (NO FILTER)
+  // GET CATEGORIES - ONLY SHOW PARENT CATEGORIES (NO SUB-CATEGORIES)
   // ============================================================
   const getCategoriesForMenu = () => {
-    // SHOW ALL CATEGORIES from database (NO FILTERING)
+    // Only show parent categories (parent_id === null)
+    // This shows: Makanan, Minuman (not Teh, Kopi, Jus, Air)
     return categories
+      .filter(cat => cat.parent_id === null)
       .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
       .map(cat => cat.name)
   }
@@ -713,13 +715,13 @@ function CustomerMenu() {
   const getCartItemCount = () => cart.reduce((sum, item) => sum + item.quantity, 0)
 
   // ============================================================
-  // FILTERS - FIXED: SHOW ALL CATEGORIES
+  // FILTERS - ONLY SHOW PARENT CATEGORIES
   // ============================================================
-  const allCategories = getCategoriesForMenu()
+  const parentCategories = getCategoriesForMenu()
   
-  // Build category names: 'All' + ALL categories from database
+  // Build category names: 'All' + ONLY parent categories from database
   const categoryNames = ['All']
-  allCategories.forEach(cat => categoryNames.push(cat))
+  parentCategories.forEach(cat => categoryNames.push(cat))
   
   // Add Promo category if there are promotions
   if (promoItems.length > 0 && !categoryNames.includes('🔥 Promosi')) {
@@ -1170,7 +1172,7 @@ function CustomerMenu() {
         </div>
       )}
 
-      {/* ===== CATEGORY FILTERS - FIXED: SHOW ALL CATEGORIES ===== */}
+      {/* ===== CATEGORY FILTERS - ONLY PARENT CATEGORIES ===== */}
       <div style={{ maxWidth: '1280px', margin: '16px auto', padding: isMobile ? '0 12px' : '0 20px' }}>
         <div style={{ 
           display: 'flex',
@@ -2222,7 +2224,7 @@ function CustomerMenu() {
           
           input:focus, textarea:focus { 
             outline: none; 
-            border-color: #0b49f5;
+            border-color: #f59e0b;
             box-shadow: 0 0 0 3px rgba(245,158,11,0.12);
           }
           
