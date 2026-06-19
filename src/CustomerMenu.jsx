@@ -393,13 +393,14 @@ function CustomerMenu() {
   // HELPERS
   // ============================================================
   const getSubCategoriesForMenu = () => {
-  return categories
-    .filter(cat => {
-      if (cat.parent_id === null) return false
-      return true  // ✅ Paparkan SEMUA sub kategori termasuk minuman
-    })
-    .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
-}
+    // SHOW ALL SUB CATEGORIES INCLUDING DRINKS
+    return categories
+      .filter(cat => {
+        if (cat.parent_id === null) return false
+        return true
+      })
+      .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
+  }
 
   const getDefaultIcon = (category) => {
     const foundCat = categories.find(c => c.name === category)
@@ -891,6 +892,7 @@ function CustomerMenu() {
                   fontWeight: 'bold',
                   background: 'transparent',
                   color: darkMode ? '#ffffff' : '#1e293b',
+                  caretColor: darkMode ? '#ffffff' : '#1e293b',
                 }}
               />
               <span style={{ fontSize: isMobile ? '18px' : '24px' }}>🪑</span>
@@ -1201,7 +1203,7 @@ function CustomerMenu() {
         </div>
       </div>
 
-      {/* ===== MENU GRID - FONT JELAS UNTUK DARK MODE ===== */}
+      {/* ===== MENU GRID ===== */}
       <div style={{ maxWidth: '1280px', margin: '0 auto', padding: isMobile ? '0 12px 24px 12px' : '0 20px 40px 20px' }}>
         <div style={{ 
           display: 'grid',
@@ -1305,13 +1307,13 @@ function CustomerMenu() {
                   )}
                 </div>
                 
-                {/* Info - FONT JELAS UNTUK DARK MODE */}
+                {/* Info */}
                 <div style={{ padding: isMobile ? '12px' : '16px', textAlign: 'center' }}>
                   <h3 style={{ 
                     margin: '0 0 6px 0',
                     fontSize: isMobile ? '13px' : '15px',
                     fontWeight: 'bold',
-                    color: textColor  // PUTIH untuk dark, GELAP untuk light
+                    color: textColor
                   }}>
                     {item.name}
                   </h3>
