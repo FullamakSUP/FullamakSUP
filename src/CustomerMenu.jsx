@@ -393,26 +393,26 @@ function CustomerMenu() {
   // HELPERS
   // ============================================================
   // ============================================================
-  // GET CATEGORIES - SYNC WITH STAFFAPP + MANAGE MENU
+  // GET CATEGORIES - FORCE "Minuman" FIRST
   // ============================================================
   const getCategoriesForMenu = () => {
-    // Get ALL categories from database (same as StaffApp)
-    const allCats = categories
+    // Get parent categories from database
+    const parentCats = categories
+      .filter(cat => cat.parent_id === null)
       .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
       .map(cat => cat.name)
     
-    // Sub-categories to hide (drink sub-categories)
-    const hideCategories = ['Teh', 'Kopi', 'Jus', 'Air']
+    // Hardcode "Minuman" - always show it first
+    const result = ['Minuman']
     
-    // Filter out hidden sub-categories
-    const filtered = allCats.filter(cat => !hideCategories.includes(cat))
+    // Add other parent categories (avoid duplicate)
+    parentCats.forEach(cat => {
+      if (cat !== 'Minuman' && !result.includes(cat)) {
+        result.push(cat)
+      }
+    })
     
-    // Force 'Minuman' to appear (sync with Manage Menu)
-    if (!filtered.includes('Minuman')) {
-      filtered.push('Minuman')
-    }
-    
-    return filtered
+    return result
   }
 
   const getDefaultIcon = (category) => {
@@ -726,7 +726,7 @@ function CustomerMenu() {
   const getCartItemCount = () => cart.reduce((sum, item) => sum + item.quantity, 0)
 
   // ============================================================
-  // FILTERS - SYNC WITH STAFFAPP + MANAGE MENU
+  // FILTERS - FORCE "Minuman" FIRST
   // ============================================================
   const displayCategories = getCategoriesForMenu()
   
@@ -1183,7 +1183,7 @@ function CustomerMenu() {
         </div>
       )}
 
-      {/* ===== CATEGORY FILTERS - SYNC WITH STAFFAPP ===== */}
+      {/* ===== CATEGORY FILTERS - FORCE "Minuman" FIRST ===== */}
       <div style={{ maxWidth: '1280px', margin: '16px auto', padding: isMobile ? '0 12px' : '0 20px' }}>
         <div style={{ 
           display: 'flex',
@@ -1471,7 +1471,7 @@ function CustomerMenu() {
       </div>
 
       {/* ========================================================== */}
-      {/* MODALS - Same as before */}
+      {/* MODALS */}
       {/* ========================================================== */}
 
       {/* ===== SIZE OPTIONS MODAL ===== */}
