@@ -445,7 +445,7 @@ function ManageSettings() {
             )}
           </div>
 
-          {/* Section 7: Business Hours */}
+          {/* Section 7: Business Hours - FIXED: textLabel replaced with textColor */}
           <div style={{ marginBottom: '28px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
               <span style={{ fontSize: '24px' }}>⏰</span>
@@ -453,7 +453,7 @@ function ManageSettings() {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               <div>
-                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px', fontSize: '13px', color: textLabel }}>🕐 {t('start')}</label>
+                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px', fontSize: '13px', color: textColor }}>🕐 {t('start')}</label>
                 <input type="time" value={settings.business_hours_start} onChange={(e) => updateSetting('business_hours_start', e.target.value)} style={{ width: '100%', padding: '14px', borderRadius: '16px', border: `1px solid ${borderColor}`, fontSize: '14px', background: inputBg, color: textColor, outline: 'none' }} />
               </div>
               <div>
