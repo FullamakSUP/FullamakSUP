@@ -2199,12 +2199,16 @@ function ManageMenu() {
                                       📦
                                     </button>
                                     <button 
-                                      onClick={() => openEditModal(item)} 
-                                      style={{ 
-                                        background: '#f59e0b', 
+                                      onClick={(e) => { 
+                                       e.stopPropagation()
+                                        console.log('🖱️ EDIT BUTTON CLICKED - Item:', item.name) 
+                                         openEditModal(item)
+                                         }} 
+                                        style={{  
+                                        background: '#f59e0b',   
                                         color: 'white', 
-                                        padding: '4px 8px', 
-                                        border: 'none', 
+                                        padding: '4px 8px',  
+                                        border: 'none',  
                                         borderRadius: '16px', 
                                         cursor: 'pointer', 
                                         fontSize: isMobile ? '9px' : '10px',
