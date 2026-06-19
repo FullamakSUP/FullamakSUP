@@ -35,12 +35,10 @@ function CustomerMenu() {
   const [taxPercent, setTaxPercent] = useState(6)
   const [isMobile, setIsMobile] = useState(false)
   
-  // Size/Options Modal State
   const [showSizeModal, setShowSizeModal] = useState(false)
   const [selectedSizeItem, setSelectedSizeItem] = useState(null)
   const [menuOptions, setMenuOptions] = useState([])
   
-  // Promotions
   const [activePromos, setActivePromos] = useState([])
   const [promoItems, setPromoItems] = useState([])
 
@@ -132,13 +130,19 @@ function CustomerMenu() {
   }, [])
 
   // ============================================================
-  // THEME COLORS - FIXED FOR DARK MODE VISIBILITY
+  // THEME COLORS - FONT JELAS UNTUK DARK MODE
   // ============================================================
   const bgColor = darkMode ? '#0a0a16' : '#fefce8'
   const cardBg = darkMode ? 'rgba(20, 20, 40, 0.95)' : 'rgba(255, 255, 255, 0.98)'
-  const textColor = darkMode ? '#e8edf5' : '#1e293b'
-  const textMuted = darkMode ? '#94a3b8' : '#64748b'
-  const borderColor = darkMode ? 'rgba(71, 85, 105, 0.3)' : 'rgba(203, 213, 225, 0.4)'
+  
+  // FONT COLORS - JELAS UNTUK KEDUA-DUA MODE
+  const textColor = darkMode ? '#ffffff' : '#1e293b'        // PUTIH TERANG untuk dark
+  const textMuted = darkMode ? '#cbd5e1' : '#64748b'        // KELABU MUDA untuk dark
+  const textLight = darkMode ? '#f8fafc' : '#0f172a'        // PUTIH SANGAT TERANG
+  const textInput = darkMode ? '#ffffff' : '#1e293b'        // Untuk input - JELAS
+  const textPrice = '#22c55e'                                // Hijau - sama untuk kedua-dua mode
+  
+  const borderColor = darkMode ? 'rgba(71, 85, 105, 0.4)' : 'rgba(203, 213, 225, 0.4)'
   const inputBg = darkMode ? '#1a1a2e' : '#ffffff'
   const secondaryBg = darkMode ? 'rgba(30, 30, 50, 0.6)' : '#fef3c7'
 
@@ -286,7 +290,6 @@ function CustomerMenu() {
           items = []
         }
         
-        // SYNC PRICE WITH MENU TABLE
         const syncedItems = []
         for (const item of items) {
           if (item.menu_id) {
@@ -390,13 +393,11 @@ function CustomerMenu() {
   // HELPERS
   // ============================================================
   const getSubCategoriesForMenu = () => {
-    const minumanMain = categories.find(c => c.name === 'Minuman' && c.parent_id === null)
-    
+    // SHOW ALL SUB CATEGORIES INCLUDING DRINKS
     return categories
       .filter(cat => {
         if (cat.parent_id === null) return false
-        if (minumanMain && cat.parent_id === minumanMain.id) return false
-        return true
+        return true  // Show ALL sub categories including drinks
       })
       .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
   }
@@ -499,9 +500,9 @@ function CustomerMenu() {
     else if (selectedOption === 'Bungkus') optionLabel = translate('takeaway')
     
     setCart([...cart, { 
-      id: `${selectedDrink.id}_${selectedOption}_${Date.now()}`, 
-      name: `${selectedDrink.name} (${optionLabel})`, 
-      price: selected.price, 
+      id: `${selectedDrink.id}_${selectedOption}_${Date.now()}`,
+      name: `${selectedDrink.name} (${optionLabel})`,
+      price: selected.price,
       quantity: 1,
       is_free: false,
       is_promo_item: false,
@@ -613,10 +614,10 @@ function CustomerMenu() {
       toast.success(`✓ ${item.name} (x${existing.quantity + 1})`)
     } else {
       setCart([...cart, { 
-        id: `special_${item.id}`, 
-        name: item.name, 
-        price: item.price, 
-        quantity: 1, 
+        id: `special_${item.id}`,
+        name: item.name,
+        price: item.price,
+        quantity: 1,
         is_special: true,
         is_free: false,
         is_promo_item: false,
@@ -649,9 +650,9 @@ function CustomerMenu() {
     setShowConfirmModal(false)
     
     const items = cart.map(item => ({ 
-      id: item.id, 
-      name: item.name, 
-      price: item.price, 
+      id: item.id,
+      name: item.name,
+      price: item.price,
       quantity: item.quantity,
       is_free: item.is_free || false,
       is_promo_item: item.is_promo_item || false,
@@ -671,18 +672,18 @@ function CustomerMenu() {
 
     try {
       const { error } = await supabase.from('customer_orders').insert([{
-        order_number: orderNumber, 
-        order_type: 'dine_in', 
+        order_number: orderNumber,
+        order_type: 'dine_in',
         table_number: parseInt(tableNumber),
-        customer_name: customerName || 'Guest', 
+        customer_name: customerName || 'Guest',
         customer_phone: customerPhone || null,
-        items: items, 
-        subtotal: subtotal, 
-        service_charge: serviceCharge, 
-        tax: tax, 
+        items: items,
+        subtotal: subtotal,
+        service_charge: serviceCharge,
+        tax: tax,
         total: total,
-        notes: notes, 
-        status: 'pending', 
+        notes: notes,
+        status: 'pending',
         payment_status: 'unpaid'
       }])
 
@@ -740,11 +741,11 @@ function CustomerMenu() {
   if (loading) {
     return (
       <div style={{ 
-        minHeight: '100vh', 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        background: bgColor 
+        minHeight: '100vh',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        background: bgColor
       }}>
         <div className="spinner"></div>
         <style>{`
@@ -770,7 +771,7 @@ function CustomerMenu() {
     backdropFilter: 'blur(16px)',
     border: `1px solid ${borderColor}`,
     boxShadow: darkMode 
-      ? '0 8px 40px rgba(0,0,0,0.5)' 
+      ? '0 8px 40px rgba(0,0,0,0.5)'
       : '0 8px 40px rgba(0,0,0,0.06)'
   }
 
@@ -784,49 +785,49 @@ function CustomerMenu() {
       
       {/* ===== HERO BANNER ===== */}
       <div style={{ 
-        background: 'linear-gradient(135deg, #f59e0b, #ea580c)', 
-        padding: isMobile ? '24px 16px' : '40px 24px', 
-        textAlign: 'center', 
-        color: 'white', 
-        position: 'relative', 
-        overflow: 'hidden' 
+        background: 'linear-gradient(135deg, #f59e0b, #ea580c)',
+        padding: isMobile ? '24px 16px' : '40px 24px',
+        textAlign: 'center',
+        color: 'white',
+        position: 'relative',
+        overflow: 'hidden'
       }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
           <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center', 
-            marginBottom: '16px', 
-            flexWrap: 'wrap', 
-            gap: '10px' 
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '16px',
+            flexWrap: 'wrap',
+            gap: '10px'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               {restaurantLogo ? (
                 <img 
-                  src={restaurantLogo} 
-                  alt={restaurantName} 
+                  src={restaurantLogo}
+                  alt={restaurantName}
                   style={{ 
-                    height: isMobile ? '36px' : '50px', 
-                    borderRadius: '10px', 
-                    background: 'white', 
-                    padding: '4px' 
-                  }} 
+                    height: isMobile ? '36px' : '50px',
+                    borderRadius: '10px',
+                    background: 'white',
+                    padding: '4px'
+                  }}
                 />
               ) : (
                 <span style={{ fontSize: isMobile ? '32px' : '40px' }}>🏪</span>
               )}
               <div>
                 <h1 style={{ 
-                  margin: 0, 
-                  fontSize: isMobile ? '16px' : '20px', 
-                  fontWeight: 'bold' 
+                  margin: 0,
+                  fontSize: isMobile ? '16px' : '20px',
+                  fontWeight: 'bold'
                 }}>
                   {restaurantName}
                 </h1>
                 <p style={{ 
-                  margin: 0, 
-                  fontSize: isMobile ? '9px' : '12px', 
-                  opacity: 0.9 
+                  margin: 0,
+                  fontSize: isMobile ? '9px' : '12px',
+                  opacity: 0.9
                 }}>
                   {translate('scan_qr')}
                 </p>
@@ -834,31 +835,31 @@ function CustomerMenu() {
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
               <button 
-                onClick={toggleDarkMode} 
+                onClick={toggleDarkMode}
                 style={{ 
-                  background: 'rgba(255,255,255,0.2)', 
-                  color: 'white', 
-                  padding: isMobile ? '6px 10px' : '8px 12px', 
-                  border: 'none', 
-                  borderRadius: '30px', 
-                  cursor: 'pointer', 
-                  transition: 'all 0.2s', 
-                  fontSize: isMobile ? '12px' : '14px' 
+                  background: 'rgba(255,255,255,0.2)',
+                  color: 'white',
+                  padding: isMobile ? '6px 10px' : '8px 12px',
+                  border: 'none',
+                  borderRadius: '30px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  fontSize: isMobile ? '12px' : '14px'
                 }}
               >
                 {darkMode ? '☀️' : '🌙'}
               </button>
               <button 
-                onClick={() => setLanguage(language === 'bm' ? 'en' : 'bm')} 
+                onClick={() => setLanguage(language === 'bm' ? 'en' : 'bm')}
                 style={{ 
-                  background: 'rgba(255,255,255,0.2)', 
-                  color: 'white', 
-                  padding: isMobile ? '6px 10px' : '8px 12px', 
-                  border: 'none', 
-                  borderRadius: '30px', 
-                  cursor: 'pointer', 
-                  transition: 'all 0.2s', 
-                  fontSize: isMobile ? '12px' : '14px' 
+                  background: 'rgba(255,255,255,0.2)',
+                  color: 'white',
+                  padding: isMobile ? '6px 10px' : '8px 12px',
+                  border: 'none',
+                  borderRadius: '30px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  fontSize: isMobile ? '12px' : '14px'
                 }}
               >
                 {language === 'bm' ? '🇺🇸 EN' : '🇲🇾 BM'}
@@ -867,44 +868,44 @@ function CustomerMenu() {
           </div>
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: '16px' }}>
             <div style={{ 
-              background: 'white', 
-              borderRadius: '50px', 
-              padding: isMobile ? '2px 16px' : '4px 20px', 
-              display: 'inline-flex', 
-              alignItems: 'center', 
-              gap: '8px', 
-              boxShadow: '0 4px 12px rgba(0,0,0,0.15)' 
+              background: 'white',
+              borderRadius: '50px',
+              padding: isMobile ? '2px 16px' : '4px 20px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
             }}>
               <span style={{ fontSize: isMobile ? '18px' : '24px' }}>📋</span>
               <input 
-                type="number" 
-                value={tableNumber} 
-                onChange={(e) => setTableNumber(e.target.value)} 
-                placeholder={translate('table_no')} 
+                type="number"
+                value={tableNumber}
+                onChange={(e) => setTableNumber(e.target.value)}
+                placeholder={translate('table_no')}
                 style={{ 
-                  padding: isMobile ? '8px 0' : '12px 0', 
-                  width: isMobile ? '80px' : '120px', 
-                  textAlign: 'center', 
-                  border: 'none', 
-                  outline: 'none', 
-                  fontSize: isMobile ? '14px' : '18px', 
-                  fontWeight: 'bold', 
+                  padding: isMobile ? '8px 0' : '12px 0',
+                  width: isMobile ? '80px' : '120px',
+                  textAlign: 'center',
+                  border: 'none',
+                  outline: 'none',
+                  fontSize: isMobile ? '14px' : '18px',
+                  fontWeight: 'bold',
                   background: 'transparent',
-                  color: darkMode ? '#e8edf5' : '#1e293b',
-                }} 
+                  color: textInput,
+                }}
               />
               <span style={{ fontSize: isMobile ? '18px' : '24px' }}>🪑</span>
             </div>
           </div>
           {!tableNumber && (
             <p style={{ 
-              marginTop: '10px', 
-              fontSize: isMobile ? '10px' : '12px', 
-              opacity: 0.9, 
-              background: 'rgba(0,0,0,0.2)', 
-              display: 'inline-block', 
-              padding: '4px 12px', 
-              borderRadius: '30px' 
+              marginTop: '10px',
+              fontSize: isMobile ? '10px' : '12px',
+              opacity: 0.9,
+              background: 'rgba(0,0,0,0.2)',
+              display: 'inline-block',
+              padding: '4px 12px',
+              borderRadius: '30px'
             }}>
               ⚠️ {translate('enter_table')}
             </p>
@@ -914,8 +915,8 @@ function CustomerMenu() {
 
       {/* ===== REAL-TIME INDICATOR ===== */}
       <div style={{ 
-        maxWidth: '1280px', 
-        margin: '8px auto 0 auto', 
+        maxWidth: '1280px',
+        margin: '8px auto 0 auto',
         padding: isMobile ? '0 12px' : '0 20px',
         textAlign: 'right',
         fontSize: '10px',
@@ -928,8 +929,8 @@ function CustomerMenu() {
       {specialMenuEnabled && specialMenuItems.length > 0 && (
         <div style={{ maxWidth: '1280px', margin: '16px auto', padding: isMobile ? '0 12px' : '0 20px' }}>
           <div style={{ 
-            background: 'linear-gradient(135deg, #fef3c7, #fde68a)', 
-            borderRadius: '20px', 
+            background: 'linear-gradient(135deg, #fef3c7, #fde68a)',
+            borderRadius: '20px',
             padding: isMobile ? '12px 16px' : '20px',
             border: '2px solid #f59e0b',
             boxShadow: '0 4px 16px rgba(245,158,11,0.2)'
@@ -937,18 +938,18 @@ function CustomerMenu() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
               <span style={{ fontSize: isMobile ? '24px' : '32px' }}>⭐</span>
               <h2 style={{ 
-                margin: 0, 
-                color: '#92400e', 
-                fontSize: isMobile ? '16px' : '20px', 
-                fontWeight: 'bold' 
+                margin: 0,
+                color: '#92400e',
+                fontSize: isMobile ? '16px' : '20px',
+                fontWeight: 'bold'
               }}>
                 {specialMenuTitle}
               </h2>
               <span style={{ 
-                background: '#ef4444', 
-                color: 'white', 
-                padding: '2px 10px', 
-                borderRadius: '20px', 
+                background: '#ef4444',
+                color: 'white',
+                padding: '2px 10px',
+                borderRadius: '20px',
                 fontSize: isMobile ? '9px' : '11px',
                 fontWeight: 'bold'
               }}>
@@ -962,14 +963,14 @@ function CustomerMenu() {
                 
                 return (
                   <div 
-                    key={idx} 
+                    key={idx}
                     style={{ 
-                      background: 'white', 
-                      borderRadius: '50px', 
-                      padding: isMobile ? '4px 12px' : '8px 20px', 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      gap: '8px', 
+                      background: 'white',
+                      borderRadius: '50px',
+                      padding: isMobile ? '4px 12px' : '8px 20px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
                       boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
                       transition: 'all 0.2s',
                       cursor: hasSizeOptions ? 'pointer' : 'default',
@@ -989,29 +990,30 @@ function CustomerMenu() {
                   >
                     {item.image_url ? (
                       <img 
-                        src={item.image_url} 
-                        alt={item.name} 
+                        src={item.image_url}
+                        alt={item.name}
                         style={{ 
-                          width: isMobile ? '24px' : '32px', 
-                          height: isMobile ? '24px' : '32px', 
-                          borderRadius: '6px', 
-                          objectFit: 'cover' 
-                        }} 
+                          width: isMobile ? '24px' : '32px',
+                          height: isMobile ? '24px' : '32px',
+                          borderRadius: '6px',
+                          objectFit: 'cover'
+                        }}
                       />
                     ) : (
                       <span>⭐</span>
                     )}
                     <span style={{ 
-                      fontWeight: 'bold', 
-                      fontSize: isMobile ? '12px' : '14px' 
+                      fontWeight: 'bold',
+                      fontSize: isMobile ? '12px' : '14px',
+                      color: '#1e293b'
                     }}>
                       {item.name}
                     </span>
                     
                     {hasSizeOptions ? (
                       <span style={{ 
-                        color: '#f59e0b', 
-                        fontWeight: 'bold', 
+                        color: '#f59e0b',
+                        fontWeight: 'bold',
                         fontSize: isMobile ? '10px' : '12px',
                         background: '#fef3c7',
                         padding: '2px 8px',
@@ -1021,12 +1023,12 @@ function CustomerMenu() {
                       </span>
                     ) : (
                       <span style={{ 
-                        color: '#16a34a', 
-                        fontWeight: 'bold', 
-                        background: '#dcfce7', 
-                        padding: '2px 8px', 
-                        borderRadius: '20px', 
-                        fontSize: isMobile ? '11px' : '13px' 
+                        color: '#16a34a',
+                        fontWeight: 'bold',
+                        background: '#dcfce7',
+                        padding: '2px 8px',
+                        borderRadius: '20px',
+                        fontSize: isMobile ? '11px' : '13px'
                       }}>
                         RM {item.price}
                       </span>
@@ -1034,10 +1036,10 @@ function CustomerMenu() {
                     
                     {item.description && (
                       <div style={{ 
-                        fontSize: isMobile ? '8px' : '9px', 
-                        color: '#64748b', 
-                        fontStyle: 'italic', 
-                        marginLeft: '4px' 
+                        fontSize: isMobile ? '8px' : '9px',
+                        color: '#64748b',
+                        fontStyle: 'italic',
+                        marginLeft: '4px'
                       }}>
                         📝 {item.description}
                       </div>
@@ -1057,15 +1059,15 @@ function CustomerMenu() {
                         } else {
                           addSpecialToCart(item)
                         }
-                      }} 
+                      }}
                       style={{ 
-                        background: isAdding ? '#22c55e' : (hasSizeOptions ? '#f59e0b' : '#22c55e'), 
-                        color: 'white', 
-                        border: 'none', 
-                        borderRadius: '30px', 
-                        padding: isMobile ? '2px 10px' : '4px 16px', 
-                        cursor: 'pointer', 
-                        fontWeight: 'bold', 
+                        background: isAdding ? '#22c55e' : (hasSizeOptions ? '#f59e0b' : '#22c55e'),
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '30px',
+                        padding: isMobile ? '2px 10px' : '4px 16px',
+                        cursor: 'pointer',
+                        fontWeight: 'bold',
                         fontSize: isMobile ? '10px' : '12px',
                         minWidth: '28px'
                       }}
@@ -1079,7 +1081,7 @@ function CustomerMenu() {
             
             {specialMenuItems.length > (isMobile ? 6 : 10) && (
               <div style={{ 
-                textAlign: 'center', 
+                textAlign: 'center',
                 marginTop: '10px',
                 color: '#78350f',
                 fontSize: isMobile ? '11px' : '13px',
@@ -1096,17 +1098,17 @@ function CustomerMenu() {
       {activePromos.length > 0 && (
         <div style={{ maxWidth: '1280px', margin: '0 auto', padding: isMobile ? '0 12px' : '0 20px' }}>
           <div style={{ 
-            background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)', 
-            borderRadius: '20px', 
-            padding: isMobile ? '12px 16px' : '20px', 
-            boxShadow: '0 4px 12px rgba(139,92,246,0.3)' 
+            background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+            borderRadius: '20px',
+            padding: isMobile ? '12px 16px' : '20px',
+            boxShadow: '0 4px 12px rgba(139,92,246,0.3)'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
               <span style={{ fontSize: isMobile ? '20px' : '28px' }}>🏷️</span>
               <span style={{ 
-                fontWeight: 'bold', 
-                color: 'white', 
-                fontSize: isMobile ? '13px' : '16px' 
+                fontWeight: 'bold',
+                color: 'white',
+                fontSize: isMobile ? '13px' : '16px'
               }}>
                 {translate('promotions')}
               </span>
@@ -1114,31 +1116,31 @@ function CustomerMenu() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               {activePromos.slice(0, isMobile ? 2 : 3).map(promo => (
                 <div key={promo.id} style={{ 
-                  background: 'rgba(255,255,255,0.15)', 
-                  borderRadius: '12px', 
-                  padding: isMobile ? '8px 12px' : '12px 16px' 
+                  background: 'rgba(255,255,255,0.15)',
+                  borderRadius: '12px',
+                  padding: isMobile ? '8px 12px' : '12px 16px'
                 }}>
                   <div style={{ 
-                    fontWeight: 'bold', 
-                    color: 'white', 
-                    fontSize: isMobile ? '12px' : '14px' 
+                    fontWeight: 'bold',
+                    color: 'white',
+                    fontSize: isMobile ? '12px' : '14px'
                   }}>
                     {promo.name}
                   </div>
                   {promo.type === 'bogo' && (
                     <div style={{ 
-                      fontSize: isMobile ? '11px' : '13px', 
-                      color: 'rgba(255,255,255,0.9)', 
-                      marginTop: '2px' 
+                      fontSize: isMobile ? '11px' : '13px',
+                      color: 'rgba(255,255,255,0.9)',
+                      marginTop: '2px'
                     }}>
                       🎁 {translate('buy')} <strong>{promo.trigger_items?.[0]?.name || 'item'}</strong> {translate('get_free')} <strong>{promo.free_items?.[0]?.name || 'item'}</strong> {translate('free')}!
                     </div>
                   )}
                   {promo.type === 'set_menu' && (
                     <div style={{ 
-                      fontSize: isMobile ? '11px' : '13px', 
-                      color: 'rgba(255,255,255,0.9)', 
-                      marginTop: '2px' 
+                      fontSize: isMobile ? '11px' : '13px',
+                      color: 'rgba(255,255,255,0.9)',
+                      marginTop: '2px'
                     }}>
                       🍽️ <strong>{promo.bundle_items?.map(i => i.name).join(' + ')}</strong><br />
                       {translate('only')} <strong>RM {promo.bundle_price}</strong>! ({translate('save')} RM {(promo.bundle_items?.reduce((s, i) => s + (i.price || 0), 0) - (promo.bundle_price || 0)).toFixed(2)})
@@ -1146,9 +1148,9 @@ function CustomerMenu() {
                   )}
                   {promo.type === 'bundle' && (
                     <div style={{ 
-                      fontSize: isMobile ? '11px' : '13px', 
-                      color: 'rgba(255,255,255,0.9)', 
-                      marginTop: '2px' 
+                      fontSize: isMobile ? '11px' : '13px',
+                      color: 'rgba(255,255,255,0.9)',
+                      marginTop: '2px'
                     }}>
                       📦 <strong>{promo.bundle_items?.map(i => i.name).join(' + ')}</strong><br />
                       {translate('only')} <strong>RM {promo.bundle_price}</strong>! ({translate('save')} RM {(promo.bundle_items?.reduce((s, i) => s + (i.price || 0), 0) - (promo.bundle_price || 0)).toFixed(2)})
@@ -1161,33 +1163,33 @@ function CustomerMenu() {
         </div>
       )}
 
-      {/* ===== CATEGORY FILTERS - FIXED DARK MODE ===== */}
+      {/* ===== CATEGORY FILTERS - SHOW ALL INCLUDING DRINKS ===== */}
       <div style={{ maxWidth: '1280px', margin: '16px auto', padding: isMobile ? '0 12px' : '0 20px' }}>
         <div style={{ 
-          display: 'flex', 
-          gap: '8px', 
-          flexWrap: 'nowrap', 
-          overflowX: 'auto', 
-          paddingBottom: '8px', 
-          scrollbarWidth: 'thin' 
+          display: 'flex',
+          gap: '8px',
+          flexWrap: 'nowrap',
+          overflowX: 'auto',
+          paddingBottom: '8px',
+          scrollbarWidth: 'thin'
         }}>
           {categoryNames.map(cat => {
             let icon = getCategoryIcon(cat)
             
             return (
               <button 
-                key={cat} 
-                onClick={() => setSelectedCategory(cat)} 
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
                 style={{ 
-                  padding: isMobile ? '6px 14px' : '10px 20px', 
-                  background: selectedCategory === cat ? '#f59e0b' : (darkMode ? '#1a1a2e' : 'white'), 
-                  color: selectedCategory === cat ? 'white' : (darkMode ? '#e8edf5' : '#1e293b'), 
-                  border: selectedCategory === cat ? 'none' : `1px solid ${borderColor}`, 
-                  borderRadius: '50px', 
-                  cursor: 'pointer', 
-                  fontWeight: selectedCategory === cat ? 'bold' : '500', 
-                  fontSize: isMobile ? '12px' : '14px', 
-                  transition: 'all 0.2s', 
+                  padding: isMobile ? '6px 14px' : '10px 20px',
+                  background: selectedCategory === cat ? '#f59e0b' : (darkMode ? '#1a1a2e' : 'white'),
+                  color: selectedCategory === cat ? 'white' : textColor,
+                  border: selectedCategory === cat ? 'none' : `1px solid ${borderColor}`,
+                  borderRadius: '50px',
+                  cursor: 'pointer',
+                  fontWeight: selectedCategory === cat ? 'bold' : '500',
+                  fontSize: isMobile ? '12px' : '14px',
+                  transition: 'all 0.2s',
                   whiteSpace: 'nowrap'
                 }}
               >
@@ -1200,12 +1202,12 @@ function CustomerMenu() {
         </div>
       </div>
 
-      {/* ===== MENU GRID - FIXED DARK MODE ===== */}
+      {/* ===== MENU GRID - FONT JELAS UNTUK DARK MODE ===== */}
       <div style={{ maxWidth: '1280px', margin: '0 auto', padding: isMobile ? '0 12px 24px 12px' : '0 20px 40px 20px' }}>
         <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: menuGridCols, 
-          gap: isMobile ? '12px' : '20px' 
+          display: 'grid',
+          gridTemplateColumns: menuGridCols,
+          gap: isMobile ? '12px' : '20px'
         }}>
           {filteredMenu.map(item => {
             const isPromoItem = item.type === 'set_menu' || item.type === 'bundle' || item.type === 'bogo'
@@ -1221,19 +1223,19 @@ function CustomerMenu() {
             
             return (
               <div 
-                key={item.id} 
+                key={item.id}
                 style={{ 
                   background: isClicked ? '#dcfce7' : (isPromoItem ? '#f3e8ff' : (darkMode ? '#1a1a2e' : 'white')),
-                  borderRadius: isMobile ? '18px' : '24px', 
-                  overflow: 'hidden', 
+                  borderRadius: isMobile ? '18px' : '24px',
+                  overflow: 'hidden',
                   boxShadow: isClicked 
-                    ? '0 4px 12px rgba(34,197,94,0.3)' 
-                    : (isPromoItem ? '0 2px 8px rgba(139,92,246,0.2)' : '0 2px 8px rgba(0,0,0,0.08)'), 
+                    ? '0 4px 12px rgba(34,197,94,0.3)'
+                    : (isPromoItem ? '0 2px 8px rgba(139,92,246,0.2)' : '0 2px 8px rgba(0,0,0,0.08)'),
                   transition: 'all 0.2s ease',
-                  cursor: 'pointer', 
+                  cursor: 'pointer',
                   border: isClicked ? '1px solid #22c55e' : 'none',
                   transform: isClicked ? 'scale(0.98)' : 'scale(1)'
-                }} 
+                }}
                 onClick={() => {
                   setClickedItemId(item.id)
                   setTimeout(() => setClickedItemId(null), 250)
@@ -1246,51 +1248,51 @@ function CustomerMenu() {
               >
                 {/* Image / Icon */}
                 <div style={{ 
-                  background: isPromoItem ? '#f3e8ff' : (darkMode ? '#2a2a3e' : '#fef3c7'), 
-                  padding: isMobile ? '16px' : '20px', 
-                  textAlign: 'center', 
-                  position: 'relative' 
+                  background: isPromoItem ? '#f3e8ff' : (darkMode ? '#2a2a3e' : '#fef3c7'),
+                  padding: isMobile ? '16px' : '20px',
+                  textAlign: 'center',
+                  position: 'relative'
                 }}>
                   {isPromoItem && (
                     <div style={{ 
-                      position: 'absolute', 
-                      top: '6px', 
-                      right: '6px', 
-                      background: '#8b5cf6', 
-                      color: 'white', 
-                      fontSize: isMobile ? '8px' : '10px', 
-                      padding: '2px 6px', 
-                      borderRadius: '20px', 
-                      fontWeight: 'bold' 
+                      position: 'absolute',
+                      top: '6px',
+                      right: '6px',
+                      background: '#8b5cf6',
+                      color: 'white',
+                      fontSize: isMobile ? '8px' : '10px',
+                      padding: '2px 6px',
+                      borderRadius: '20px',
+                      fontWeight: 'bold'
                     }}>
                       {translate('promo')}
                     </div>
                   )}
                   {hasSizeOptions && (
                     <div style={{ 
-                      position: 'absolute', 
-                      top: '6px', 
-                      left: '6px', 
-                      background: '#f59e0b', 
-                      color: 'white', 
-                      fontSize: isMobile ? '8px' : '10px', 
-                      padding: '2px 6px', 
-                      borderRadius: '20px', 
-                      fontWeight: 'bold' 
+                      position: 'absolute',
+                      top: '6px',
+                      left: '6px',
+                      background: '#f59e0b',
+                      color: 'white',
+                      fontSize: isMobile ? '8px' : '10px',
+                      padding: '2px 6px',
+                      borderRadius: '20px',
+                      fontWeight: 'bold'
                     }}>
                       {translate('select_size_btn')}
                     </div>
                   )}
                   {hasImage ? (
                     <img 
-                      src={item.image_url} 
-                      alt={item.name} 
+                      src={item.image_url}
+                      alt={item.name}
                       style={{ 
-                        width: isMobile ? '70px' : '100px', 
-                        height: isMobile ? '70px' : '100px', 
-                        objectFit: 'cover', 
-                        borderRadius: '12px', 
-                        margin: '0 auto' 
+                        width: isMobile ? '70px' : '100px',
+                        height: isMobile ? '70px' : '100px',
+                        objectFit: 'cover',
+                        borderRadius: '12px',
+                        margin: '0 auto'
                       }}
                       onError={(e) => {
                         e.target.style.display = 'none'
@@ -1304,21 +1306,21 @@ function CustomerMenu() {
                   )}
                 </div>
                 
-                {/* Info - FIXED DARK MODE */}
+                {/* Info - FONT JELAS UNTUK DARK MODE */}
                 <div style={{ padding: isMobile ? '12px' : '16px', textAlign: 'center' }}>
                   <h3 style={{ 
-                    margin: '0 0 6px 0', 
-                    fontSize: isMobile ? '13px' : '15px', 
-                    fontWeight: 'bold', 
-                    color: darkMode ? '#e8edf5' : '#1e293b'
+                    margin: '0 0 6px 0',
+                    fontSize: isMobile ? '13px' : '15px',
+                    fontWeight: 'bold',
+                    color: textColor  // PUTIH untuk dark, GELAP untuk light
                   }}>
                     {item.name}
                   </h3>
                   
                   {hasDescription && (
                     <div style={{ 
-                      fontSize: isMobile ? '10px' : '12px', 
-                      color: darkMode ? '#94a3b8' : '#64748b',
+                      fontSize: isMobile ? '10px' : '12px',
+                      color: textMuted,
                       fontStyle: 'italic',
                       marginBottom: '6px',
                       background: darkMode ? 'rgba(30,30,50,0.6)' : secondaryBg,
@@ -1333,17 +1335,17 @@ function CustomerMenu() {
                   {isPromoItem && item.original_price && (
                     <div style={{ marginBottom: '6px' }}>
                       <span style={{ 
-                        fontSize: isMobile ? '10px' : '12px', 
-                        color: '#94a3b8', 
-                        textDecoration: 'line-through', 
-                        marginRight: '6px' 
+                        fontSize: isMobile ? '10px' : '12px',
+                        color: '#94a3b8',
+                        textDecoration: 'line-through',
+                        marginRight: '6px'
                       }}>
                         RM {item.original_price.toFixed(2)}
                       </span>
                       <span style={{ 
-                        fontSize: isMobile ? '13px' : '16px', 
-                        fontWeight: 'bold', 
-                        color: '#8b5cf6' 
+                        fontSize: isMobile ? '13px' : '16px',
+                        fontWeight: 'bold',
+                        color: '#8b5cf6'
                       }}>
                         RM {item.price.toFixed(2)}
                       </span>
@@ -1352,34 +1354,37 @@ function CustomerMenu() {
                   
                   {hasDrinkOptions ? (
                     <div style={{ 
-                      marginBottom: '8px', 
-                      display: 'flex', 
-                      flexWrap: 'wrap', 
-                      justifyContent: 'center', 
-                      gap: '4px' 
+                      marginBottom: '8px',
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      justifyContent: 'center',
+                      gap: '4px'
                     }}>
                       {panasPrice && (
                         <span style={{ 
-                          color: '#f97316', 
-                          fontSize: isMobile ? '9px' : '11px', 
-                          marginRight: '4px' 
+                          color: '#f97316',
+                          fontSize: isMobile ? '9px' : '11px',
+                          marginRight: '4px',
+                          fontWeight: 'bold'
                         }}>
                           🔥 RM {panasPrice?.toFixed(2)}
                         </span>
                       )}
                       {sejukPrice && (
                         <span style={{ 
-                          color: '#06b6d4', 
-                          fontSize: isMobile ? '9px' : '11px', 
-                          marginRight: '4px' 
+                          color: '#06b6d4',
+                          fontSize: isMobile ? '9px' : '11px',
+                          marginRight: '4px',
+                          fontWeight: 'bold'
                         }}>
                           🧊 RM {sejukPrice?.toFixed(2)}
                         </span>
                       )}
                       {bungkusPrice && (
                         <span style={{ 
-                          color: '#8b5cf6', 
-                          fontSize: isMobile ? '9px' : '11px' 
+                          color: '#8b5cf6',
+                          fontSize: isMobile ? '9px' : '11px',
+                          fontWeight: 'bold'
                         }}>
                           📦 RM {bungkusPrice?.toFixed(2)}
                         </span>
@@ -1387,10 +1392,10 @@ function CustomerMenu() {
                     </div>
                   ) : !isPromoItem && !hasSizeOptions && (
                     <div style={{ 
-                      fontSize: isMobile ? '16px' : '20px', 
-                      fontWeight: 'bold', 
-                      color: '#22c55e', 
-                      marginBottom: '6px' 
+                      fontSize: isMobile ? '16px' : '20px',
+                      fontWeight: 'bold',
+                      color: textPrice,
+                      marginBottom: '6px'
                     }}>
                       RM {item.price?.toFixed(2)}
                     </div>
@@ -1398,22 +1403,22 @@ function CustomerMenu() {
                   
                   {hasSizeOptions && (
                     <div style={{ 
-                      fontSize: isMobile ? '11px' : '14px', 
-                      fontWeight: 'bold', 
-                      color: '#f59e0b', 
-                      marginBottom: '6px' 
+                      fontSize: isMobile ? '11px' : '14px',
+                      fontWeight: 'bold',
+                      color: '#f59e0b',
+                      marginBottom: '6px'
                     }}>
                       {translate('select_size_btn')}
                     </div>
                   )}
                   
                   <div style={{ 
-                    width: '100%', 
-                    padding: isMobile ? '6px' : '10px', 
-                    background: isAdding ? '#22c55e' : (isPromoItem ? '#8b5cf6' : '#f59e0b'), 
-                    color: 'white', 
-                    borderRadius: '40px', 
-                    fontWeight: 'bold', 
+                    width: '100%',
+                    padding: isMobile ? '6px' : '10px',
+                    background: isAdding ? '#22c55e' : (isPromoItem ? '#8b5cf6' : '#f59e0b'),
+                    color: 'white',
+                    borderRadius: '40px',
+                    fontWeight: 'bold',
                     transition: 'all 0.2s',
                     textAlign: 'center',
                     fontSize: isMobile ? '11px' : '13px'
@@ -1428,16 +1433,16 @@ function CustomerMenu() {
         
         {filteredMenu.length === 0 && (
           <div style={{ 
-            textAlign: 'center', 
-            padding: isMobile ? '40px 20px' : '80px 20px', 
-            ...glassEffect, 
-            borderRadius: '20px' 
+            textAlign: 'center',
+            padding: isMobile ? '40px 20px' : '80px 20px',
+            ...glassEffect,
+            borderRadius: '20px'
           }}>
             <span style={{ fontSize: isMobile ? '48px' : '64px', opacity: 0.5 }}>🍽️</span>
             <p style={{ 
-              color: textMuted, 
-              marginTop: '12px', 
-              fontSize: isMobile ? '13px' : '14px' 
+              color: textMuted,
+              marginTop: '12px',
+              fontSize: isMobile ? '13px' : '14px'
             }}>
               {translate('no_menu_category')}
             </p>
@@ -1446,38 +1451,39 @@ function CustomerMenu() {
       </div>
 
       {/* ========================================================== */}
-      {/* MODALS - SAME AS BEFORE */}
+      {/* MODALS */}
       {/* ========================================================== */}
 
       {/* ===== SIZE OPTIONS MODAL ===== */}
       {showSizeModal && selectedSizeItem && (
         <div style={{ 
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
-          background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', 
-          display: 'flex', justifyContent: 'center', alignItems: 'center', 
-          zIndex: 2000, animation: 'fadeIn 0.2s ease' 
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)',
+          display: 'flex', justifyContent: 'center', alignItems: 'center',
+          zIndex: 2000, animation: 'fadeIn 0.2s ease'
         }}>
           <div style={{ 
-            background: 'white', 
-            borderRadius: '24px', 
-            padding: isMobile ? '20px' : '28px', 
-            maxWidth: '380px', 
-            width: '90%', 
-            textAlign: 'center', 
-            animation: 'popIn 0.3s ease' 
+            background: 'white',
+            borderRadius: '24px',
+            padding: isMobile ? '20px' : '28px',
+            maxWidth: '380px',
+            width: '90%',
+            textAlign: 'center',
+            animation: 'popIn 0.3s ease'
           }}>
             <div style={{ fontSize: isMobile ? '36px' : '48px', marginBottom: '8px' }}>🍽️</div>
             <h2 style={{ 
-              marginBottom: '6px', 
-              fontSize: isMobile ? '18px' : '22px', 
-              fontWeight: 'bold' 
+              marginBottom: '6px',
+              fontSize: isMobile ? '18px' : '22px',
+              fontWeight: 'bold',
+              color: '#1e293b'
             }}>
               {selectedSizeItem.name}
             </h2>
             <p style={{ 
-              color: '#64748b', 
-              marginBottom: '20px', 
-              fontSize: isMobile ? '12px' : '14px' 
+              color: '#64748b',
+              marginBottom: '20px',
+              fontSize: isMobile ? '12px' : '14px'
             }}>
               {translate('choose_size')}
             </p>
@@ -1485,7 +1491,7 @@ function CustomerMenu() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
               {menuOptions.map(opt => {
                 const finalPrice = opt.is_absolute_price 
-                  ? opt.price_adjustment 
+                  ? opt.price_adjustment
                   : (selectedSizeItem.price + opt.price_adjustment)
                 return (
                   <button 
@@ -1505,22 +1511,22 @@ function CustomerMenu() {
                       alignItems: 'center'
                     }}
                   >
-                    <span>{opt.option_name}</span>
-                    <span>RM {finalPrice.toFixed(2)}</span>
+                    <span style={{ color: 'white' }}>{opt.option_name}</span>
+                    <span style={{ color: 'white' }}>RM {finalPrice.toFixed(2)}</span>
                   </button>
                 )
               })}
             </div>
             
             <button 
-              onClick={() => setShowSizeModal(false)} 
+              onClick={() => setShowSizeModal(false)}
               style={{ 
-                width: '100%', 
-                padding: isMobile ? '12px' : '14px', 
-                background: '#64748b', 
-                color: 'white', 
-                border: 'none', 
-                borderRadius: '50px', 
+                width: '100%',
+                padding: isMobile ? '12px' : '14px',
+                background: '#64748b',
+                color: 'white',
+                border: 'none',
+                borderRadius: '50px',
                 cursor: 'pointer',
                 fontWeight: 'bold'
               }}
@@ -1534,55 +1540,56 @@ function CustomerMenu() {
       {/* ===== DRINK OPTIONS MODAL ===== */}
       {showDrinkModal && selectedDrink && (
         <div style={{ 
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
-          background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', 
-          display: 'flex', justifyContent: 'center', alignItems: 'center', 
-          zIndex: 2000, animation: 'fadeIn 0.2s ease' 
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)',
+          display: 'flex', justifyContent: 'center', alignItems: 'center',
+          zIndex: 2000, animation: 'fadeIn 0.2s ease'
         }}>
           <div style={{ 
-            background: 'white', 
-            borderRadius: '24px', 
-            padding: isMobile ? '20px' : '28px', 
-            maxWidth: '380px', 
-            width: '90%', 
-            textAlign: 'center', 
-            animation: 'popIn 0.3s ease' 
+            background: 'white',
+            borderRadius: '24px',
+            padding: isMobile ? '20px' : '28px',
+            maxWidth: '380px',
+            width: '90%',
+            textAlign: 'center',
+            animation: 'popIn 0.3s ease'
           }}>
             <h2 style={{ 
-              marginBottom: '6px', 
-              fontSize: isMobile ? '18px' : '22px', 
-              fontWeight: 'bold' 
+              marginBottom: '6px',
+              fontSize: isMobile ? '18px' : '22px',
+              fontWeight: 'bold',
+              color: '#1e293b'
             }}>
               🥤 {selectedDrink.name}
             </h2>
             <p style={{ 
-              color: '#64748b', 
-              marginBottom: '20px', 
-              fontSize: isMobile ? '12px' : '14px' 
+              color: '#64748b',
+              marginBottom: '20px',
+              fontSize: isMobile ? '12px' : '14px'
             }}>
               {translate('drink_type')}
             </p>
             
             <div style={{ 
-              display: 'flex', 
-              gap: '10px', 
-              marginBottom: '20px', 
-              flexWrap: 'wrap', 
-              justifyContent: 'center' 
+              display: 'flex',
+              gap: '10px',
+              marginBottom: '20px',
+              flexWrap: 'wrap',
+              justifyContent: 'center'
             }}>
               {drinkOptions[selectedDrink.name]?.some(o => o.type === 'Panas') && (
                 <button 
-                  onClick={() => setSelectedOption('Panas')} 
+                  onClick={() => setSelectedOption('Panas')}
                   style={{ 
-                    flex: 1, 
+                    flex: 1,
                     minWidth: isMobile ? '80px' : '100px',
-                    padding: isMobile ? '12px' : '16px', 
-                    background: selectedOption === 'Panas' ? '#f97316' : '#f1f5f9', 
-                    color: selectedOption === 'Panas' ? 'white' : '#333', 
-                    border: 'none', 
-                    borderRadius: '14px', 
-                    cursor: 'pointer', 
-                    fontWeight: 'bold', 
+                    padding: isMobile ? '12px' : '16px',
+                    background: selectedOption === 'Panas' ? '#f97316' : '#f1f5f9',
+                    color: selectedOption === 'Panas' ? 'white' : '#333',
+                    border: 'none',
+                    borderRadius: '14px',
+                    cursor: 'pointer',
+                    fontWeight: 'bold',
                     fontSize: isMobile ? '12px' : '14px',
                     transition: 'all 0.2s'
                   }}
@@ -1594,17 +1601,17 @@ function CustomerMenu() {
               
               {drinkOptions[selectedDrink.name]?.some(o => o.type === 'Sejuk') && (
                 <button 
-                  onClick={() => setSelectedOption('Sejuk')} 
+                  onClick={() => setSelectedOption('Sejuk')}
                   style={{ 
-                    flex: 1, 
+                    flex: 1,
                     minWidth: isMobile ? '80px' : '100px',
-                    padding: isMobile ? '12px' : '16px', 
-                    background: selectedOption === 'Sejuk' ? '#06b6d4' : '#f1f5f9', 
-                    color: selectedOption === 'Sejuk' ? 'white' : '#333', 
-                    border: 'none', 
-                    borderRadius: '14px', 
-                    cursor: 'pointer', 
-                    fontWeight: 'bold', 
+                    padding: isMobile ? '12px' : '16px',
+                    background: selectedOption === 'Sejuk' ? '#06b6d4' : '#f1f5f9',
+                    color: selectedOption === 'Sejuk' ? 'white' : '#333',
+                    border: 'none',
+                    borderRadius: '14px',
+                    cursor: 'pointer',
+                    fontWeight: 'bold',
                     fontSize: isMobile ? '12px' : '14px',
                     transition: 'all 0.2s'
                   }}
@@ -1616,17 +1623,17 @@ function CustomerMenu() {
               
               {drinkOptions[selectedDrink.name]?.some(o => o.type === 'Bungkus') && (
                 <button 
-                  onClick={() => setSelectedOption('Bungkus')} 
+                  onClick={() => setSelectedOption('Bungkus')}
                   style={{ 
-                    flex: 1, 
+                    flex: 1,
                     minWidth: isMobile ? '80px' : '100px',
-                    padding: isMobile ? '12px' : '16px', 
-                    background: selectedOption === 'Bungkus' ? '#8b5cf6' : '#f1f5f9', 
-                    color: selectedOption === 'Bungkus' ? 'white' : '#333', 
-                    border: 'none', 
-                    borderRadius: '14px', 
-                    cursor: 'pointer', 
-                    fontWeight: 'bold', 
+                    padding: isMobile ? '12px' : '16px',
+                    background: selectedOption === 'Bungkus' ? '#8b5cf6' : '#f1f5f9',
+                    color: selectedOption === 'Bungkus' ? 'white' : '#333',
+                    border: 'none',
+                    borderRadius: '14px',
+                    cursor: 'pointer',
+                    fontWeight: 'bold',
                     fontSize: isMobile ? '12px' : '14px',
                     transition: 'all 0.2s'
                   }}
@@ -1638,33 +1645,33 @@ function CustomerMenu() {
             </div>
             
             <button 
-              onClick={addDrinkToCart} 
+              onClick={addDrinkToCart}
               style={{ 
-                width: '100%', 
-                padding: isMobile ? '12px' : '14px', 
-                background: '#22c55e', 
-                color: 'white', 
-                border: 'none', 
-                borderRadius: '40px', 
-                cursor: 'pointer', 
-                fontWeight: 'bold', 
-                marginBottom: '10px', 
-                fontSize: isMobile ? '13px' : '14px' 
+                width: '100%',
+                padding: isMobile ? '12px' : '14px',
+                background: '#22c55e',
+                color: 'white',
+                border: 'none',
+                borderRadius: '40px',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                marginBottom: '10px',
+                fontSize: isMobile ? '13px' : '14px'
               }}
             >
               {translate('add_to_cart')}
             </button>
             <button 
-              onClick={() => setShowDrinkModal(false)} 
+              onClick={() => setShowDrinkModal(false)}
               style={{ 
-                width: '100%', 
-                padding: isMobile ? '12px' : '14px', 
-                background: '#64748b', 
-                color: 'white', 
-                border: 'none', 
-                borderRadius: '40px', 
-                cursor: 'pointer', 
-                fontSize: isMobile ? '13px' : '14px' 
+                width: '100%',
+                padding: isMobile ? '12px' : '14px',
+                background: '#64748b',
+                color: 'white',
+                border: 'none',
+                borderRadius: '40px',
+                cursor: 'pointer',
+                fontSize: isMobile ? '13px' : '14px'
               }}
             >
               {translate('cancel')}
@@ -1676,41 +1683,41 @@ function CustomerMenu() {
       {/* ===== FLOATING CART BUTTON ===== */}
       {cartItemCount > 0 && (
         <button 
-          onClick={() => setShowCart(true)} 
+          onClick={() => setShowCart(true)}
           style={{ 
-            position: 'fixed', 
-            bottom: '16px', 
-            right: '16px', 
-            width: isMobile ? '50px' : '64px', 
-            height: isMobile ? '50px' : '64px', 
-            borderRadius: '25px', 
-            background: 'linear-gradient(135deg, #f59e0b, #ea580c)', 
-            color: 'white', 
-            border: 'none', 
-            fontSize: isMobile ? '22px' : '28px', 
-            cursor: 'pointer', 
-            boxShadow: '0 4px 12px rgba(245,158,11,0.4)', 
-            zIndex: 1000, 
-            display: 'flex', 
-            alignItems: 'center', 
+            position: 'fixed',
+            bottom: '16px',
+            right: '16px',
+            width: isMobile ? '50px' : '64px',
+            height: isMobile ? '50px' : '64px',
+            borderRadius: '25px',
+            background: 'linear-gradient(135deg, #f59e0b, #ea580c)',
+            color: 'white',
+            border: 'none',
+            fontSize: isMobile ? '22px' : '28px',
+            cursor: 'pointer',
+            boxShadow: '0 4px 12px rgba(245,158,11,0.4)',
+            zIndex: 1000,
+            display: 'flex',
+            alignItems: 'center',
             justifyContent: 'center'
           }}
         >
           🛒
           <span style={{ 
-            position: 'absolute', 
-            top: '-4px', 
-            right: '-4px', 
-            background: '#ef4444', 
-            color: 'white', 
-            borderRadius: '50%', 
-            width: '18px', 
-            height: '18px', 
-            fontSize: '10px', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            fontWeight: 'bold' 
+            position: 'absolute',
+            top: '-4px',
+            right: '-4px',
+            background: '#ef4444',
+            color: 'white',
+            borderRadius: '50%',
+            width: '18px',
+            height: '18px',
+            fontSize: '10px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontWeight: 'bold'
           }}>
             {cartItemCount}
           </span>
@@ -1720,41 +1727,41 @@ function CustomerMenu() {
       {/* ===== CART DRAWER ===== */}
       {showCart && (
         <div style={{ 
-          position: 'fixed', 
-          top: 0, 
-          right: 0, 
-          bottom: 0, 
-          width: '100%', 
-          maxWidth: isMobile ? '100%' : '420px', 
-          background: 'white', 
-          boxShadow: '-2px 0 16px rgba(0,0,0,0.15)', 
-          zIndex: 1001, 
-          display: 'flex', 
-          flexDirection: 'column', 
-          animation: 'slideIn 0.3s ease' 
+          position: 'fixed',
+          top: 0,
+          right: 0,
+          bottom: 0,
+          width: '100%',
+          maxWidth: isMobile ? '100%' : '420px',
+          background: 'white',
+          boxShadow: '-2px 0 16px rgba(0,0,0,0.15)',
+          zIndex: 1001,
+          display: 'flex',
+          flexDirection: 'column',
+          animation: 'slideIn 0.3s ease'
         }}>
           
           <div style={{ 
-            padding: isMobile ? '14px 16px' : '20px', 
-            borderBottom: `1px solid #e2e8f0`, 
-            background: '#f59e0b', 
-            color: 'white' 
+            padding: isMobile ? '14px 16px' : '20px',
+            borderBottom: `1px solid #e2e8f0`,
+            background: '#f59e0b',
+            color: 'white'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 style={{ margin: 0, fontSize: isMobile ? '16px' : '20px' }}>
+              <h2 style={{ margin: 0, fontSize: isMobile ? '16px' : '20px', color: 'white' }}>
                 {translate('your_order')} ({cartItemCount})
               </h2>
               <button 
-                onClick={() => setShowCart(false)} 
+                onClick={() => setShowCart(false)}
                 style={{ 
-                  background: 'rgba(255,255,255,0.2)', 
-                  color: 'white', 
-                  border: 'none', 
-                  borderRadius: '30px', 
-                  width: '28px', 
-                  height: '28px', 
-                  cursor: 'pointer', 
-                  fontSize: '16px' 
+                  background: 'rgba(255,255,255,0.2)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '30px',
+                  width: '28px',
+                  height: '28px',
+                  cursor: 'pointer',
+                  fontSize: '16px'
                 }}
               >
                 ✕
@@ -1763,9 +1770,9 @@ function CustomerMenu() {
           </div>
           
           <div style={{ 
-            flex: 1, 
-            overflowY: 'auto', 
-            padding: isMobile ? '16px' : '20px' 
+            flex: 1,
+            overflowY: 'auto',
+            padding: isMobile ? '16px' : '20px'
           }}>
             {cart.length === 0 ? (
               <p style={{ textAlign: 'center', color: '#94a3b8', padding: '30px' }}>
@@ -1775,73 +1782,74 @@ function CustomerMenu() {
               <>
                 {cart.map(item => (
                   <div key={item.id} style={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    alignItems: 'center', 
-                    marginBottom: '12px', 
-                    paddingBottom: '8px', 
-                    borderBottom: `1px solid #e2e8f0` 
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '12px',
+                    paddingBottom: '8px',
+                    borderBottom: `1px solid #e2e8f0`
                   }}>
                     <div style={{ flex: 2 }}>
                       <div style={{ 
-                        fontWeight: 'bold', 
-                        fontSize: isMobile ? '13px' : '14px' 
+                        fontWeight: 'bold',
+                        fontSize: isMobile ? '13px' : '14px',
+                        color: '#1e293b'
                       }}>
                         {item.name} 
                         {item.is_free && (
                           <span style={{ 
-                            color: '#22c55e', 
-                            fontSize: '10px', 
-                            marginLeft: '4px' 
+                            color: '#22c55e',
+                            fontSize: '10px',
+                            marginLeft: '4px'
                           }}>
                             ({translate('free')})
                           </span>
                         )}
                         {item.is_promo_item && (
                           <span style={{ 
-                            color: '#8b5cf6', 
-                            fontSize: '10px', 
-                            marginLeft: '4px' 
+                            color: '#8b5cf6',
+                            fontSize: '10px',
+                            marginLeft: '4px'
                           }}>
                             (PROMO)
                           </span>
                         )}
                         {item.option_type === 'Bungkus' && (
                           <span style={{ 
-                            color: '#8b5cf6', 
-                            fontSize: '10px', 
-                            marginLeft: '4px' 
+                            color: '#8b5cf6',
+                            fontSize: '10px',
+                            marginLeft: '4px'
                           }}>
                             📦
                           </span>
                         )}
                       </div>
                       <div style={{ 
-                        fontSize: isMobile ? '10px' : '12px', 
-                        color: '#94a3b8' 
+                        fontSize: isMobile ? '10px' : '12px',
+                        color: '#94a3b8'
                       }}>
                         x{item.quantity}
                       </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <span style={{ 
-                        fontWeight: 'bold', 
-                        color: '#22c55e', 
-                        fontSize: isMobile ? '13px' : '14px' 
+                        fontWeight: 'bold',
+                        color: '#22c55e',
+                        fontSize: isMobile ? '13px' : '14px'
                       }}>
                         RM {(item.price * item.quantity).toFixed(2)}
                       </span>
                       <button 
-                        onClick={() => removeFromCart(item.id)} 
+                        onClick={() => removeFromCart(item.id)}
                         style={{ 
-                          background: '#ef4444', 
-                          color: 'white', 
-                          border: 'none', 
-                          borderRadius: '20px', 
-                          padding: '2px 8px', 
-                          cursor: 'pointer', 
-                          fontSize: '10px', 
-                          fontWeight: 'bold' 
+                          background: '#ef4444',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '20px',
+                          padding: '2px 8px',
+                          cursor: 'pointer',
+                          fontSize: '10px',
+                          fontWeight: 'bold'
                         }}
                       >
                         ✕
@@ -1851,46 +1859,50 @@ function CustomerMenu() {
                 ))}
                 
                 <div style={{ 
-                  background: '#fef3c7', 
-                  borderRadius: '14px', 
-                  padding: isMobile ? '12px' : '16px', 
-                  marginTop: '12px' 
+                  background: '#fef3c7',
+                  borderRadius: '14px',
+                  padding: isMobile ? '12px' : '16px',
+                  marginTop: '12px'
                 }}>
                   <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    marginBottom: '6px', 
-                    fontSize: isMobile ? '12px' : '13px' 
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginBottom: '6px',
+                    fontSize: isMobile ? '12px' : '13px',
+                    color: '#1e293b'
                   }}>
                     <span>{translate('subtotal')}:</span>
                     <span>RM {getSubtotal().toFixed(2)}</span>
                   </div>
                   <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    marginBottom: '6px', 
-                    fontSize: isMobile ? '12px' : '13px' 
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginBottom: '6px',
+                    fontSize: isMobile ? '12px' : '13px',
+                    color: '#1e293b'
                   }}>
                     <span>{translate('service')} ({serviceChargePercent}%):</span>
                     <span>RM {getServiceCharge().toFixed(2)}</span>
                   </div>
                   <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    marginBottom: '6px', 
-                    fontSize: isMobile ? '12px' : '13px' 
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginBottom: '6px',
+                    fontSize: isMobile ? '12px' : '13px',
+                    color: '#1e293b'
                   }}>
                     <span>{translate('tax')} ({taxPercent}%):</span>
                     <span>RM {getTax().toFixed(2)}</span>
                   </div>
                   <div style={{ 
-                    borderTop: `1px solid #fde68a`, 
-                    marginTop: '6px', 
-                    paddingTop: '6px', 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    fontWeight: 'bold', 
-                    fontSize: isMobile ? '16px' : '18px' 
+                    borderTop: `1px solid #fde68a`,
+                    marginTop: '6px',
+                    paddingTop: '6px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    fontWeight: 'bold',
+                    fontSize: isMobile ? '16px' : '18px',
+                    color: '#1e293b'
                   }}>
                     <span>{translate('total')}:</span>
                     <span style={{ color: '#22c55e' }}>RM {getGrandTotal().toFixed(2)}</span>
@@ -1898,71 +1910,74 @@ function CustomerMenu() {
                 </div>
                 
                 <input 
-                  type="text" 
-                  placeholder={translate('your_name')} 
-                  value={customerName} 
-                  onChange={(e) => setCustomerName(e.target.value)} 
+                  type="text"
+                  placeholder={translate('your_name')}
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
                   style={{ 
-                    width: '100%', 
-                    padding: isMobile ? '10px 12px' : '12px', 
-                    marginTop: '12px', 
-                    marginBottom: '10px', 
-                    borderRadius: '12px', 
-                    border: `1px solid #cbd5e1`, 
-                    outline: 'none', 
-                    fontSize: isMobile ? '13px' : '14px' 
-                  }} 
+                    width: '100%',
+                    padding: isMobile ? '10px 12px' : '12px',
+                    marginTop: '12px',
+                    marginBottom: '10px',
+                    borderRadius: '12px',
+                    border: `1px solid #cbd5e1`,
+                    outline: 'none',
+                    fontSize: isMobile ? '13px' : '14px',
+                    color: '#1e293b'
+                  }}
                 />
                 <input 
-                  type="tel" 
-                  placeholder={translate('phone_optional')} 
-                  value={customerPhone} 
-                  onChange={(e) => setCustomerPhone(e.target.value)} 
+                  type="tel"
+                  placeholder={translate('phone_optional')}
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
                   style={{ 
-                    width: '100%', 
-                    padding: isMobile ? '10px 12px' : '12px', 
-                    marginBottom: '10px', 
-                    borderRadius: '12px', 
-                    border: `1px solid #cbd5e1`, 
-                    outline: 'none', 
-                    fontSize: isMobile ? '13px' : '14px' 
-                  }} 
+                    width: '100%',
+                    padding: isMobile ? '10px 12px' : '12px',
+                    marginBottom: '10px',
+                    borderRadius: '12px',
+                    border: `1px solid #cbd5e1`,
+                    outline: 'none',
+                    fontSize: isMobile ? '13px' : '14px',
+                    color: '#1e293b'
+                  }}
                 />
                 <textarea 
-                  placeholder={translate('special_notes')} 
-                  value={notes} 
-                  onChange={(e) => setNotes(e.target.value)} 
-                  rows="2" 
+                  placeholder={translate('special_notes')}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  rows="2"
                   style={{ 
-                    width: '100%', 
-                    padding: isMobile ? '10px 12px' : '12px', 
-                    marginBottom: '12px', 
-                    borderRadius: '12px', 
-                    border: `1px solid #cbd5e1`, 
-                    outline: 'none', 
-                    fontFamily: 'inherit', 
-                    fontSize: isMobile ? '13px' : '14px' 
-                  }} 
+                    width: '100%',
+                    padding: isMobile ? '10px 12px' : '12px',
+                    marginBottom: '12px',
+                    borderRadius: '12px',
+                    border: `1px solid #cbd5e1`,
+                    outline: 'none',
+                    fontFamily: 'inherit',
+                    fontSize: isMobile ? '13px' : '14px',
+                    color: '#1e293b'
+                  }}
                 />
               </>
             )}
           </div>
           
           <div style={{ 
-            padding: isMobile ? '14px 16px' : '20px', 
-            borderTop: `1px solid #e2e8f0` 
+            padding: isMobile ? '14px 16px' : '20px',
+            borderTop: `1px solid #e2e8f0`
           }}>
             <div style={{ display: 'flex', gap: '10px' }}>
               <button 
-                onClick={() => setShowCart(false)} 
+                onClick={() => setShowCart(false)}
                 style={{ 
                   flex: 1,
-                  padding: isMobile ? '10px' : '14px', 
-                  background: '#64748b', 
-                  color: 'white', 
-                  border: 'none', 
-                  borderRadius: '40px', 
-                  cursor: 'pointer', 
+                  padding: isMobile ? '10px' : '14px',
+                  background: '#64748b',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '40px',
+                  cursor: 'pointer',
                   fontWeight: 'bold',
                   fontSize: isMobile ? '12px' : '14px'
                 }}
@@ -1970,17 +1985,17 @@ function CustomerMenu() {
                 {translate('back_to_menu')}
               </button>
               <button 
-                onClick={handlePlaceOrder} 
+                onClick={handlePlaceOrder}
                 disabled={!tableNumber || cart.length === 0}
                 style={{ 
                   flex: 1,
-                  padding: isMobile ? '10px' : '14px', 
-                  background: (!tableNumber || cart.length === 0) ? '#cbd5e1' : 'linear-gradient(135deg, #f59e0b, #ea580c)', 
-                  color: 'white', 
-                  border: 'none', 
-                  borderRadius: '40px', 
-                  cursor: (!tableNumber || cart.length === 0) ? 'not-allowed' : 'pointer', 
-                  fontSize: isMobile ? '12px' : '14px', 
+                  padding: isMobile ? '10px' : '14px',
+                  background: (!tableNumber || cart.length === 0) ? '#cbd5e1' : 'linear-gradient(135deg, #f59e0b, #ea580c)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '40px',
+                  cursor: (!tableNumber || cart.length === 0) ? 'not-allowed' : 'pointer',
+                  fontSize: isMobile ? '12px' : '14px',
                   fontWeight: 'bold'
                 }}
               >
@@ -1994,95 +2009,100 @@ function CustomerMenu() {
       {/* ===== CONFIRMATION MODAL ===== */}
       {showConfirmModal && (
         <div style={{ 
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
-          background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(4px)', 
-          display: 'flex', justifyContent: 'center', alignItems: 'center', 
-          zIndex: 2000, animation: 'fadeIn 0.2s ease' 
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(4px)',
+          display: 'flex', justifyContent: 'center', alignItems: 'center',
+          zIndex: 2000, animation: 'fadeIn 0.2s ease'
         }}>
           <div style={{ 
-            background: 'white', 
-            borderRadius: '28px', 
-            padding: isMobile ? '20px' : '28px', 
-            maxWidth: '400px', 
-            width: '90%', 
-            textAlign: 'center', 
-            boxShadow: '0 20px 40px rgba(0,0,0,0.2)', 
-            animation: 'popIn 0.3s ease' 
+            background: 'white',
+            borderRadius: '28px',
+            padding: isMobile ? '20px' : '28px',
+            maxWidth: '400px',
+            width: '90%',
+            textAlign: 'center',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+            animation: 'popIn 0.3s ease'
           }}>
             <div style={{ 
-              width: isMobile ? '48px' : '60px', 
-              height: isMobile ? '48px' : '60px', 
-              background: '#fef3c7', 
-              borderRadius: '50%', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              margin: '0 auto 12px auto' 
+              width: isMobile ? '48px' : '60px',
+              height: isMobile ? '48px' : '60px',
+              background: '#fef3c7',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 12px auto'
             }}>
               <span style={{ fontSize: isMobile ? '26px' : '32px' }}>📋</span>
             </div>
             <h2 style={{ 
-              marginBottom: '6px', 
-              fontSize: isMobile ? '18px' : '22px', 
-              fontWeight: 'bold' 
+              marginBottom: '6px',
+              fontSize: isMobile ? '18px' : '22px',
+              fontWeight: 'bold',
+              color: '#1e293b'
             }}>
               {translate('confirm_order')}
             </h2>
             <p style={{ 
-              color: '#64748b', 
-              marginBottom: '16px', 
-              fontSize: isMobile ? '12px' : '14px' 
+              color: '#64748b',
+              marginBottom: '16px',
+              fontSize: isMobile ? '12px' : '14px'
             }}>
               {translate('review_order')}
             </p>
             <div style={{ 
-              background: '#f8fafc', 
-              borderRadius: '14px', 
-              padding: isMobile ? '12px' : '16px', 
-              marginBottom: '16px', 
-              textAlign: 'left' 
+              background: '#f8fafc',
+              borderRadius: '14px',
+              padding: isMobile ? '12px' : '16px',
+              marginBottom: '16px',
+              textAlign: 'left'
             }}>
               <div style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                marginBottom: '6px', 
-                fontSize: isMobile ? '12px' : '13px' 
+                display: 'flex',
+                justifyContent: 'space-between',
+                marginBottom: '6px',
+                fontSize: isMobile ? '12px' : '13px',
+                color: '#1e293b'
               }}>
                 <span style={{ color: '#64748b' }}>{translate('table')}:</span>
                 <span style={{ fontWeight: 'bold' }}>{tableNumber}</span>
               </div>
               <div style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                marginBottom: '6px', 
-                fontSize: isMobile ? '12px' : '13px' 
+                display: 'flex',
+                justifyContent: 'space-between',
+                marginBottom: '6px',
+                fontSize: isMobile ? '12px' : '13px',
+                color: '#1e293b'
               }}>
                 <span style={{ color: '#64748b' }}>{translate('customer')}:</span>
                 <span style={{ fontWeight: 'bold' }}>{customerName || translate('guest')}</span>
               </div>
               <div style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                marginTop: '6px', 
-                paddingTop: '6px', 
-                borderTop: '1px solid #e2e8f0', 
-                fontSize: isMobile ? '12px' : '13px' 
+                display: 'flex',
+                justifyContent: 'space-between',
+                marginTop: '6px',
+                paddingTop: '6px',
+                borderTop: '1px solid #e2e8f0',
+                fontSize: isMobile ? '12px' : '13px',
+                color: '#1e293b'
               }}>
                 <span style={{ fontWeight: 'bold' }}>{translate('total_items')}:</span>
                 <span style={{ fontWeight: 'bold' }}>{getCartItemCount()}</span>
               </div>
             </div>
             <div style={{ 
-              background: '#fef3c7', 
-              borderRadius: '14px', 
-              padding: isMobile ? '12px' : '16px', 
-              marginBottom: '20px' 
+              background: '#fef3c7',
+              borderRadius: '14px',
+              padding: isMobile ? '12px' : '16px',
+              marginBottom: '20px'
             }}>
               <div style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                fontWeight: 'bold', 
-                fontSize: isMobile ? '16px' : '18px' 
+                display: 'flex',
+                justifyContent: 'space-between',
+                fontWeight: 'bold',
+                fontSize: isMobile ? '16px' : '18px',
+                color: '#1e293b'
               }}>
                 <span>{translate('total_amount')}:</span>
                 <span style={{ color: '#22c55e' }}>RM {getGrandTotal().toFixed(2)}</span>
@@ -2090,49 +2110,49 @@ function CustomerMenu() {
             </div>
             <div style={{ display: 'flex', gap: '10px' }}>
               <button 
-                onClick={() => { setShowConfirmModal(false); setShowCart(true) }} 
+                onClick={() => { setShowConfirmModal(false); setShowCart(true) }}
                 style={{ 
-                  flex: 1, 
-                  padding: isMobile ? '10px' : '14px', 
-                  background: '#64748b', 
-                  color: 'white', 
-                  border: 'none', 
-                  borderRadius: '40px', 
-                  cursor: 'pointer', 
-                  fontWeight: 'bold', 
-                  fontSize: isMobile ? '12px' : '14px' 
+                  flex: 1,
+                  padding: isMobile ? '10px' : '14px',
+                  background: '#64748b',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '40px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  fontSize: isMobile ? '12px' : '14px'
                 }}
               >
                 {translate('back')}
               </button>
               <button 
-                onClick={() => setShowConfirmModal(false)} 
+                onClick={() => setShowConfirmModal(false)}
                 style={{ 
-                  flex: 1, 
-                  padding: isMobile ? '10px' : '14px', 
-                  background: 'transparent', 
-                  color: '#64748b', 
-                  border: `1px solid #64748b`, 
-                  borderRadius: '40px', 
-                  cursor: 'pointer', 
-                  fontSize: isMobile ? '12px' : '14px', 
-                  fontWeight: 'bold' 
+                  flex: 1,
+                  padding: isMobile ? '10px' : '14px',
+                  background: 'transparent',
+                  color: '#64748b',
+                  border: `1px solid #64748b`,
+                  borderRadius: '40px',
+                  cursor: 'pointer',
+                  fontSize: isMobile ? '12px' : '14px',
+                  fontWeight: 'bold'
                 }}
               >
                 {translate('close')}
               </button>
               <button 
-                onClick={submitOrderConfirmed} 
+                onClick={submitOrderConfirmed}
                 style={{ 
-                  flex: 1, 
-                  padding: isMobile ? '10px' : '14px', 
-                  background: 'linear-gradient(135deg, #22c55e, #16a34a)', 
-                  color: 'white', 
-                  border: 'none', 
-                  borderRadius: '40px', 
-                  cursor: 'pointer', 
-                  fontWeight: 'bold', 
-                  fontSize: isMobile ? '12px' : '14px' 
+                  flex: 1,
+                  padding: isMobile ? '10px' : '14px',
+                  background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '40px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  fontSize: isMobile ? '12px' : '14px'
                 }}
               >
                 {translate('confirm')}
