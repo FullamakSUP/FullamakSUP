@@ -393,15 +393,21 @@ function CustomerMenu() {
   // HELPERS
   // ============================================================
   // ============================================================
-  // GET CATEGORIES - ONLY SHOW PARENT CATEGORIES (NO SUB-CATEGORIES)
+  // GET CATEGORIES - PARENT CATEGORIES + FORCE "Minuman"
   // ============================================================
   const getCategoriesForMenu = () => {
-    // Only show parent categories (parent_id === null)
-    // This shows: Makanan, Minuman (not Teh, Kopi, Jus, Air)
-    return categories
+    // Get parent categories (parent_id === null)
+    const parentCats = categories
       .filter(cat => cat.parent_id === null)
       .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
       .map(cat => cat.name)
+    
+    // Force "Minuman" to appear even if empty
+    if (!parentCats.includes('Minuman')) {
+      parentCats.push('Minuman')
+    }
+    
+    return parentCats
   }
 
   const getDefaultIcon = (category) => {
@@ -715,11 +721,11 @@ function CustomerMenu() {
   const getCartItemCount = () => cart.reduce((sum, item) => sum + item.quantity, 0)
 
   // ============================================================
-  // FILTERS - ONLY SHOW PARENT CATEGORIES
+  // FILTERS - PARENT CATEGORIES + FORCE "Minuman"
   // ============================================================
   const parentCategories = getCategoriesForMenu()
   
-  // Build category names: 'All' + ONLY parent categories from database
+  // Build category names: 'All' + parent categories + force "Minuman"
   const categoryNames = ['All']
   parentCategories.forEach(cat => categoryNames.push(cat))
   
@@ -1172,7 +1178,7 @@ function CustomerMenu() {
         </div>
       )}
 
-      {/* ===== CATEGORY FILTERS - ONLY PARENT CATEGORIES ===== */}
+      {/* ===== CATEGORY FILTERS - PARENT CATEGORIES + FORCE "Minuman" ===== */}
       <div style={{ maxWidth: '1280px', margin: '16px auto', padding: isMobile ? '0 12px' : '0 20px' }}>
         <div style={{ 
           display: 'flex',
