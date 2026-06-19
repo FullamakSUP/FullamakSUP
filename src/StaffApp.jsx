@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 import ReceiptModal from './ReceiptModal'
 import toast from 'react-hot-toast'
 import { useTheme } from './context/ThemeContext'
@@ -49,7 +50,6 @@ function StaffApp() {
   const [selectedDrinkItem, setSelectedDrinkItem] = useState(null)
   const [selectedDrinkOption, setSelectedDrinkOption] = useState('Panas')
   
-  // Size/Options Modal State
   const [showSizeModal, setShowSizeModal] = useState(false)
   const [selectedSizeItem, setSelectedSizeItem] = useState(null)
   const [menuOptions, setMenuOptions] = useState([])
@@ -62,13 +62,11 @@ function StaffApp() {
   
   const [audio, setAudio] = useState(null)
   
-  // Pagination for history
   const [historyPage, setHistoryPage] = useState(1)
   const historyItemsPerPage = 10
 
   // ========== TRANSLATIONS - TANPA EMOJI ==========
   const translations = {
-    // General
     new_order: { en: 'New Order', ms: 'Pesanan Baru' },
     take_away: { en: 'Take Away', ms: 'Bungkus' },
     table: { en: 'Table', ms: 'Meja' },
@@ -76,18 +74,12 @@ function StaffApp() {
     cancelled: { en: 'Cancelled', ms: 'Dibatalkan' },
     payment_received: { en: 'Payment received', ms: 'Bayaran diterima' },
     record_payment: { en: 'Record Payment', ms: 'Rekod Bayaran' },
-    
-    // Tabs - TANPA EMOJI (emoji ada dalam icon)
     tab_pos: { en: 'POS', ms: 'POS' },
     tab_new: { en: 'Baru', ms: 'Baru' },
     tab_unpaid: { en: 'Belum Bayar', ms: 'Belum Bayar' },
     tab_history: { en: 'Sejarah', ms: 'Sejarah' },
-    
-    // Order Types
     dine_in: { en: 'Dine In', ms: 'Makan di Sini' },
     takeaway: { en: 'Take Away', ms: 'Bungkus' },
-    
-    // Labels
     table_no: { en: 'Table', ms: 'Meja' },
     name: { en: 'Name', ms: 'Nama' },
     phone: { en: 'Phone', ms: 'Telefon' },
@@ -101,15 +93,11 @@ function StaffApp() {
     action: { en: 'Action', ms: 'Tindakan' },
     id: { en: 'ID', ms: 'ID' },
     type: { en: 'Type', ms: 'Jenis' },
-    
-    // Status
     pending: { en: 'Pending', ms: 'Tertunda' },
     preparing: { en: 'Preparing', ms: 'Sedang Siap' },
     ready: { en: 'Ready', ms: 'Sedia' },
     paid: { en: 'Paid', ms: 'Dibayar' },
     unpaid: { en: 'Unpaid', ms: 'Belum Bayar' },
-    
-    // Buttons
     accept_cook: { en: 'Accept & Cook', ms: 'Terima & Masak' },
     accept_ready: { en: 'Accept (Ready)', ms: 'Terima (Sedia)' },
     cancel: { en: 'Cancel', ms: 'Batal' },
@@ -120,31 +108,21 @@ function StaffApp() {
     place_order: { en: 'Place Order', ms: 'Hantar Pesanan' },
     record_payment_btn: { en: 'Record Payment', ms: 'Rekod Bayaran' },
     select_size: { en: 'Select Size', ms: 'Pilih Saiz' },
-    
-    // Drink Options
     drink_type: { en: 'Select drink type', ms: 'Pilih jenis minuman' },
     hot: { en: 'Hot', ms: 'Panas' },
     cold: { en: 'Cold', ms: 'Sejuk' },
     takeaway_drink: { en: 'Takeaway', ms: 'Bungkus' },
     add_to_cart: { en: 'Add to Cart', ms: 'Tambah ke Keranjang' },
-    
-    // Messages
     start_cooking: { en: 'Started cooking!', ms: 'Mula memasak!' },
     order_accepted: { en: 'Order accepted! Ready for payment.', ms: 'Pesanan diterima! Sedia untuk bayar.' },
     new_orders_alert: { en: 'Click to process', ms: 'Klik untuk proses' },
     no_new_orders: { en: 'No new orders', ms: 'Tiada pesanan baru' },
     no_unpaid: { en: 'No unpaid orders', ms: 'Tiada pesanan belum bayar' },
     no_history: { en: 'No history', ms: 'Tiada sejarah' },
-    
-    // Payment Methods
     cash: { en: 'Cash', ms: 'Tunai' },
     tng: { en: 'TnG', ms: 'TnG' },
     bank: { en: 'Bank', ms: 'Bank' },
-    
-    // Size Modal
     choose_size: { en: 'Choose size / option', ms: 'Pilih saiz / pilihan' },
-    
-    // Staff
     no_orders: { en: 'No orders', ms: 'Tiada pesanan' },
     guest: { en: 'Guest', ms: 'Tetamu' },
     all: { en: 'All', ms: 'Semua' },
@@ -153,35 +131,21 @@ function StaffApp() {
     processing: { en: 'Processing...', ms: 'Memproses...' },
     refresh: { en: 'Refresh', ms: 'Muat Semula' },
     test_sound: { en: 'Test Sound', ms: 'Uji Bunyi' },
-    
-    // Cart
     cart: { en: 'Cart', ms: 'Keranjang' },
     grand_total: { en: 'Grand Total', ms: 'Jumlah Keseluruhan' },
-    
-    // Description
     description: { en: 'Description', ms: 'Keterangan' },
-    
-    // Pagination
     first: { en: 'First', ms: 'Pertama' },
     prev: { en: 'Prev', ms: 'Sebelum' },
     next: { en: 'Next', ms: 'Seterusnya' },
     last: { en: 'Last', ms: 'Terakhir' },
-    
-    // Settings
     kitchen_on: { en: 'Kitchen ON', ms: 'Dapur ON' },
     kitchen_off: { en: 'Kitchen OFF', ms: 'Dapur OFF' },
     auto_complete: { en: 'Auto Complete', ms: 'Auto Siap' },
     min: { en: 'min', ms: 'min' },
-    
-    // Order
     accepted: { en: 'Accepted', ms: 'Diterima' },
-    
-    // Receipt
     receipt: { en: 'Receipt', ms: 'Resit' },
     print: { en: 'Print', ms: 'Cetak' },
     reprint: { en: 'Reprint', ms: 'Cetak Semula' },
-    
-    // Validation
     please_enter_table: { en: 'Please enter table number', ms: 'Sila masukkan nombor meja' },
     order_sent: { en: 'Order sent to kitchen!', ms: 'Pesanan dihantar ke dapur!' },
     error: { en: 'Error', ms: 'Ralat' },
@@ -222,7 +186,6 @@ function StaffApp() {
       : '0 8px 32px rgba(0, 0, 0, 0.08)'
   }
 
-  // Get drink option label with translations
   const getDrinkOptionLabel = (optionType) => {
     if (optionType === 'Panas') return `☕ ${t('hot')}`
     if (optionType === 'Sejuk') return `🧊 ${t('cold')}`
@@ -237,7 +200,7 @@ function StaffApp() {
     return ''
   }
 
-  // ========== LOAD CATEGORIES FUNCTION ==========
+  // ========== LOAD CATEGORIES ==========
   async function loadCategories() {
     const { data } = await supabase
       .from('categories')
@@ -247,16 +210,18 @@ function StaffApp() {
     setCategories(data || [])
   }
 
-  // Get sub categories for POS filter - EXCLUDE MINUMAN SUB CATEGORIES
-  const getSubCategoriesForMenu = () => {
-    const minumanMain = categories.find(c => c.name === 'Minuman' && c.parent_id === null)
+  // ========== GET ALL CATEGORIES WITH MENU ITEMS - FIXED ==========
+  const getCategoriesWithItems = () => {
+    // Get all unique categories from menu items
+    const menuCategories = [...new Set(menu.map(item => item.category))]
     
-    return categories.filter(cat => {
-      if (cat.parent_id === null) return false
-      if (minumanMain && cat.parent_id === minumanMain.id) return false
-      return true
-    })
+    // Filter categories that exist in menu
+    return categories.filter(cat => menuCategories.includes(cat.name))
   }
+
+  // Get categories for display
+  const categoriesWithItems = getCategoriesWithItems()
+  const categoryNames = ['Semua', ...categoriesWithItems.map(cat => cat.name)]
 
   useEffect(() => {
     if (typeof Audio !== 'undefined') {
@@ -345,13 +310,11 @@ function StaffApp() {
     let reminderCount = 0
     
     if (customerOrders.length > 0 && activeTab !== 'orders') {
-      // Play sound immediately when there are new orders
       if (soundEnabled && audio) {
         audio.currentTime = 0
         audio.play().catch(e => console.log('Reminder sound failed:', e))
       }
       
-      // Show initial toast
       toast(
         `🔔 ${customerOrders.length} ${t('new_order')}! ${t('new_orders_alert')}`,
         { 
@@ -365,26 +328,21 @@ function StaffApp() {
         }
       )
       
-      // Send push notification for reminder
       sendNotification(
         `🔔 ${customerOrders.length} New Orders Waiting!`,
         `Please process ${customerOrders.length} pending orders`,
         '/staff'
       )
       
-      // Set interval for reminders every 5 seconds
       interval = setInterval(() => {
         reminderCount++
         
-        // Only send reminder if still have pending orders and not on orders tab
         if (customerOrders.length > 0 && activeTab !== 'orders') {
-          // Play sound
           if (soundEnabled && audio) {
             audio.currentTime = 0
             audio.play().catch(e => console.log('Reminder sound failed:', e))
           }
           
-          // Show toast with reminder count
           toast(
             `🔔 Still ${customerOrders.length} ${t('new_order')}! Please process. (${reminderCount})`,
             { 
@@ -398,26 +356,22 @@ function StaffApp() {
             }
           )
           
-          // Send push notification every 5 seconds
           sendNotification(
             `🔔 ${customerOrders.length} Orders Waiting!`,
             `Please process pending orders (reminder ${reminderCount})`,
             '/staff'
           )
           
-          // Update document title with count
           document.title = `🔔 ${customerOrders.length} New Orders! - KedaiPOS`
         } else {
-          // Reset reminder count when no pending orders or on orders tab
           reminderCount = 0
           document.title = 'KedaiPOS - Staf'
         }
-      }, 5000) // Every 5 seconds
+      }, 5000)
     }
     
     return () => { 
       if (interval) clearInterval(interval) 
-      // Reset title on unmount
       document.title = 'KedaiPOS - Staf'
     }
   }, [customerOrders.length, activeTab, soundEnabled, audio, t])
@@ -470,7 +424,6 @@ function StaffApp() {
     return () => clearInterval(interval)
   }, [kitchenEnabled, autoCompleteEnabled, autoCompleteMinutes])
 
-  // Menu Options Functions
   async function loadMenuOptions(menuId) {
     const { data } = await supabase
       .from('menu_options')
@@ -618,7 +571,6 @@ function StaffApp() {
     setSelectedOrder(null)
     toast.success(`✅ ${t('payment_received')} RM ${grandTotal.toFixed(2)}!`)
     
-    // Auto print after payment
     try {
       const { data: autoPrintData } = await supabase
         .from('settings')
@@ -760,13 +712,28 @@ function StaffApp() {
     toast.success(`🔄 ${t('data_refreshed')}`) 
   }
 
-  // ========== SUB CATEGORIES FOR POS FILTER ==========
-  const subCategoriesForMenu = getSubCategoriesForMenu()
-  const categoryNames = ['Semua', ...subCategoriesForMenu.map(cat => cat.name)]
-
-  const filteredMenu = selectedCategory === 'Semua' 
-    ? menu 
-    : menu.filter(item => item.category === selectedCategory)
+  // ========== DRAG & DROP HANDLER ==========
+  const handleDragEnd = async (result) => {
+    if (!result.destination) return
+    
+    // Remove 'Semua' from the list for reordering
+    const categoryList = categoriesWithItems
+    const items = Array.from(categoryList)
+    const [reorderedItem] = items.splice(result.source.index, 1)
+    items.splice(result.destination.index, 0, reorderedItem)
+    
+    // Update sort_order in database
+    for (let i = 0; i < items.length; i++) {
+      await supabase
+        .from('categories')
+        .update({ sort_order: i })
+        .eq('id', items[i].id)
+    }
+    
+    // Reload categories
+    await loadCategories()
+    toast.success('✅ Category order updated!')
+  }
 
   const getDefaultIcon = (category) => {
     const found = categories.find(c => c.name === category)
@@ -780,7 +747,7 @@ function StaffApp() {
 
   const getCategoryIconForFilter = (catName) => {
     if (catName === 'Semua') return '🍽️'
-    const found = subCategoriesForMenu.find(c => c.name === catName)
+    const found = categoriesWithItems.find(c => c.name === catName)
     if (found && found.icon) return found.icon
     return '🍽️'
   }
@@ -894,14 +861,13 @@ function StaffApp() {
     return method
   }
 
-  // POS Tab - Menu grid responsive
   const menuGridCols = isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(170px, 1fr))'
 
   return (
     <Sidebar>
       <div style={{ padding: isMobile ? '12px' : '24px', maxWidth: '1400px', margin: '0 auto', background: bgColor, minHeight: '100vh' }}>
         
-        {/* Top Bar - Responsive */}
+        {/* Top Bar */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
             <div style={{ 
@@ -973,7 +939,7 @@ function StaffApp() {
           </div>
         </div>
 
-        {/* Settings Bar - Responsive */}
+        {/* Settings Bar */}
         <div style={{ 
           ...glassEffect, 
           borderRadius: '20px', 
@@ -990,7 +956,7 @@ function StaffApp() {
           <span style={{ color: textColor, fontWeight: 'bold' }}>💰 {t('unpaid')}: {unpaidOrders.length}</span>
         </div>
 
-        {/* Order Type Selection - Responsive */}
+        {/* Order Type Selection */}
         <div style={{ 
           display: 'flex', 
           gap: '12px', 
@@ -1034,7 +1000,7 @@ function StaffApp() {
           </button>
         </div>
 
-        {/* Order Details Input - Responsive */}
+        {/* Order Details Input */}
         <div style={{ 
           ...glassEffect, 
           borderRadius: '20px', 
@@ -1115,7 +1081,7 @@ function StaffApp() {
           )}
         </div>
 
-        {/* Tabs - CLEAN, NO DOUBLE ICONS */}
+        {/* Tabs */}
         <div style={{ 
           display: 'flex', 
           gap: '4px', 
@@ -1178,7 +1144,7 @@ function StaffApp() {
           ))}
         </div>
 
-        {/* New Orders Alert Banner */}
+        {/* New Orders Alert */}
         {customerOrders.length > 0 && activeTab !== 'orders' && (
           <div 
             onClick={() => setActiveTab('orders')} 
@@ -1215,38 +1181,84 @@ function StaffApp() {
           </div>
         )}
 
-        {/* POS TAB - Responsive */}
+        {/* POS TAB */}
         {activeTab === 'pos' && (
           <>
             <h1 style={{ color: textColor, fontSize: isMobile ? '18px' : '26px', marginBottom: '16px', fontWeight: 'bold' }}>
               🧾 POS {orderType === 'take_away' ? `(${t('takeaway')})` : `(${t('dine_in')})`}
             </h1>
             
-            {/* Category Filters - ONLY SUB CATEGORIES (EXCLUDE MINUMAN) */}
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
-              {categoryNames.map(cat => (
-                <button 
-                  key={cat} 
-                  onClick={() => setSelectedCategory(cat)} 
-                  style={{ 
-                    padding: isMobile ? '6px 14px' : '10px 24px', 
-                    background: selectedCategory === cat ? 'linear-gradient(135deg, #2563eb, #1d4ed8)' : 'transparent', 
-                    color: selectedCategory === cat ? 'white' : textColor, 
-                    border: `1px solid ${borderColor}`, 
-                    borderRadius: '50px', 
-                    cursor: 'pointer', 
-                    fontWeight: selectedCategory === cat ? 'bold' : '500', 
-                    fontSize: isMobile ? '11px' : '14px',
-                    whiteSpace: 'nowrap'
-                  }}
-                >
-                  {cat === 'Semua' ? `🍽️ ${t('all')}` : `${getCategoryIconForFilter(cat)} ${cat}`}
-                </button>
-              ))}
-            </div>
+            {/* Category Filters - WITH DRAG & DROP - FIXED */}
+            <DragDropContext onDragEnd={handleDragEnd}>
+              <Droppable droppableId="categories" direction="horizontal">
+                {(provided) => (
+                  <div 
+                    {...provided.droppableProps}
+                    ref={provided.innerRef}
+                    style={{ 
+                      display: 'flex', 
+                      gap: '8px', 
+                      flexWrap: 'wrap', 
+                      marginBottom: '16px',
+                      padding: '4px',
+                      minHeight: '50px'
+                    }}
+                  >
+                    {categoryNames.map((cat, index) => (
+                      <Draggable key={cat} draggableId={cat} index={index}>
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            style={{
+                              ...provided.draggableProps.style,
+                              cursor: 'grab',
+                              opacity: snapshot.isDragging ? 0.5 : 1,
+                              display: 'inline-block'
+                            }}
+                          >
+                            <button 
+                              onClick={() => setSelectedCategory(cat)} 
+                              style={{ 
+                                padding: isMobile ? '6px 14px' : '10px 24px', 
+                                background: selectedCategory === cat ? 'linear-gradient(135deg, #2563eb, #1d4ed8)' : 'transparent', 
+                                color: selectedCategory === cat ? 'white' : textColor, 
+                                border: `1px solid ${borderColor}`, 
+                                borderRadius: '50px', 
+                                cursor: 'pointer', 
+                                fontWeight: selectedCategory === cat ? 'bold' : '500', 
+                                fontSize: isMobile ? '11px' : '14px',
+                                whiteSpace: 'nowrap',
+                                pointerEvents: selectedCategory === cat ? 'none' : 'auto',
+                                transition: 'all 0.2s',
+                                boxShadow: snapshot.isDragging ? '0 4px 12px rgba(0,0,0,0.3)' : 'none'
+                              }}
+                            >
+                              {cat === 'Semua' ? `🍽️ ${t('all')}` : `${getCategoryIconForFilter(cat)} ${cat}`}
+                              {cat !== 'Semua' && (
+                                <span style={{ 
+                                  marginLeft: '6px', 
+                                  fontSize: '10px', 
+                                  opacity: 0.5,
+                                  display: 'inline-block'
+                                }}>
+                                  ↕
+                                </span>
+                              )}
+                            </button>
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </DragDropContext>
             
             <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', flexDirection: isMobile ? 'column' : 'row' }}>
-              {/* Menu Grid - WITH DESCRIPTION */}
+              {/* Menu Grid */}
               <div style={{ flex: 2 }}>
                 <div style={{ display: 'grid', gridTemplateColumns: menuGridCols, gap: isMobile ? '12px' : '20px' }}>
                   {filteredMenu.map(item => {
@@ -1301,7 +1313,6 @@ function StaffApp() {
                           {item.name}
                         </h3>
                         
-                        {/* 👇 DESCRIPTION DISPLAY */}
                         {hasDescription && (
                           <div style={{ 
                             fontSize: isMobile ? '9px' : '11px', 
@@ -1372,7 +1383,7 @@ function StaffApp() {
                 </div>
               </div>
               
-              {/* Cart Section - Responsive sticky */}
+              {/* Cart Section */}
               <div style={{ 
                 flex: 1, 
                 ...glassEffect, 
@@ -1513,7 +1524,7 @@ function StaffApp() {
           </>
         )}
 
-        {/* ORDERS TAB - Responsive */}
+        {/* ORDERS TAB */}
         {activeTab === 'orders' && (
           <div>
             <h2 style={{ 
@@ -1659,7 +1670,7 @@ function StaffApp() {
           </div>
         )}
 
-        {/* UNPAID TAB - Responsive */}
+        {/* UNPAID TAB */}
         {activeTab === 'unpaid' && (
           <div>
             <h2 style={{ 
@@ -1814,7 +1825,7 @@ function StaffApp() {
           </div>
         )}
 
-        {/* HISTORY TAB - Responsive */}
+        {/* HISTORY TAB */}
         {activeTab === 'history' && (
           <div>
             <h2 style={{ 
@@ -1983,7 +1994,7 @@ function StaffApp() {
                     </tbody>
                   </table>
                 </div>
-                {/* Pagination - Responsive */}
+                {/* Pagination */}
                 {Math.ceil(orderHistory.length / historyItemsPerPage) > 1 && (
                   <div style={{ 
                     display: 'flex', 
@@ -2074,7 +2085,7 @@ function StaffApp() {
           </div>
         )}
 
-        {/* Size Options Modal - Responsive */}
+        {/* Size Options Modal */}
         {showSizeModal && selectedSizeItem && (
           <div style={{ 
             position: 'fixed', 
@@ -2163,7 +2174,7 @@ function StaffApp() {
           </div>
         )}
 
-        {/* Drink Options Modal - UPDATED with Bungkus */}
+        {/* Drink Options Modal */}
         {showDrinkModal && selectedDrinkItem && (
           <div style={{ 
             position: 'fixed', 
@@ -2212,7 +2223,6 @@ function StaffApp() {
                 flexWrap: 'wrap', 
                 justifyContent: 'center' 
               }}>
-                {/* Panas */}
                 {drinkOptions[selectedDrinkItem.name]?.some(o => o.type === 'Panas') && (
                   <button 
                     onClick={() => setSelectedDrinkOption('Panas')} 
@@ -2235,7 +2245,6 @@ function StaffApp() {
                   </button>
                 )}
                 
-                {/* Sejuk */}
                 {drinkOptions[selectedDrinkItem.name]?.some(o => o.type === 'Sejuk') && (
                   <button 
                     onClick={() => setSelectedDrinkOption('Sejuk')} 
@@ -2258,7 +2267,6 @@ function StaffApp() {
                   </button>
                 )}
                 
-                {/* Bungkus / Takeaway */}
                 {drinkOptions[selectedDrinkItem.name]?.some(o => o.type === 'Bungkus') && (
                   <button 
                     onClick={() => setSelectedDrinkOption('Bungkus')} 
@@ -2318,7 +2326,7 @@ function StaffApp() {
           </div>
         )}
 
-        {/* Payment Modal - Responsive */}
+        {/* Payment Modal */}
         {showPaymentModal && selectedOrder && (
           <div style={{ 
             position: 'fixed', 
