@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react'
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
+import { createClient } from '@supabase/supabase-js'
 import ReceiptModal from './ReceiptModal'
 import toast from 'react-hot-toast'
 import { useTheme } from './context/ThemeContext'
 import { useLanguage } from './context/LanguageContext'
 import Sidebar from './components/Sidebar'
-import { supabase } from './lib/supabase'
-import { sendNotification } from './utils/notification'
+
+const supabaseUrl = 'https://thtumfwamkkchuousgio.supabase.co'
+const supabaseKey = ' sb_publishable_d88qlLkxoSu0Ffzp2hcUUw_cTbExB_P '
+
+const supabase = createClient(supabaseUrl, supabaseKey)
 
 // Helper function for Malaysia time
 const formatMalaysiaTime = (date) => {
@@ -21,9 +24,8 @@ const formatMalaysiaTime = (date) => {
 
 function StaffApp() {
   const { darkMode } = useTheme()
-  const { language } = useLanguage()
+  const { language, t } = useLanguage()
   const [menu, setMenu] = useState([])
-  const [categories, setCategories] = useState([])
   const [drinkOptions, setDrinkOptions] = useState({})
   const [cart, setCart] = useState([])
   const [customerOrders, setCustomerOrders] = useState([])
@@ -50,10 +52,6 @@ function StaffApp() {
   const [selectedDrinkItem, setSelectedDrinkItem] = useState(null)
   const [selectedDrinkOption, setSelectedDrinkOption] = useState('Panas')
   
-  const [showSizeModal, setShowSizeModal] = useState(false)
-  const [selectedSizeItem, setSelectedSizeItem] = useState(null)
-  const [menuOptions, setMenuOptions] = useState([])
-  
   const [orderType, setOrderType] = useState('dine_in')
   const [customerName, setCustomerName] = useState('')
   const [customerPhone, setCustomerPhone] = useState('')
@@ -62,110 +60,9 @@ function StaffApp() {
   
   const [audio, setAudio] = useState(null)
   
+  // Pagination for history
   const [historyPage, setHistoryPage] = useState(1)
   const historyItemsPerPage = 10
-
-  // ========== TRANSLATIONS - TANPA EMOJI ==========
-  const translations = {
-    new_order: { en: 'New Order', ms: 'Pesanan Baru' },
-    take_away: { en: 'Take Away', ms: 'Bungkus' },
-    table: { en: 'Table', ms: 'Meja' },
-    empty_cart: { en: 'Cart is empty', ms: 'Keranjang kosong' },
-    cancelled: { en: 'Cancelled', ms: 'Dibatalkan' },
-    payment_received: { en: 'Payment received', ms: 'Bayaran diterima' },
-    record_payment: { en: 'Record Payment', ms: 'Rekod Bayaran' },
-    tab_pos: { en: 'POS', ms: 'POS' },
-    tab_new: { en: 'Baru', ms: 'Baru' },
-    tab_unpaid: { en: 'Belum Bayar', ms: 'Belum Bayar' },
-    tab_history: { en: 'Sejarah', ms: 'Sejarah' },
-    dine_in: { en: 'Dine In', ms: 'Makan di Sini' },
-    takeaway: { en: 'Take Away', ms: 'Bungkus' },
-    table_no: { en: 'Table', ms: 'Meja' },
-    name: { en: 'Name', ms: 'Nama' },
-    phone: { en: 'Phone', ms: 'Telefon' },
-    customer: { en: 'Customer', ms: 'Pelanggan' },
-    total: { en: 'Total', ms: 'Jumlah' },
-    subtotal: { en: 'Subtotal', ms: 'Subtotal' },
-    service: { en: 'Service Charge', ms: 'Caj Perkhidmatan' },
-    tax: { en: 'Tax', ms: 'Cukai' },
-    method: { en: 'Method', ms: 'Kaedah' },
-    time: { en: 'Time', ms: 'Masa' },
-    action: { en: 'Action', ms: 'Tindakan' },
-    id: { en: 'ID', ms: 'ID' },
-    type: { en: 'Type', ms: 'Jenis' },
-    pending: { en: 'Pending', ms: 'Tertunda' },
-    preparing: { en: 'Preparing', ms: 'Sedang Siap' },
-    ready: { en: 'Ready', ms: 'Sedia' },
-    paid: { en: 'Paid', ms: 'Dibayar' },
-    unpaid: { en: 'Unpaid', ms: 'Belum Bayar' },
-    accept_cook: { en: 'Accept & Cook', ms: 'Terima & Masak' },
-    accept_ready: { en: 'Accept (Ready)', ms: 'Terima (Sedia)' },
-    cancel: { en: 'Cancel', ms: 'Batal' },
-    save: { en: 'Save', ms: 'Simpan' },
-    close: { en: 'Close', ms: 'Tutup' },
-    add: { en: 'Add', ms: 'Tambah' },
-    added: { en: 'Added!', ms: 'Ditambah!' },
-    place_order: { en: 'Place Order', ms: 'Hantar Pesanan' },
-    record_payment_btn: { en: 'Record Payment', ms: 'Rekod Bayaran' },
-    select_size: { en: 'Select Size', ms: 'Pilih Saiz' },
-    drink_type: { en: 'Select drink type', ms: 'Pilih jenis minuman' },
-    hot: { en: 'Hot', ms: 'Panas' },
-    cold: { en: 'Cold', ms: 'Sejuk' },
-    takeaway_drink: { en: 'Takeaway', ms: 'Bungkus' },
-    add_to_cart: { en: 'Add to Cart', ms: 'Tambah ke Keranjang' },
-    start_cooking: { en: 'Started cooking!', ms: 'Mula memasak!' },
-    order_accepted: { en: 'Order accepted! Ready for payment.', ms: 'Pesanan diterima! Sedia untuk bayar.' },
-    new_orders_alert: { en: 'Click to process', ms: 'Klik untuk proses' },
-    no_new_orders: { en: 'No new orders', ms: 'Tiada pesanan baru' },
-    no_unpaid: { en: 'No unpaid orders', ms: 'Tiada pesanan belum bayar' },
-    no_history: { en: 'No history', ms: 'Tiada sejarah' },
-    cash: { en: 'Cash', ms: 'Tunai' },
-    tng: { en: 'TnG', ms: 'TnG' },
-    bank: { en: 'Bank', ms: 'Bank' },
-    choose_size: { en: 'Choose size / option', ms: 'Pilih saiz / pilihan' },
-    no_orders: { en: 'No orders', ms: 'Tiada pesanan' },
-    guest: { en: 'Guest', ms: 'Tetamu' },
-    all: { en: 'All', ms: 'Semua' },
-    walk_in: { en: 'Walk-in', ms: 'Berjalan Masuk' },
-    no_table: { en: 'No table', ms: 'Tiada meja' },
-    processing: { en: 'Processing...', ms: 'Memproses...' },
-    refresh: { en: 'Refresh', ms: 'Muat Semula' },
-    test_sound: { en: 'Test Sound', ms: 'Uji Bunyi' },
-    cart: { en: 'Cart', ms: 'Keranjang' },
-    grand_total: { en: 'Grand Total', ms: 'Jumlah Keseluruhan' },
-    description: { en: 'Description', ms: 'Keterangan' },
-    first: { en: 'First', ms: 'Pertama' },
-    prev: { en: 'Prev', ms: 'Sebelum' },
-    next: { en: 'Next', ms: 'Seterusnya' },
-    last: { en: 'Last', ms: 'Terakhir' },
-    kitchen_on: { en: 'Kitchen ON', ms: 'Dapur ON' },
-    kitchen_off: { en: 'Kitchen OFF', ms: 'Dapur OFF' },
-    auto_complete: { en: 'Auto Complete', ms: 'Auto Siap' },
-    min: { en: 'min', ms: 'min' },
-    accepted: { en: 'Accepted', ms: 'Diterima' },
-    receipt: { en: 'Receipt', ms: 'Resit' },
-    print: { en: 'Print', ms: 'Cetak' },
-    reprint: { en: 'Reprint', ms: 'Cetak Semula' },
-    please_enter_table: { en: 'Please enter table number', ms: 'Sila masukkan nombor meja' },
-    order_sent: { en: 'Order sent to kitchen!', ms: 'Pesanan dihantar ke dapur!' },
-    error: { en: 'Error', ms: 'Ralat' },
-    data_refreshed: { en: 'Data refreshed!', ms: 'Data telah direfresh!' },
-  }
-
-  const t = (key) => {
-    if (!translations[key]) return key
-    return language === 'en' ? translations[key].en : translations[key].ms
-  }
-
-  // Check if mobile
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
 
   // Modern theme colors
   const bgColor = darkMode ? '#0f0f1a' : '#f1f5f9'
@@ -181,47 +78,8 @@ function StaffApp() {
     background: cardBg,
     backdropFilter: 'blur(10px)',
     border: `1px solid ${borderColor}`,
-    boxShadow: darkMode 
-      ? '0 8px 32px rgba(0, 0, 0, 0.4)' 
-      : '0 8px 32px rgba(0, 0, 0, 0.08)'
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)'
   }
-
-  const getDrinkOptionLabel = (optionType) => {
-    if (optionType === 'Panas') return `☕ ${t('hot')}`
-    if (optionType === 'Sejuk') return `🧊 ${t('cold')}`
-    if (optionType === 'Bungkus') return `📦 ${t('takeaway_drink')}`
-    return optionType
-  }
-
-  const getDrinkOptionEmoji = (optionType) => {
-    if (optionType === 'Panas') return '🔥'
-    if (optionType === 'Sejuk') return '🧊'
-    if (optionType === 'Bungkus') return '📦'
-    return ''
-  }
-
-  // ========== LOAD CATEGORIES ==========
-  async function loadCategories() {
-    const { data } = await supabase
-      .from('categories')
-      .select('*')
-      .order('sort_order', { ascending: true })
-    console.log('📂 Categories loaded (StaffApp):', data)
-    setCategories(data || [])
-  }
-
-  // ========== GET ALL CATEGORIES WITH MENU ITEMS - FIXED ==========
-  const getCategoriesWithItems = () => {
-    // Get all unique categories from menu items
-    const menuCategories = [...new Set(menu.map(item => item.category))]
-    
-    // Filter categories that exist in menu
-    return categories.filter(cat => menuCategories.includes(cat.name))
-  }
-
-  // Get categories for display
-  const categoriesWithItems = getCategoriesWithItems()
-  const categoryNames = ['Semua', ...categoriesWithItems.map(cat => cat.name)]
 
   useEffect(() => {
     if (typeof Audio !== 'undefined') {
@@ -232,12 +90,18 @@ function StaffApp() {
   }, [])
 
   useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  useEffect(() => {
     loadMenu()
     loadDrinkOptions()
     loadCustomerOrders()
     loadUnpaidOrders()
     loadSettings()
-    loadCategories()
 
     const menuSubscription = supabase.channel('menu_changes').on('postgres_changes', { event: '*', schema: 'public', table: 'menu' }, () => loadMenu()).subscribe()
     const drinkSubscription = supabase.channel('drink_options_changes').on('postgres_changes', { event: '*', schema: 'public', table: 'drink_options' }, () => loadDrinkOptions()).subscribe()
@@ -259,15 +123,7 @@ function StaffApp() {
           }
           document.title = '🔔 Pesanan Baru! - KedaiPOS'
           setTimeout(() => { document.title = 'KedaiPOS - Staf' }, 5000)
-          
-          const orderTypeLabel = payload.new.order_type === 'take_away' ? t('takeaway') : `${t('table')} ${payload.new.table_number}`
-          toast.success(`${t('new_order')} ${orderTypeLabel}!`)
-          
-          sendNotification(
-            '🆕 New Order Received!',
-            `${orderTypeLabel} - ${payload.new.customer_name || t('guest')} (${payload.new.items?.length} items)`,
-            '/staff'
-          )
+          toast.success(`${t('new_order')} ${payload.new.order_type === 'take_away' ? t('take_away') : `${t('table')} ${payload.new.table_number}`}!`)
         }
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'customer_orders' }, (payload) => {
@@ -277,13 +133,7 @@ function StaffApp() {
             audio.currentTime = 0
             audio.play().catch(e => console.log('Audio play failed:', e))
           }
-          toast.success('✅ Order ready! Please record payment.', { duration: 4000 })
-          
-          sendNotification(
-            '✅ Order Ready!',
-            `Order ${payload.new.order_number} is ready for pickup - ${payload.new.customer_name || t('guest')}`,
-            '/staff'
-          )
+          toast.success('✅ Pesanan sedia! Sila rekod bayaran.', { duration: 4000 })
         }
         if (payload.old.status === 'pending' && payload.new.status !== 'pending') {
           loadCustomerOrders()
@@ -304,76 +154,25 @@ function StaffApp() {
     }
   }, [soundEnabled, audio])
 
-  // ===== REMINDER NOTIFICATION EVERY 5 SECONDS =====
   useEffect(() => {
     let interval
-    let reminderCount = 0
-    
     if (customerOrders.length > 0 && activeTab !== 'orders') {
       if (soundEnabled && audio) {
         audio.currentTime = 0
         audio.play().catch(e => console.log('Reminder sound failed:', e))
       }
-      
-      toast(
-        `🔔 ${customerOrders.length} ${t('new_order')}! ${t('new_orders_alert')}`,
-        { 
-          duration: 3000, 
-          icon: '🔔',
-          style: {
-            background: '#ef4444',
-            color: 'white',
-            fontWeight: 'bold'
-          }
-        }
-      )
-      
-      sendNotification(
-        `🔔 ${customerOrders.length} New Orders Waiting!`,
-        `Please process ${customerOrders.length} pending orders`,
-        '/staff'
-      )
-      
+      toast(`🔔 ${customerOrders.length} ${t('new_orders')}! Klik tab "🆕 ${t('new_order')}" untuk proses.`, { duration: 3000, icon: '🔔' })
       interval = setInterval(() => {
-        reminderCount++
-        
         if (customerOrders.length > 0 && activeTab !== 'orders') {
           if (soundEnabled && audio) {
             audio.currentTime = 0
             audio.play().catch(e => console.log('Reminder sound failed:', e))
           }
-          
-          toast(
-            `🔔 Still ${customerOrders.length} ${t('new_order')}! Please process. (${reminderCount})`,
-            { 
-              duration: 3000, 
-              icon: '🔔',
-              style: {
-                background: '#ef4444',
-                color: 'white',
-                fontWeight: 'bold'
-              }
-            }
-          )
-          
-          sendNotification(
-            `🔔 ${customerOrders.length} Orders Waiting!`,
-            `Please process pending orders (reminder ${reminderCount})`,
-            '/staff'
-          )
-          
-          document.title = `🔔 ${customerOrders.length} New Orders! - KedaiPOS`
-        } else {
-          reminderCount = 0
-          document.title = 'KedaiPOS - Staf'
+          toast(`🔔 Masih ada ${customerOrders.length} ${t('new_orders')}! Sila proses.`, { duration: 3000, icon: '🔔' })
         }
       }, 5000)
     }
-    
-    return () => { 
-      if (interval) clearInterval(interval) 
-      document.title = 'KedaiPOS - Staf'
-    }
+    return () => { if (interval) clearInterval(interval) }
   }, [customerOrders.length, activeTab, soundEnabled, audio, t])
 
   useEffect(() => {
@@ -382,10 +181,12 @@ function StaffApp() {
     return () => { if (interval) clearInterval(interval) }
   }, [activeTab])
 
+  // Reset history page when order history changes
   useEffect(() => {
     setHistoryPage(1)
   }, [orderHistory.length])
 
+  // Auto complete orders when kitchen is disabled
   useEffect(() => {
     if (kitchenEnabled) return
     if (!autoCompleteEnabled) return
@@ -423,56 +224,6 @@ function StaffApp() {
     
     return () => clearInterval(interval)
   }, [kitchenEnabled, autoCompleteEnabled, autoCompleteMinutes])
-
-  async function loadMenuOptions(menuId) {
-    const { data } = await supabase
-      .from('menu_options')
-      .select('*')
-      .eq('menu_id', menuId)
-      .eq('available', true)
-      .order('sort_order')
-    return data || []
-  }
-
-  async function addToCartWithOption(item, option) {
-    setAddingItemId(item.id)
-    setTimeout(() => setAddingItemId(null), 300)
-    
-    const finalPrice = option.is_absolute_price 
-      ? option.price_adjustment 
-      : item.price + option.price_adjustment
-    
-    const cartItem = {
-      id: `${item.id}_${option.id}_${Date.now()}`,
-      name: `${item.name} (${option.option_name})`,
-      price: finalPrice,
-      quantity: 1,
-      option_name: option.option_name,
-      option_id: option.id,
-      category: item.category || 'Makanan'
-    }
-    
-    setCart([...cart, cartItem])
-    setShowSizeModal(false)
-    setSelectedSizeItem(null)
-    toast.success(`✓ ${cartItem.name} ${t('added')}`)
-  }
-
-  function addToCartDirect(item) {
-    const existing = cart.find(x => x.id === item.id && !x.option_id)
-    if (existing) {
-      setCart(cart.map(x => x.id === item.id && !x.option_id ? { ...x, quantity: x.quantity + 1 } : x))
-    } else {
-      setCart([...cart, { 
-        ...item, 
-        quantity: 1,
-        is_free: false,
-        is_promo_item: false,
-        category: item.category || 'Makanan'
-      }])
-    }
-    toast.success(`✓ ${item.name} ${t('added')}`)
-  }
 
   async function loadSettings() {
     const { data } = await supabase.from('settings').select('key, value')
@@ -533,7 +284,7 @@ function StaffApp() {
       } else {
         await supabase.from(table).update({ status: 'ready', payment_status: 'unpaid' }).eq('id', orderId)
         setCustomerOrders(prev => prev.filter(order => order.id !== orderId))
-        toast.success('✅ ' + t('order_accepted'))
+        toast.success('✅ Pesanan diterima! Sedia untuk bayar.')
         await loadUnpaidOrders()
         await loadCustomerOrders()
       }
@@ -551,52 +302,14 @@ function StaffApp() {
     const tax = subtotal * (taxPercent / 100)
     const grandTotal = subtotal + serviceCharge + tax
     
-    await supabase.from('customer_orders').update({ 
-      payment_status: 'paid', 
-      payment_method: paymentMethod, 
-      paid_at: new Date().toISOString(), 
-      subtotal, 
-      service_charge: serviceCharge, 
-      tax, 
-      grand_total: grandTotal 
-    }).eq('id', order.id)
-    
+    await supabase.from('customer_orders').update({ payment_status: 'paid', payment_method: paymentMethod, paid_at: new Date().toISOString(), subtotal, service_charge: serviceCharge, tax, grand_total: grandTotal }).eq('id', order.id)
     await loadUnpaidOrders()
     await loadOrderHistory()
     setShowPaymentModal(false)
-    
-    const receiptOrder = { ...order, payment_method: paymentMethod, paid_at: new Date().toISOString(), subtotal, service_charge: serviceCharge, tax, grand_total: grandTotal }
-    setCurrentReceiptOrder(receiptOrder)
+    setCurrentReceiptOrder({ ...order, payment_method: paymentMethod, paid_at: new Date().toISOString(), subtotal, service_charge: serviceCharge, tax, grand_total: grandTotal })
     setShowReceipt(true)
     setSelectedOrder(null)
     toast.success(`✅ ${t('payment_received')} RM ${grandTotal.toFixed(2)}!`)
-    
-    try {
-      const { data: autoPrintData } = await supabase
-        .from('settings')
-        .select('value')
-        .eq('key', 'auto_print')
-        .single()
-      
-      const { data: printerTypeData } = await supabase
-        .from('settings')
-        .select('value')
-        .eq('key', 'printer_type')
-        .single()
-      
-      if (autoPrintData?.value === 'true' && printerTypeData?.value !== 'none') {
-        setTimeout(() => {
-          const printButton = document.querySelector('#receipt-print-btn')
-          if (printButton) {
-            printButton.click()
-          } else {
-            window.print()
-          }
-        }, 1000)
-      }
-    } catch (err) {
-      console.error('Auto print error:', err)
-    }
   }
 
   function openPaymentModal(order) { setSelectedOrder(order); setShowPaymentModal(true) }
@@ -606,16 +319,7 @@ function StaffApp() {
   function getTax() { return getSubtotal() * (taxPercent / 100) }
   function getGrandTotal() { return getSubtotal() + getServiceCharge() + getTax() }
 
-  const openDrinkOptionsForItem = (item) => { 
-    setSelectedDrinkItem(item)
-    const options = drinkOptions[item.name]
-    if (options && options.length > 0) {
-      setSelectedDrinkOption(options[0].type)
-    } else {
-      setSelectedDrinkOption('Panas')
-    }
-    setShowDrinkModal(true) 
-  }
+  const openDrinkOptionsForItem = (item) => { setSelectedDrinkItem(item); setSelectedDrinkOption('Panas'); setShowDrinkModal(true) }
   
   const addDrinkToCart = () => {
     if (!selectedDrinkItem) return
@@ -626,37 +330,14 @@ function StaffApp() {
     setAddingItemId(`${selectedDrinkItem.id}_${selectedDrinkOption}`)
     setTimeout(() => setAddingItemId(null), 300)
     
-    const optionLabel = getDrinkOptionLabel(selectedDrinkOption)
-    
-    setCart([...cart, { 
-      id: `${selectedDrinkItem.id}_${selectedDrinkOption}_${Date.now()}`, 
-      name: `${selectedDrinkItem.name} (${optionLabel})`, 
-      price: selected.price, 
-      quantity: 1,
-      category: 'Minuman',
-      option_type: selectedDrinkOption
-    }])
+    setCart([...cart, { id: `${selectedDrinkItem.id}_${selectedDrinkOption}`, name: `${selectedDrinkItem.name} (${selectedDrinkOption === 'Panas' ? '☕ Panas' : '🧊 Sejuk'})`, price: selected.price, quantity: 1 }])
     setShowDrinkModal(false)
     setSelectedDrinkItem(null)
-    toast.success(`✓ ${selectedDrinkItem.name} (${optionLabel}) ${t('added')}`)
   }
 
   function addToCart(item) {
     setAddingItemId(item.id)
     setTimeout(() => setAddingItemId(null), 300)
-    
-    if (item.has_options) {
-      loadMenuOptions(item.id).then(options => {
-        if (options && options.length > 0) {
-          setSelectedSizeItem(item)
-          setMenuOptions(options)
-          setShowSizeModal(true)
-        } else {
-          addToCartDirect(item)
-        }
-      })
-      return
-    }
     
     const hasDrinkOptions = drinkOptions[item.name] && drinkOptions[item.name].length > 0
     const isDrink = item.category === 'Minuman'
@@ -664,7 +345,16 @@ function StaffApp() {
     if (hasDrinkOptions || isDrink) {
       openDrinkOptionsForItem(item)
     } else {
-      addToCartDirect(item)
+      const existing = cart.find(x => x.id === item.id)
+      if (existing) {
+        setCart(cart.map(x => x.id === item.id ? { ...x, quantity: x.quantity + 1 } : x))
+      } else {
+        setCart([...cart, { 
+          ...item, 
+          quantity: 1,
+          category: item.category || 'Makanan' 
+        }])
+      }
     }
   }
 
@@ -679,844 +369,207 @@ function StaffApp() {
 
   async function saveOrder() {
     if (cart.length === 0) { toast.error(t('empty_cart')); return }
-    if (orderType === 'dine_in' && !tableNumber) { toast.error(t('please_enter_table')); return }
+    if (orderType === 'dine_in' && !tableNumber) { toast.error('Sila masukkan nombor meja untuk Dine In!'); return }
     const orderNumber = 'ORD-' + Date.now()
-    const items = cart.map(item => ({ 
-      id: item.id, 
-      name: item.name, 
-      price: item.price, 
-      quantity: item.quantity, 
-      category: item.category, 
-      option_name: item.option_name || null,
-      option_type: item.option_type || null
-    }))
+    const items = cart.map(item => ({ id: item.id, name: item.name, price: item.price, quantity: item.quantity, category: item.category }))
     const subtotal = getSubtotal()
     const serviceCharge = getServiceCharge()
     const tax = getTax()
     const grandTotal = getGrandTotal()
     const orderData = { order_number: orderNumber, items, subtotal, service_charge: serviceCharge, tax, total: grandTotal, payment_status: 'unpaid', status: 'pending' }
     if (orderType === 'take_away') { orderData.order_type = 'take_away'; orderData.customer_name = customerName || 'Take Away'; orderData.customer_phone = customerPhone || ''; orderData.table_number = 0 }
-    else if (orderType === 'dine_in' && tableNumber) { orderData.order_type = 'dine_in'; orderData.customer_name = customerName || t('walk_in'); orderData.table_number = parseInt(tableNumber) }
+    else if (orderType === 'dine_in' && tableNumber) { orderData.order_type = 'dine_in'; orderData.customer_name = customerName || 'Walk-in'; orderData.table_number = parseInt(tableNumber) }
     const { error } = await supabase.from('customer_orders').insert([orderData])
-    if (error) toast.error(`${t('error')}: ${error.message}`)
-    else { toast.success(`${t('order_sent')}`); setCart([]); setCustomerName(''); setCustomerPhone(''); setTableNumber(''); loadCustomerOrders() }
+    if (error) toast.error('Ralat: ' + error.message)
+    else { toast.success(`Pesanan ${orderNumber} dihantar ke dapur!`); setCart([]); setCustomerName(''); setCustomerPhone(''); setTableNumber(''); loadCustomerOrders() }
   }
 
-  async function manualRefresh() { 
-    await loadMenu(); 
-    await loadDrinkOptions(); 
-    await loadCustomerOrders(); 
-    await loadUnpaidOrders(); 
-    await loadSettings();
-    await loadCategories();
-    toast.success(`🔄 ${t('data_refreshed')}`) 
-  }
+  async function manualRefresh() { await loadMenu(); await loadDrinkOptions(); await loadCustomerOrders(); await loadUnpaidOrders(); await loadSettings(); toast.success('🔄 Data telah direfresh!') }
 
-  // ========== DRAG & DROP HANDLER ==========
-  const handleDragEnd = async (result) => {
-    if (!result.destination) return
-    
-    // Remove 'Semua' from the list for reordering
-    const categoryList = categoriesWithItems
-    const items = Array.from(categoryList)
-    const [reorderedItem] = items.splice(result.source.index, 1)
-    items.splice(result.destination.index, 0, reorderedItem)
-    
-    // Update sort_order in database
-    for (let i = 0; i < items.length; i++) {
-      await supabase
-        .from('categories')
-        .update({ sort_order: i })
-        .eq('id', items[i].id)
-    }
-    
-    // Reload categories
-    await loadCategories()
-    toast.success('✅ Category order updated!')
-  }
+  const categories = ['Semua', ...new Set(menu.map(item => item.category).filter(Boolean))]
+  const filteredMenu = selectedCategory === 'Semua' ? menu : menu.filter(item => item.category === selectedCategory)
 
   const getDefaultIcon = (category) => {
-    const found = categories.find(c => c.name === category)
-    if (found && found.icon) return found.icon
     switch(category) {
       case 'Makanan': return '🍚'
       case 'Minuman': return '🥤'
+      case 'SUP': return '🍜'
       default: return '🍽️'
     }
   }
 
-  const getCategoryIconForFilter = (catName) => {
-    if (catName === 'Semua') return '🍽️'
-    const found = categoriesWithItems.find(c => c.name === catName)
-    if (found && found.icon) return found.icon
+  const getCategoryIcon = (cat) => {
+    if (cat === 'Makanan') return '🍚'
+    if (cat === 'Minuman') return '🥤'
+    if (cat === 'SUP') return '🍜'
     return '🍽️'
   }
 
-  const getStatusText = (status) => {
-    switch(status) {
-      case 'pending': return t('pending')
-      case 'preparing': return t('preparing')
-      case 'ready': return t('ready')
-      case 'paid': return t('paid')
-      default: return status
-    }
-  }
-
-  const getStatusColor = (status) => {
-    switch(status) {
-      case 'pending': return '#ef4444'
-      case 'preparing': return '#f59e0b'
-      case 'ready': return '#22c55e'
-      case 'paid': return '#22c55e'
-      default: return '#64748b'
-    }
-  }
-
   const renderOrderItems = (items) => {
-    if (!items) return null
-    return items.map((item, idx) => {
-      const optionEmoji = item.option_type ? getDrinkOptionEmoji(item.option_type) : ''
-      return (
-        <div key={idx} style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          padding: '8px 0', 
-          borderBottom: idx !== items.length - 1 ? `1px solid ${borderColor}` : 'none' 
-        }}>
-          <span style={{ color: textColor, flex: 2, fontSize: isMobile ? '12px' : '14px' }}>
-            {item.name}
-            {item.option_type && (
-              <span style={{ 
-                background: item.option_type === 'Bungkus' ? '#8b5cf6' : 
-                           item.option_type === 'Panas' ? '#f97316' : '#06b6d4',
-                color: 'white',
-                padding: '1px 8px',
-                borderRadius: '20px',
-                fontSize: '9px',
-                marginLeft: '6px',
-                fontWeight: 'bold'
-              }}>
-                {optionEmoji} {item.option_type === 'Bungkus' ? t('takeaway_drink') : 
-                               item.option_type === 'Panas' ? t('hot') : t('cold')}
-              </span>
-            )}
-          </span>
-          <span style={{ color: textMuted, textAlign: 'center', flex: 1, fontSize: isMobile ? '11px' : '13px' }}>x{item.quantity}</span>
-          <span style={{ color: '#22c55e', fontWeight: 'bold', textAlign: 'right', flex: 1, fontSize: isMobile ? '12px' : '14px' }}>RM {(item.price * item.quantity).toFixed(2)}</span>
-        </div>
-      )
-    })
+    return items.map((item, idx) => (
+      <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: idx !== items.length - 1 ? `1px solid ${borderColor}` : 'none' }}>
+        <span style={{ color: textColor, flex: 2, fontSize: '14px' }}>{item.name}</span>
+        <span style={{ color: textMuted, textAlign: 'center', flex: 1, fontSize: '13px' }}>x{item.quantity}</span>
+        <span style={{ color: '#22c55e', fontWeight: 'bold', textAlign: 'right', flex: 1, fontSize: '14px' }}>RM {(item.price * item.quantity).toFixed(2)}</span>
+      </div>
+    ))
   }
 
   const renderUnpaidItems = (items) => {
-    if (!items) return null
-    return items.map((item, idx) => {
-      const optionEmoji = item.option_type ? getDrinkOptionEmoji(item.option_type) : ''
-      return (
-        <div key={idx} style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          padding: '8px 0', 
-          borderBottom: idx !== items.length - 1 ? `1px solid ${borderColor}` : 'none' 
-        }}>
-          <span style={{ color: textColor, fontSize: isMobile ? '12px' : '14px' }}>
-            {item.name}
-            {item.option_type && (
-              <span style={{ 
-                background: item.option_type === 'Bungkus' ? '#8b5cf6' : 
-                           item.option_type === 'Panas' ? '#f97316' : '#06b6d4',
-                color: 'white',
-                padding: '1px 8px',
-                borderRadius: '20px',
-                fontSize: '9px',
-                marginLeft: '6px',
-                fontWeight: 'bold'
-              }}>
-                {optionEmoji} {item.option_type === 'Bungkus' ? t('takeaway_drink') : 
-                               item.option_type === 'Panas' ? t('hot') : t('cold')}
-              </span>
-            )}
-            <span style={{ color: textMuted, marginLeft: '4px' }}>x{item.quantity}</span>
-          </span>
-          <span style={{ color: '#22c55e', fontWeight: 'bold', fontSize: isMobile ? '12px' : '14px' }}>RM {(item.price * item.quantity).toFixed(2)}</span>
-        </div>
-      )
-    })
+    return items.map((item, idx) => (
+      <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: idx !== items.length - 1 ? `1px solid ${borderColor}` : 'none' }}>
+        <span style={{ color: textColor, fontSize: '14px' }}>{item.name} x{item.quantity}</span>
+        <span style={{ color: '#22c55e', fontWeight: 'bold', fontSize: '14px' }}>RM {(item.price * item.quantity).toFixed(2)}</span>
+      </div>
+    ))
   }
-
-  const getOrderGrandTotal = (order) => {
-    if (order.grand_total) return order.grand_total
-    const subtotal = order.subtotal || order.total || 0
-    const sc = order.service_charge || (subtotal * (serviceChargePercent / 100))
-    const tax = order.tax || (subtotal * (taxPercent / 100))
-    return subtotal + sc + tax
-  }
-
-  const getPaymentMethodDisplay = (method) => {
-    if (!method) return '—'
-    if (method === 'cash') return t('cash')
-    if (method === 'tng') return t('tng')
-    if (method === 'bank') return t('bank')
-    return method
-  }
-
-  const menuGridCols = isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(170px, 1fr))'
 
   return (
     <Sidebar>
-      <div style={{ padding: isMobile ? '12px' : '24px', maxWidth: '1400px', margin: '0 auto', background: bgColor, minHeight: '100vh' }}>
+      <div style={{ padding: isMobile ? '16px' : '24px', maxWidth: '1400px', margin: '0 auto', background: bgColor, minHeight: '100vh' }}>
         
         {/* Top Bar */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-            <div style={{ 
-              background: kitchenEnabled ? '#22c55e' : '#ef4444', 
-              color: 'white', 
-              padding: '4px 14px', 
-              borderRadius: '30px', 
-              fontSize: isMobile ? '10px' : '12px', 
-              fontWeight: 'bold',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px'
-            }}>
-              🍳 {kitchenEnabled ? t('kitchen_on') : t('kitchen_off')}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <div style={{ background: kitchenEnabled ? '#22c55e' : '#ef4444', color: 'white', padding: '6px 16px', borderRadius: '40px', fontSize: '12px', fontWeight: 'bold', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+              🍳 {t('kitchen')}: {kitchenEnabled ? 'ON' : 'OFF'}
             </div>
             {!kitchenEnabled && autoCompleteEnabled && (
-              <div style={{ 
-                background: '#3b82f6', 
-                color: 'white', 
-                padding: '4px 14px', 
-                borderRadius: '30px', 
-                fontSize: isMobile ? '10px' : '12px', 
-                fontWeight: 'bold',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px'
-              }}>
-                ⏱️ {t('auto_complete')}: {autoCompleteMinutes}{t('min')}
+              <div style={{ background: '#3b82f6', color: 'white', padding: '6px 16px', borderRadius: '40px', fontSize: '12px', fontWeight: 'bold' }}>
+                ⏱️ Auto Complete: {autoCompleteMinutes} min
               </div>
             )}
           </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button 
-              onClick={manualRefresh} 
-              style={{ 
-                background: 'linear-gradient(135deg, #06b6d4, #0891b2)', 
-                color: 'white', 
-                padding: isMobile ? '6px 14px' : '8px 20px', 
-                border: 'none', 
-                borderRadius: '30px', 
-                cursor: 'pointer', 
-                fontSize: isMobile ? '11px' : '13px', 
-                fontWeight: 'bold',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px'
-              }}
-            >
-              🔄 <span style={{ display: isMobile ? 'none' : 'inline' }}>{t('refresh')}</span>
-            </button>
-            <button 
-              onClick={() => { if (audio) { audio.currentTime = 0; audio.play().catch(e => console.log('Test sound failed:', e)) } }} 
-              style={{ 
-                background: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)', 
-                color: textColor, 
-                padding: isMobile ? '6px 14px' : '8px 20px', 
-                border: `1px solid ${borderColor}`, 
-                borderRadius: '30px', 
-                cursor: 'pointer', 
-                fontSize: isMobile ? '11px' : '13px', 
-                fontWeight: '500',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px'
-              }}
-            >
-              🔊 <span style={{ display: isMobile ? 'none' : 'inline' }}>{t('test_sound')}</span>
-            </button>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button onClick={manualRefresh} style={{ background: 'linear-gradient(135deg, #06b6d4, #0891b2)', color: 'white', padding: '8px 20px', border: 'none', borderRadius: '40px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold' }}>🔄 {t('refresh')}</button>
+            <button onClick={() => { if (audio) { audio.currentTime = 0; audio.play().catch(e => console.log('Test sound failed:', e)) } }} style={{ background: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)', color: textColor, padding: '8px 20px', border: `1px solid ${borderColor}`, borderRadius: '40px', cursor: 'pointer', fontSize: '13px', fontWeight: '500' }}>🔊 {t('sound')} Test</button>
           </div>
         </div>
 
         {/* Settings Bar */}
-        <div style={{ 
-          ...glassEffect, 
-          borderRadius: '20px', 
-          padding: isMobile ? '10px 16px' : '12px 24px', 
-          marginBottom: '16px', 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          flexWrap: 'wrap', 
-          gap: '10px', 
-          fontSize: isMobile ? '11px' : '13px' 
-        }}>
-          <span style={{ color: textColor }}>⚙️ {t('service')}: {serviceChargePercent}% {orderType === 'take_away' && '(Tiada)'}</span>
+        <div style={{ ...glassEffect, borderRadius: '24px', padding: '12px 20px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', fontSize: '13px' }}>
+          <span style={{ color: textColor }}>⚙️ {t('service_charge')}: {serviceChargePercent}% {orderType === 'take_away' && `(${t('take_away')} - Tiada)`}</span>
           <span style={{ color: textColor }}>🏷️ {t('tax')}: {taxPercent}%</span>
           <span style={{ color: textColor, fontWeight: 'bold' }}>💰 {t('unpaid')}: {unpaidOrders.length}</span>
         </div>
 
         {/* Order Type Selection */}
-        <div style={{ 
-          display: 'flex', 
-          gap: '12px', 
-          marginBottom: '16px', 
-          background: cardBg, 
-          borderRadius: '50px', 
-          padding: '4px', 
-          ...glassEffect 
-        }}>
-          <button 
-            onClick={() => { setOrderType('dine_in'); setCustomerName(''); setCustomerPhone(''); setTableNumber(''); }} 
-            style={{ 
-              flex: 1, 
-              padding: isMobile ? '8px 12px' : '12px 20px', 
-              background: orderType === 'dine_in' ? 'linear-gradient(135deg, #2563eb, #1d4ed8)' : 'transparent', 
-              color: orderType === 'dine_in' ? 'white' : textColor, 
-              border: 'none', 
-              borderRadius: '50px', 
-              cursor: 'pointer', 
-              fontWeight: 'bold', 
-              fontSize: isMobile ? '12px' : '14px' 
-            }}
-          >
-            {t('dine_in')}
-          </button>
-          <button 
-            onClick={() => { setOrderType('take_away'); setCustomerName(''); setCustomerPhone(''); setTableNumber(''); }} 
-            style={{ 
-              flex: 1, 
-              padding: isMobile ? '8px 12px' : '12px 20px', 
-              background: orderType === 'take_away' ? 'linear-gradient(135deg, #22c55e, #16a34a)' : 'transparent', 
-              color: orderType === 'take_away' ? 'white' : textColor, 
-              border: 'none', 
-              borderRadius: '50px', 
-              cursor: 'pointer', 
-              fontWeight: 'bold', 
-              fontSize: isMobile ? '12px' : '14px' 
-            }}
-          >
-            {t('takeaway')}
-          </button>
+        <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', background: cardBg, borderRadius: '60px', padding: '6px', ...glassEffect }}>
+          <button onClick={() => { setOrderType('dine_in'); setCustomerName(''); setCustomerPhone(''); setTableNumber(''); }} style={{ flex: 1, padding: '12px 20px', background: orderType === 'dine_in' ? 'linear-gradient(135deg, #2563eb, #1d4ed8)' : 'transparent', color: orderType === 'dine_in' ? 'white' : textColor, border: 'none', borderRadius: '50px', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}>🍽️ {t('dine_in')}</button>
+          <button onClick={() => { setOrderType('take_away'); setCustomerName(''); setCustomerPhone(''); setTableNumber(''); }} style={{ flex: 1, padding: '12px 20px', background: orderType === 'take_away' ? 'linear-gradient(135deg, #22c55e, #16a34a)' : 'transparent', color: orderType === 'take_away' ? 'white' : textColor, border: 'none', borderRadius: '50px', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}>🥡 {t('take_away')}</button>
         </div>
 
         {/* Order Details Input */}
-        <div style={{ 
-          ...glassEffect, 
-          borderRadius: '20px', 
-          padding: isMobile ? '12px' : '20px', 
-          marginBottom: '16px', 
-          display: 'flex', 
-          gap: '10px', 
-          flexWrap: 'wrap' 
-        }}>
+        <div style={{ ...glassEffect, borderRadius: '24px', padding: '20px', marginBottom: '24px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
           {orderType === 'dine_in' && (
             <>
-              <input 
-                type="number" 
-                placeholder={t('table_no')} 
-                value={tableNumber} 
-                onChange={(e) => setTableNumber(e.target.value)} 
-                style={{ 
-                  padding: isMobile ? '10px 12px' : '14px 16px', 
-                  borderRadius: '14px', 
-                  border: `1px solid ${inputBorder}`, 
-                  background: inputBg, 
-                  color: textColor, 
-                  flex: 1, 
-                  minWidth: '100px', 
-                  fontSize: isMobile ? '13px' : '14px' 
-                }} 
-              />
-              <input 
-                type="text" 
-                placeholder={t('name')} 
-                value={customerName} 
-                onChange={(e) => setCustomerName(e.target.value)} 
-                style={{ 
-                  padding: isMobile ? '10px 12px' : '14px 16px', 
-                  borderRadius: '14px', 
-                  border: `1px solid ${inputBorder}`, 
-                  background: inputBg, 
-                  color: textColor, 
-                  flex: 2, 
-                  fontSize: isMobile ? '13px' : '14px' 
-                }} 
-              />
+              <input type="number" placeholder={t('table_number')} value={tableNumber} onChange={(e) => setTableNumber(e.target.value)} style={{ padding: '14px 16px', borderRadius: '16px', border: `1px solid ${inputBorder}`, background: inputBg, color: textColor, flex: 1, minWidth: '140px', outline: 'none', fontSize: '14px' }} />
+              <input type="text" placeholder={t('customer_name')} value={customerName} onChange={(e) => setCustomerName(e.target.value)} style={{ padding: '14px 16px', borderRadius: '16px', border: `1px solid ${inputBorder}`, background: inputBg, color: textColor, flex: 2, outline: 'none', fontSize: '14px' }} />
             </>
           )}
           {orderType === 'take_away' && (
             <>
-              <input 
-                type="text" 
-                placeholder={t('name')} 
-                value={customerName} 
-                onChange={(e) => setCustomerName(e.target.value)} 
-                style={{ 
-                  padding: isMobile ? '10px 12px' : '14px 16px', 
-                  borderRadius: '14px', 
-                  border: `1px solid ${inputBorder}`, 
-                  background: inputBg, 
-                  color: textColor, 
-                  flex: 1, 
-                  fontSize: isMobile ? '13px' : '14px' 
-                }} 
-              />
-              <input 
-                type="tel" 
-                placeholder={t('phone')} 
-                value={customerPhone} 
-                onChange={(e) => setCustomerPhone(e.target.value)} 
-                style={{ 
-                  padding: isMobile ? '10px 12px' : '14px 16px', 
-                  borderRadius: '14px', 
-                  border: `1px solid ${inputBorder}`, 
-                  background: inputBg, 
-                  color: textColor, 
-                  flex: 1, 
-                  fontSize: isMobile ? '13px' : '14px' 
-                }} 
-              />
+              <input type="text" placeholder={t('customer_name')} value={customerName} onChange={(e) => setCustomerName(e.target.value)} style={{ padding: '14px 16px', borderRadius: '16px', border: `1px solid ${inputBorder}`, background: inputBg, color: textColor, flex: 1, outline: 'none', fontSize: '14px' }} />
+              <input type="tel" placeholder={t('customer_phone')} value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} style={{ padding: '14px 16px', borderRadius: '16px', border: `1px solid ${inputBorder}`, background: inputBg, color: textColor, flex: 1, outline: 'none', fontSize: '14px' }} />
             </>
           )}
         </div>
 
         {/* Tabs */}
-        <div style={{ 
-          display: 'flex', 
-          gap: '4px', 
-          marginBottom: '16px', 
-          background: darkMode ? 'rgba(30, 30, 46, 0.5)' : 'rgba(0,0,0,0.03)', 
-          borderRadius: '50px', 
-          padding: '4px', 
-          overflowX: 'auto', 
-          flexWrap: 'nowrap' 
-        }}>
+        <div style={{ display: 'flex', gap: '4px', marginBottom: '28px', background: darkMode ? 'rgba(30, 30, 46, 0.5)' : 'rgba(0,0,0,0.03)', borderRadius: '60px', padding: '4px', overflowX: 'auto', flexWrap: 'nowrap' }}>
           {[
-            { id: 'pos', icon: '🧾', label: 'POS' },
-            { id: 'orders', icon: '🆕', label: 'Baru', badge: customerOrders.length },
-            { id: 'unpaid', icon: '💰', label: 'Belum Bayar', badge: unpaidOrders.length },
-            { id: 'history', icon: '📜', label: 'Sejarah', badge: 0 }
+            { id: 'pos', icon: '🧾', label: t('pos') },
+            { id: 'orders', icon: '🆕', label: t('new_order'), badge: customerOrders.length },
+            { id: 'unpaid', icon: '💰', label: t('unpaid'), badge: unpaidOrders.length },
+            { id: 'history', icon: '📜', label: language === 'bm' ? 'Sejarah' : 'History', badge: 0 }
           ].map(tab => (
-            <button 
-              key={tab.id} 
-              onClick={() => { 
-                setActiveTab(tab.id); 
-                if (tab.id === 'orders') loadCustomerOrders(); 
-                if (tab.id === 'unpaid') loadUnpaidOrders(); 
-                if (tab.id === 'history') loadOrderHistory(); 
-              }} 
-              style={{ 
-                flex: 1, 
-                padding: isMobile ? '8px 12px' : '12px 24px', 
-                background: activeTab === tab.id ? 'linear-gradient(135deg, #2563eb, #1d4ed8)' : 'transparent', 
-                color: activeTab === tab.id ? 'white' : textColor, 
-                border: 'none', 
-                borderRadius: '50px', 
-                cursor: 'pointer', 
-                fontWeight: activeTab === tab.id ? 'bold' : '500', 
-                fontSize: isMobile ? '11px' : '14px', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
-                gap: '6px',
-                whiteSpace: 'nowrap',
-                minWidth: isMobile ? 'auto' : '80px'
-              }}
-            >
-              <span style={{ fontSize: isMobile ? '14px' : '16px' }}>{tab.icon}</span>
+            <button key={tab.id} onClick={() => { setActiveTab(tab.id); if (tab.id === 'orders') loadCustomerOrders(); if (tab.id === 'unpaid') loadUnpaidOrders(); if (tab.id === 'history') loadOrderHistory(); }} style={{ flex: 1, padding: isMobile ? '10px 12px' : '12px 20px', background: activeTab === tab.id ? 'linear-gradient(135deg, #2563eb, #1d4ed8)' : 'transparent', color: activeTab === tab.id ? 'white' : textColor, border: 'none', borderRadius: '50px', cursor: 'pointer', fontWeight: activeTab === tab.id ? 'bold' : '500', fontSize: isMobile ? '13px' : '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+              <span>{tab.icon}</span>
               <span>{tab.label}</span>
-              {tab.badge > 0 && (
-                <span style={{ 
-                  background: activeTab === tab.id ? 'rgba(255,255,255,0.25)' : '#ef4444', 
-                  color: 'white', 
-                  borderRadius: '20px', 
-                  padding: '1px 8px', 
-                  fontSize: '10px', 
-                  fontWeight: 'bold',
-                  minWidth: '20px',
-                  textAlign: 'center'
-                }}>
-                  {tab.badge}
-                </span>
-              )}
+              {tab.badge > 0 && <span style={{ background: activeTab === tab.id ? 'rgba(255,255,255,0.2)' : '#ef4444', color: 'white', borderRadius: '20px', padding: '2px 8px', fontSize: '10px', fontWeight: 'bold' }}>{tab.badge}</span>}
             </button>
           ))}
         </div>
 
-        {/* New Orders Alert */}
+        {/* New Orders Alert Banner */}
         {customerOrders.length > 0 && activeTab !== 'orders' && (
-          <div 
-            onClick={() => setActiveTab('orders')} 
-            style={{ 
-              background: 'linear-gradient(135deg, #ef4444, #dc2626)', 
-              color: 'white', 
-              padding: isMobile ? '12px 16px' : '16px 24px', 
-              borderRadius: '20px', 
-              marginBottom: '16px', 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center', 
-              cursor: 'pointer' 
-            }}
-          >
+          <div onClick={() => setActiveTab('orders')} style={{ background: 'linear-gradient(135deg, #ef4444, #dc2626)', color: 'white', padding: '16px 24px', borderRadius: '28px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', boxShadow: '0 8px 20px rgba(239,68,68,0.3)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <span style={{ fontSize: isMobile ? '20px' : '28px' }}>🔔</span>
-              <div>
-                <strong style={{ fontSize: isMobile ? '13px' : '16px' }}>{customerOrders.length} {t('new_order')}</strong>
-                <br />
-                <small style={{ fontSize: isMobile ? '9px' : '11px', opacity: 0.9 }}>{t('new_orders_alert')}</small>
-              </div>
+              <span style={{ fontSize: '28px' }}>🔔</span>
+              <div><strong style={{ fontSize: '16px' }}>{customerOrders.length} {t('new_orders')}!</strong><br /><small style={{ fontSize: '11px', opacity: 0.9 }}>Klik untuk lihat dan proses</small></div>
             </div>
-            <div style={{ 
-              background: 'white', 
-              color: '#dc2626', 
-              padding: '2px 12px', 
-              borderRadius: '30px', 
-              fontWeight: 'bold', 
-              fontSize: isMobile ? '14px' : '18px' 
-            }}>
-              {customerOrders.length}
-            </div>
+            <div style={{ background: 'white', color: '#dc2626', padding: '4px 14px', borderRadius: '40px', fontWeight: 'bold', fontSize: '18px' }}>{customerOrders.length}</div>
           </div>
         )}
 
         {/* POS TAB */}
         {activeTab === 'pos' && (
           <>
-            <h1 style={{ color: textColor, fontSize: isMobile ? '18px' : '26px', marginBottom: '16px', fontWeight: 'bold' }}>
-              🧾 POS {orderType === 'take_away' ? `(${t('takeaway')})` : `(${t('dine_in')})`}
-            </h1>
+            <h1 style={{ color: textColor, fontSize: isMobile ? '22px' : '26px', marginBottom: '20px', fontWeight: 'bold' }}>🧾 KedaiPOS - {t('staff')} {orderType === 'take_away' ? `(${t('take_away')})` : `(${t('dine_in')})`}</h1>
             
-            {/* Category Filters - WITH DRAG & DROP - FIXED */}
-            <DragDropContext onDragEnd={handleDragEnd}>
-              <Droppable droppableId="categories" direction="horizontal">
-                {(provided) => (
-                  <div 
-                    {...provided.droppableProps}
-                    ref={provided.innerRef}
-                    style={{ 
-                      display: 'flex', 
-                      gap: '8px', 
-                      flexWrap: 'wrap', 
-                      marginBottom: '16px',
-                      padding: '4px',
-                      minHeight: '50px'
-                    }}
-                  >
-                    {categoryNames.map((cat, index) => (
-                      <Draggable key={cat} draggableId={cat} index={index}>
-                        {(provided, snapshot) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            style={{
-                              ...provided.draggableProps.style,
-                              cursor: 'grab',
-                              opacity: snapshot.isDragging ? 0.5 : 1,
-                              display: 'inline-block'
-                            }}
-                          >
-                            <button 
-                              onClick={() => setSelectedCategory(cat)} 
-                              style={{ 
-                                padding: isMobile ? '6px 14px' : '10px 24px', 
-                                background: selectedCategory === cat ? 'linear-gradient(135deg, #2563eb, #1d4ed8)' : 'transparent', 
-                                color: selectedCategory === cat ? 'white' : textColor, 
-                                border: `1px solid ${borderColor}`, 
-                                borderRadius: '50px', 
-                                cursor: 'pointer', 
-                                fontWeight: selectedCategory === cat ? 'bold' : '500', 
-                                fontSize: isMobile ? '11px' : '14px',
-                                whiteSpace: 'nowrap',
-                                pointerEvents: selectedCategory === cat ? 'none' : 'auto',
-                                transition: 'all 0.2s',
-                                boxShadow: snapshot.isDragging ? '0 4px 12px rgba(0,0,0,0.3)' : 'none'
-                              }}
-                            >
-                              {cat === 'Semua' ? `🍽️ ${t('all')}` : `${getCategoryIconForFilter(cat)} ${cat}`}
-                              {cat !== 'Semua' && (
-                                <span style={{ 
-                                  marginLeft: '6px', 
-                                  fontSize: '10px', 
-                                  opacity: 0.5,
-                                  display: 'inline-block'
-                                }}>
-                                  ↕
-                                </span>
-                              )}
-                            </button>
-                          </div>
-                        )}
-                      </Draggable>
-                    ))}
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
-            </DragDropContext>
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '24px' }}>
+              {categories.map(cat => (
+                <button key={cat} onClick={() => setSelectedCategory(cat)} style={{ padding: isMobile ? '8px 18px' : '10px 24px', background: selectedCategory === cat ? 'linear-gradient(135deg, #2563eb, #1d4ed8)' : 'transparent', color: selectedCategory === cat ? 'white' : textColor, border: `1px solid ${borderColor}`, borderRadius: '50px', cursor: 'pointer', fontWeight: selectedCategory === cat ? 'bold' : '500', fontSize: isMobile ? '13px' : '14px' }}>
+                  {cat === 'Semua' ? '🍽️ Semua' : `${getCategoryIcon(cat)} ${cat}`}
+                </button>
+              ))}
+            </div>
             
-            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', flexDirection: isMobile ? 'column' : 'row' }}>
-              {/* Menu Grid */}
+            <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap', flexDirection: isMobile ? 'column' : 'row' }}>
               <div style={{ flex: 2 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: menuGridCols, gap: isMobile ? '12px' : '20px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(auto-fill, minmax(150px, 1fr))' : 'repeat(auto-fill, minmax(170px, 1fr))', gap: '20px' }}>
                   {filteredMenu.map(item => {
                     const hasDrinkOptions = drinkOptions[item.name] && drinkOptions[item.name].length > 0
                     const hasImage = item.image_url && item.image_url.trim() !== ''
                     const panasPrice = hasDrinkOptions ? drinkOptions[item.name]?.find(o => o.type === 'Panas')?.price : null
                     const sejukPrice = hasDrinkOptions ? drinkOptions[item.name]?.find(o => o.type === 'Sejuk')?.price : null
-                    const bungkusPrice = hasDrinkOptions ? drinkOptions[item.name]?.find(o => o.type === 'Bungkus')?.price : null
                     const isAdding = addingItemId === item.id
-                    const hasSizeOptions = item.has_options === true
-                    const hasDescription = item.description && item.description.trim() !== ''
                     
                     return (
-                      <div key={item.id} style={{ 
-                        ...glassEffect, 
-                        borderRadius: '20px', 
-                        padding: isMobile ? '12px' : '18px', 
-                        textAlign: 'center', 
-                        cursor: 'pointer', 
-                        transition: 'transform 0.2s'
-                      }}>
-                        {hasImage ? (
-                          <img src={item.image_url} alt={item.name} style={{ 
-                            width: isMobile ? '60px' : '90px', 
-                            height: isMobile ? '60px' : '90px', 
-                            objectFit: 'cover', 
-                            borderRadius: '14px', 
-                            margin: '0 auto 10px auto', 
-                            display: 'block' 
-                          }} />
-                        ) : (
-                          <div style={{ 
-                            width: isMobile ? '50px' : '70px', 
-                            height: isMobile ? '50px' : '70px', 
-                            background: secondaryBg, 
-                            borderRadius: '50%', 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            justifyContent: 'center', 
-                            margin: '0 auto 10px auto', 
-                            fontSize: isMobile ? '28px' : '36px' 
-                          }}>
-                            {getDefaultIcon(item.category)}
-                          </div>
-                        )}
-                        <h3 style={{ 
-                          fontSize: isMobile ? '13px' : '15px', 
-                          margin: '6px 0', 
-                          color: textColor, 
-                          fontWeight: 'bold' 
-                        }}>
-                          {item.name}
-                        </h3>
-                        
-                        {hasDescription && (
-                          <div style={{ 
-                            fontSize: isMobile ? '9px' : '11px', 
-                            color: textMuted, 
-                            fontStyle: 'italic',
-                            marginBottom: '6px',
-                            background: secondaryBg,
-                            padding: '3px 8px',
-                            borderRadius: '6px',
-                            border: `1px solid ${borderColor}`
-                          }}>
-                            📝 {item.description}
-                          </div>
-                        )}
-                        
+                      <div key={item.id} style={{ background: cardBg, borderRadius: '24px', padding: '18px', border: `1px solid ${borderColor}`, transition: 'transform 0.25s, box-shadow 0.25s', textAlign: 'center', cursor: 'pointer' }}
+                        onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 20px 32px rgba(0,0,0,0.12)' }}
+                        onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}>
+                        {hasImage ? <img src={item.image_url} alt={item.name} style={{ width: '90px', height: '90px', objectFit: 'cover', borderRadius: '18px', margin: '0 auto 12px auto', display: 'block', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} /> : <div style={{ width: '70px', height: '70px', background: secondaryBg, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px auto', fontSize: '36px' }}>{getDefaultIcon(item.category)}</div>}
+                        <h3 style={{ fontSize: '15px', margin: '8px 0', color: textColor, fontWeight: 'bold' }}>{item.name}</h3>
                         {hasDrinkOptions ? (
-                          <div style={{ 
-                            fontSize: isMobile ? '9px' : '11px', 
-                            marginBottom: '10px', 
-                            display: 'flex', 
-                            flexWrap: 'wrap', 
-                            justifyContent: 'center', 
-                            gap: '4px' 
-                          }}>
-                            {panasPrice && <span style={{ color: '#f97316' }}>🔥 RM {panasPrice}</span>}
-                            {sejukPrice && <span style={{ color: '#06b6d4' }}>🧊 RM {sejukPrice}</span>}
-                            {bungkusPrice && <span style={{ color: '#8b5cf6' }}>📦 RM {bungkusPrice}</span>}
+                          <div style={{ fontSize: '12px', marginBottom: '12px' }}>
+                            <span style={{ color: '#f97316' }}>🔥 RM {panasPrice}</span>
+                            <span style={{ color: '#06b6d4', marginLeft: '8px' }}>🧊 RM {sejukPrice}</span>
                           </div>
                         ) : (
-                          <p style={{ 
-                            color: darkMode ? '#4ade80' : '#22c55e', 
-                            fontSize: isMobile ? '16px' : '18px', 
-                            fontWeight: 'bold', 
-                            margin: '6px 0' 
-                          }}>
-                            RM {item.price}
-                          </p>
+                          <p style={{ color: '#22c55e', fontSize: '18px', fontWeight: 'bold', margin: '8px 0' }}>RM {item.price}</p>
                         )}
-                        {hasSizeOptions && (
-                          <div style={{ 
-                            fontSize: isMobile ? '9px' : '11px', 
-                            color: '#8b5cf6', 
-                            marginBottom: '6px', 
-                            fontWeight: 'bold' 
-                          }}>
-                            {t('select_size')}
-                          </div>
-                        )}
-                        <button 
-                          onClick={() => addToCart(item)} 
-                          style={{ 
-                            background: isAdding ? 'linear-gradient(135deg, #22c55e, #16a34a)' : 'linear-gradient(135deg, #3b82f6, #2563eb)', 
-                            color: 'white', 
-                            padding: isMobile ? '8px 0' : '10px 0', 
-                            border: 'none', 
-                            borderRadius: '50px', 
-                            cursor: 'pointer', 
-                            width: '100%', 
-                            fontSize: isMobile ? '11px' : '13px', 
-                            fontWeight: 'bold' 
-                          }}
-                        >
-                          {isAdding ? `✓ ${t('added')}` : `+ ${t('add')}`}
-                        </button>
+                        <button onClick={() => addToCart(item)} style={{ background: isAdding ? 'linear-gradient(135deg, #22c55e, #16a34a)' : 'linear-gradient(135deg, #3b82f6, #2563eb)', color: 'white', padding: '10px 0', border: 'none', borderRadius: '60px', cursor: 'pointer', width: '100%', fontSize: '13px', fontWeight: 'bold' }}>{isAdding ? '✓ Ditambah!' : `+ ${t('add')}`}</button>
                       </div>
                     )
                   })}
                 </div>
               </div>
               
-              {/* Cart Section */}
-              <div style={{ 
-                flex: 1, 
-                ...glassEffect, 
-                borderRadius: '20px', 
-                padding: isMobile ? '12px' : '20px', 
-                position: isMobile ? 'relative' : 'sticky', 
-                top: '20px', 
-                alignSelf: 'flex-start', 
-                maxHeight: isMobile ? 'auto' : 'calc(100vh - 40px)', 
-                overflowY: 'auto' 
-              }}>
-                <h2 style={{ 
-                  color: textColor, 
-                  fontSize: isMobile ? '16px' : '20px', 
-                  marginBottom: '12px', 
-                  fontWeight: 'bold' 
-                }}>
-                  🛒 {t('cart')} ({cart.reduce((s, i) => s + i.quantity, 0)})
-                </h2>
-                {cart.length === 0 ? (
-                  <p style={{ 
-                    color: textMuted, 
-                    textAlign: 'center', 
-                    padding: '30px 10px', 
-                    fontSize: isMobile ? '12px' : '14px' 
-                  }}>
-                    {t('empty_cart')}
-                  </p>
-                ) : (
+              <div style={{ flex: 1, ...glassEffect, borderRadius: '28px', padding: '20px', position: 'sticky', top: '20px', alignSelf: 'flex-start', maxHeight: 'calc(100vh - 40px)', overflowY: 'auto' }}>
+                <h2 style={{ color: textColor, fontSize: '20px', marginBottom: '20px', fontWeight: 'bold' }}>🛒 {t('cart')}</h2>
+                {cart.length === 0 ? <p style={{ color: textMuted, textAlign: 'center', padding: '40px 20px' }}>{t('empty_cart')}</p> : (
                   <>
-                    <div style={{ marginBottom: '12px', maxHeight: '300px', overflowY: 'auto' }}>
-                      {cart.map(item => {
-                        const optionEmoji = item.option_type ? getDrinkOptionEmoji(item.option_type) : ''
-                        return (
-                          <div key={item.id} style={{ 
-                            borderBottom: `1px solid ${borderColor}`, 
-                            marginBottom: '8px', 
-                            paddingBottom: '6px' 
-                          }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <div>
-                                <span style={{ 
-                                  color: textColor, 
-                                  fontWeight: '500', 
-                                  fontSize: isMobile ? '12px' : '14px' 
-                                }}>
-                                  {item.name}
-                                  {item.option_type && (
-                                    <span style={{ 
-                                      background: item.option_type === 'Bungkus' ? '#8b5cf6' : 
-                                                 item.option_type === 'Panas' ? '#f97316' : '#06b6d4',
-                                      color: 'white',
-                                      padding: '1px 6px',
-                                      borderRadius: '12px',
-                                      fontSize: '8px',
-                                      marginLeft: '4px'
-                                    }}>
-                                      {optionEmoji}
-                                    </span>
-                                  )}
-                                </span>
-                                <div style={{ fontSize: isMobile ? '10px' : '12px', color: textMuted }}>x{item.quantity}</div>
-                              </div>
-                              <span style={{ 
-                                color: darkMode ? '#4ade80' : '#22c55e', 
-                                fontWeight: 'bold', 
-                                fontSize: isMobile ? '12px' : '14px' 
-                              }}>
-                                RM {(item.price * item.quantity).toFixed(2)}
-                              </span>
-                              <button 
-                                onClick={() => removeFromCart(item.id)} 
-                                style={{ 
-                                  background: '#ef4444', 
-                                  color: 'white', 
-                                  border: 'none', 
-                                  borderRadius: '30px', 
-                                  padding: '2px 10px', 
-                                  cursor: 'pointer', 
-                                  fontSize: isMobile ? '10px' : '12px', 
-                                  fontWeight: 'bold' 
-                                }}
-                              >
-                                ✕
-                              </button>
-                            </div>
+                    <div style={{ marginBottom: '20px', maxHeight: '400px', overflowY: 'auto' }}>
+                      {cart.map(item => (
+                        <div key={item.id} style={{ borderBottom: `1px solid ${borderColor}`, marginBottom: '12px', paddingBottom: '10px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div><span style={{ color: textColor, fontWeight: '500', fontSize: '14px' }}>{item.name}</span><div style={{ fontSize: '12px', color: textMuted }}>x{item.quantity}</div></div>
+                            <span style={{ color: '#22c55e', fontWeight: 'bold', fontSize: '14px' }}>RM {(item.price * item.quantity).toFixed(2)}</span>
+                            <button onClick={() => removeFromCart(item.id)} style={{ background: '#ef4444', color: 'white', border: 'none', borderRadius: '30px', padding: '4px 12px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>✕</button>
                           </div>
-                        )
-                      })}
-                    </div>
-                    <hr style={{ borderColor: borderColor, margin: '10px 0' }} />
-                    <div style={{ fontSize: isMobile ? '12px' : '14px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                        <span>{t('subtotal')}:</span>
-                        <span>RM {getSubtotal().toFixed(2)}</span>
-                      </div>
-                      {orderType !== 'take_away' && (
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                          <span>{t('service')} ({serviceChargePercent}%):</span>
-                          <span>RM {getServiceCharge().toFixed(2)}</span>
                         </div>
-                      )}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                        <span>{t('tax')} ({taxPercent}%):</span>
-                        <span>RM {getTax().toFixed(2)}</span>
-                      </div>
+                      ))}
                     </div>
-                    <hr style={{ borderColor: borderColor, margin: '10px 0' }} />
-                    <h3 style={{ 
-                      textAlign: 'right', 
-                      color: darkMode ? '#4ade80' : '#22c55e', 
-                      fontSize: isMobile ? '18px' : '22px', 
-                      marginBottom: '12px', 
-                      fontWeight: 'bold' 
-                    }}>
-                      {t('grand_total')}: RM {getGrandTotal().toFixed(2)}
-                    </h3>
-                    <button 
-                      onClick={saveOrder} 
-                      style={{ 
-                        background: 'linear-gradient(135deg, #2563eb, #1d4ed8)', 
-                        color: 'white', 
-                        padding: isMobile ? '10px' : '14px', 
-                        width: '100%', 
-                        border: 'none', 
-                        borderRadius: '50px', 
-                        cursor: 'pointer', 
-                        fontWeight: 'bold', 
-                        fontSize: isMobile ? '13px' : '15px' 
-                      }}
-                    >
-                      {t('place_order')}
-                    </button>
+                    <hr style={{ borderColor: borderColor, margin: '16px 0' }} />
+                    <div style={{ fontSize: '14px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}><span style={{ color: textColor }}>{t('subtotal')}:</span><span style={{ color: textColor }}>RM {getSubtotal().toFixed(2)}</span></div>
+                      {orderType !== 'take_away' && <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}><span style={{ color: textColor }}>{t('service_charge')} ({serviceChargePercent}%):</span><span style={{ color: textColor }}>RM {getServiceCharge().toFixed(2)}</span></div>}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}><span style={{ color: textColor }}>{t('tax')} ({taxPercent}%):</span><span style={{ color: textColor }}>RM {getTax().toFixed(2)}</span></div>
+                    </div>
+                    <hr style={{ borderColor: borderColor, margin: '16px 0' }} />
+                    <h3 style={{ textAlign: 'right', color: '#22c55e', fontSize: '22px', marginBottom: '20px', fontWeight: 'bold' }}>{t('total')}: RM {getGrandTotal().toFixed(2)}</h3>
+                    <button onClick={saveOrder} style={{ background: 'linear-gradient(135deg, #2563eb, #1d4ed8)', color: 'white', padding: '14px', width: '100%', border: 'none', borderRadius: '60px', cursor: 'pointer', fontWeight: 'bold', fontSize: '15px' }}>💾 {t('place_order')}</button>
                   </>
                 )}
               </div>
@@ -1527,140 +580,28 @@ function StaffApp() {
         {/* ORDERS TAB */}
         {activeTab === 'orders' && (
           <div>
-            <h2 style={{ 
-              color: textColor, 
-              marginBottom: '16px', 
-              fontSize: isMobile ? '16px' : '20px', 
-              fontWeight: 'bold', 
-              borderLeft: '4px solid #ef4444', 
-              paddingLeft: '12px' 
-            }}>
-              🆕 {t('tab_new')}
-            </h2>
+            <h2 style={{ color: textColor, marginBottom: '24px', fontSize: '20px', fontWeight: 'bold', borderLeft: '4px solid #ef4444', paddingLeft: '14px' }}>🆕 {t('new_order')}</h2>
             {customerOrders.length === 0 ? (
-              <div style={{ 
-                textAlign: 'center', 
-                padding: '40px 20px', 
-                ...glassEffect, 
-                borderRadius: '20px' 
-              }}>
-                <span style={{ fontSize: '48px', opacity: 0.5 }}>🍽️</span>
-                <p style={{ color: textMuted, marginTop: '12px' }}>{t('no_new_orders')}</p>
-              </div>
+              <div style={{ textAlign: 'center', padding: '80px 20px', ...glassEffect, borderRadius: '28px' }}><span style={{ fontSize: '64px', opacity: 0.5 }}>🍽️</span><p style={{ color: textMuted, marginTop: '16px' }}>{t('no_data')}</p></div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 {customerOrders.map(order => (
-                  <div key={order.id} style={{ 
-                    ...glassEffect, 
-                    borderRadius: '20px', 
-                    padding: isMobile ? '16px' : '24px', 
-                    borderLeft: `4px solid #ef4444` 
-                  }}>
-                    <div style={{ 
-                      display: 'flex', 
-                      justifyContent: 'space-between', 
-                      alignItems: 'center', 
-                      marginBottom: '12px', 
-                      flexWrap: 'wrap', 
-                      gap: '8px' 
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontSize: isMobile ? '20px' : '28px' }}>
-                          {order.order_type === 'take_away' ? '🥡' : '🍽️'}
-                        </span>
-                        <h3 style={{ 
-                          margin: 0, 
-                          fontSize: isMobile ? '14px' : '16px', 
-                          color: textColor, 
-                          fontWeight: 'bold' 
-                        }}>
-                          {order.order_type === 'take_away' ? t('takeaway') : `${t('table')} ${order.table_number}`}
-                        </h3>
-                        <span style={{ 
-                          background: '#ef4444', 
-                          color: 'white', 
-                          padding: '2px 8px', 
-                          borderRadius: '30px', 
-                          fontSize: isMobile ? '9px' : '10px', 
-                          fontWeight: 'bold' 
-                        }}>
-                          {t('pending')}
-                        </span>
+                  <div key={order.id} style={{ ...glassEffect, borderRadius: '28px', padding: '24px', borderLeft: `4px solid #ef4444` }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <span style={{ fontSize: '28px' }}>{order.order_type === 'take_away' ? '🥡' : '🍽️'}</span>
+                        <h3 style={{ margin: 0, fontSize: '16px', color: textColor, fontWeight: 'bold' }}>{order.order_type === 'take_away' ? t('take_away') : `${t('table')} ${order.table_number}`}</h3>
+                        <span style={{ background: '#ef4444', color: 'white', padding: '4px 12px', borderRadius: '40px', fontSize: '10px', fontWeight: 'bold' }}>{t('pending')}</span>
                       </div>
-                      <div style={{ fontSize: isMobile ? '10px' : '12px', color: textMuted }}>
-                        🕐 {formatMalaysiaTime(order.created_at)}
-                      </div>
+                      <div style={{ fontSize: '12px', color: textMuted }}>🕐 {formatMalaysiaTime(order.created_at)}</div>
                     </div>
-                    <div style={{ marginBottom: '12px' }}>
-                      <span style={{ fontWeight: 'bold', color: textColor, fontSize: isMobile ? '12px' : '14px' }}>
-                        {t('customer')}:
-                      </span> 
-                      <span style={{ color: textColor, fontSize: isMobile ? '12px' : '14px' }}>
-                        {order.customer_name || t('guest')}
-                      </span>
-                    </div>
-                    <div style={{ 
-                      background: secondaryBg, 
-                      borderRadius: '16px', 
-                      padding: '12px', 
-                      margin: '12px 0' 
-                    }}>
-                      {renderOrderItems(order.items)}
-                    </div>
-                    <div style={{ 
-                      display: 'flex', 
-                      justifyContent: 'space-between', 
-                      alignItems: 'center', 
-                      marginTop: '12px', 
-                      paddingTop: '12px', 
-                      borderTop: `1px solid ${borderColor}`, 
-                      flexWrap: 'wrap', 
-                      gap: '10px' 
-                    }}>
-                      <div>
-                        <span style={{ fontSize: isMobile ? '12px' : '14px', color: textMuted }}>
-                          {t('total')}:
-                        </span>
-                        <span style={{ 
-                          fontSize: isMobile ? '18px' : '22px', 
-                          fontWeight: 'bold', 
-                          color: '#22c55e', 
-                          marginLeft: '6px' 
-                        }}>
-                          RM {order.total?.toFixed(2) || '0.00'}
-                        </span>
-                      </div>
-                      <div style={{ display: 'flex', gap: '10px' }}>
-                        <button 
-                          onClick={() => updateOrderStatus(order.id, 'accepted')} 
-                          style={{ 
-                            background: kitchenEnabled ? 'linear-gradient(135deg, #22c55e, #16a34a)' : 'linear-gradient(135deg, #06b6d4, #0891b2)', 
-                            color: 'white', 
-                            padding: isMobile ? '8px 16px' : '10px 24px', 
-                            border: 'none', 
-                            borderRadius: '40px', 
-                            cursor: 'pointer', 
-                            fontWeight: 'bold', 
-                            fontSize: isMobile ? '11px' : '13px' 
-                          }}
-                        >
-                          {kitchenEnabled ? t('accept_cook') : t('accept_ready')}
-                        </button>
-                        <button 
-                          onClick={() => updateOrderStatus(order.id, 'cancelled')} 
-                          style={{ 
-                            background: 'linear-gradient(135deg, #ef4444, #dc2626)', 
-                            color: 'white', 
-                            padding: isMobile ? '8px 16px' : '10px 24px', 
-                            border: 'none', 
-                            borderRadius: '40px', 
-                            cursor: 'pointer', 
-                            fontWeight: 'bold', 
-                            fontSize: isMobile ? '11px' : '13px' 
-                          }}
-                        >
-                          {t('cancel')}
-                        </button>
+                    <div style={{ marginBottom: '16px' }}><span style={{ fontWeight: 'bold', color: textColor }}>{t('customer_name')}:</span> <span style={{ color: textColor, marginLeft: '8px' }}>{order.customer_name || 'Walk-in'}</span>{order.customer_phone && <span style={{ marginLeft: '12px', fontSize: '12px', color: textMuted }}>📞 {order.customer_phone}</span>}</div>
+                    <div style={{ background: secondaryBg, borderRadius: '20px', padding: '16px', margin: '16px 0' }}>{renderOrderItems(order.items)}</div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px', paddingTop: '16px', borderTop: `1px solid ${borderColor}`, flexWrap: 'wrap', gap: '12px' }}>
+                      <div><span style={{ fontSize: '14px', color: textMuted }}>{t('total')}:</span><span style={{ fontSize: '22px', fontWeight: 'bold', color: '#22c55e', marginLeft: '8px' }}>RM {order.total}</span></div>
+                      <div style={{ display: 'flex', gap: '12px' }}>
+                        <button onClick={() => updateOrderStatus(order.id, 'accepted')} style={{ background: kitchenEnabled ? 'linear-gradient(135deg, #22c55e, #16a34a)' : 'linear-gradient(135deg, #06b6d4, #0891b2)', color: 'white', padding: '10px 24px', border: 'none', borderRadius: '40px', cursor: 'pointer', fontWeight: 'bold' }}>{kitchenEnabled ? `✅ ${t('accept')} & ${t('start_cooking')}` : `✅ ${t('accept')} (${t('ready')})`}</button>
+                        <button onClick={() => updateOrderStatus(order.id, 'cancelled')} style={{ background: 'linear-gradient(135deg, #ef4444, #dc2626)', color: 'white', padding: '10px 24px', border: 'none', borderRadius: '40px', cursor: 'pointer', fontWeight: 'bold' }}>❌ {t('cancel')}</button>
                       </div>
                     </div>
                   </div>
@@ -1673,150 +614,31 @@ function StaffApp() {
         {/* UNPAID TAB */}
         {activeTab === 'unpaid' && (
           <div>
-            <h2 style={{ 
-              color: textColor, 
-              marginBottom: '16px', 
-              fontSize: isMobile ? '16px' : '20px', 
-              fontWeight: 'bold', 
-              borderLeft: '4px solid #eab308', 
-              paddingLeft: '12px' 
-            }}>
-              💰 {t('tab_unpaid')}
-            </h2>
+            <h2 style={{ color: textColor, marginBottom: '24px', fontSize: '20px', fontWeight: 'bold', borderLeft: '4px solid #eab308', paddingLeft: '14px' }}>💰 {t('unpaid')}</h2>
             {unpaidOrders.length === 0 ? (
-              <div style={{ 
-                textAlign: 'center', 
-                padding: '40px 20px', 
-                ...glassEffect, 
-                borderRadius: '20px' 
-              }}>
-                <span style={{ fontSize: '48px', opacity: 0.5 }}>✅</span>
-                <p style={{ color: textMuted, marginTop: '12px' }}>{t('no_unpaid')}</p>
-              </div>
+              <div style={{ textAlign: 'center', padding: '80px 20px', ...glassEffect, borderRadius: '28px' }}><span style={{ fontSize: '64px', opacity: 0.5 }}>✅</span><p style={{ color: textMuted, marginTop: '16px' }}>{t('no_data')}</p></div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 {unpaidOrders.map(order => {
-                  const grandTotal = getOrderGrandTotal(order)
+                  const subtotal = order.subtotal || order.total || 0
+                  const sc = order.service_charge || (subtotal * (serviceChargePercent / 100))
+                  const tax = order.tax || (subtotal * (taxPercent / 100))
+                  const grandTotal = order.grand_total || (subtotal + sc + tax)
                   return (
-                    <div key={order.id} style={{ 
-                      ...glassEffect, 
-                      borderRadius: '20px', 
-                      padding: isMobile ? '16px' : '24px', 
-                      borderLeft: `4px solid #eab308` 
-                    }}>
-                      <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        marginBottom: '12px', 
-                        flexWrap: 'wrap', 
-                        gap: '8px' 
-                      }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ fontSize: isMobile ? '20px' : '24px' }}>
-                            {order.order_type === 'take_away' ? '🥡' : '🍽️'}
-                          </span>
-                          <span style={{ 
-                            fontWeight: 'bold', 
-                            color: textColor, 
-                            fontSize: isMobile ? '12px' : '14px' 
-                          }}>
-                            {order.order_number || `ORD-${order.id}`}
-                          </span>
-                        </div>
-                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                          <span style={{ color: textColor, fontSize: isMobile ? '12px' : '14px' }}>
-                            {order.order_type === 'take_away' ? t('takeaway') : `${t('table')} ${order.table_number}`}
-                          </span>
-                          <span style={{ 
-                            background: getStatusColor(order.status), 
-                            color: order.status === 'preparing' ? '#333' : 'white', 
-                            padding: '2px 10px', 
-                            borderRadius: '30px', 
-                            fontSize: isMobile ? '9px' : '10px', 
-                            fontWeight: 'bold' 
-                          }}>
-                            {getStatusText(order.status)}
-                          </span>
-                        </div>
+                    <div key={order.id} style={{ ...glassEffect, borderRadius: '28px', padding: '24px', borderLeft: `4px solid #eab308` }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><span style={{ fontSize: '24px' }}>{order.order_type === 'take_away' ? '🥡' : '🍽️'}</span><span style={{ fontWeight: 'bold', color: textColor }}>{order.order_number || `ORD-${order.id}`}</span></div>
+                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}><span style={{ color: textColor }}>{order.order_type === 'take_away' ? t('take_away') : `${t('table')} ${order.table_number}`}</span><span style={{ background: order.status === 'ready' ? '#22c55e' : order.status === 'preparing' ? '#eab308' : '#6c757d', color: order.status === 'preparing' ? '#333' : 'white', padding: '2px 12px', borderRadius: '40px', fontSize: '10px', fontWeight: 'bold' }}>{order.status === 'ready' ? t('ready') : order.status === 'preparing' ? t('preparing') : t('pending')}</span></div>
                       </div>
-                      <p>
-                        <strong style={{ color: textColor, fontSize: isMobile ? '12px' : '14px' }}>
-                          {order.customer_name || t('guest')}
-                        </strong>
-                      </p>
-                      <div style={{ 
-                        background: secondaryBg, 
-                        borderRadius: '16px', 
-                        padding: '12px', 
-                        margin: '12px 0' 
-                      }}>
-                        {renderUnpaidItems(order.items)}
+                      <p><strong style={{ color: textColor }}>{order.customer_name || 'Walk-in'}</strong></p>
+                      <div style={{ background: secondaryBg, borderRadius: '20px', padding: '16px', margin: '16px 0' }}>{renderUnpaidItems(order.items)}</div>
+                      <div style={{ background: secondaryBg, padding: '16px', borderRadius: '20px', marginTop: '16px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '6px' }}><span>{t('subtotal')}:</span><span>RM {subtotal.toFixed(2)}</span></div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '6px' }}><span>{t('service_charge')} ({serviceChargePercent}%):</span><span>RM {sc.toFixed(2)}</span></div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '6px' }}><span>{t('tax')} ({taxPercent}%):</span><span>RM {tax.toFixed(2)}</span></div>
+                        <div style={{ borderTop: `1px solid ${borderColor}`, marginTop: '10px', paddingTop: '10px', display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '18px' }}><span>{t('total')}:</span><span style={{ color: '#22c55e' }}>RM {grandTotal.toFixed(2)}</span></div>
                       </div>
-                      <div style={{ 
-                        background: secondaryBg, 
-                        padding: '12px', 
-                        borderRadius: '16px', 
-                        marginTop: '12px' 
-                      }}>
-                        <div style={{ 
-                          display: 'flex', 
-                          justifyContent: 'space-between', 
-                          fontSize: isMobile ? '11px' : '13px', 
-                          marginBottom: '4px' 
-                        }}>
-                          <span>{t('subtotal')}:</span>
-                          <span>RM {order.subtotal?.toFixed(2) || order.total?.toFixed(2) || '0.00'}</span>
-                        </div>
-                        {order.order_type !== 'take_away' && (
-                          <div style={{ 
-                            display: 'flex', 
-                            justifyContent: 'space-between', 
-                            fontSize: isMobile ? '11px' : '13px', 
-                            marginBottom: '4px' 
-                          }}>
-                            <span>{t('service')} ({serviceChargePercent}%):</span>
-                            <span>RM {order.service_charge?.toFixed(2) || '0.00'}</span>
-                          </div>
-                        )}
-                        <div style={{ 
-                          display: 'flex', 
-                          justifyContent: 'space-between', 
-                          fontSize: isMobile ? '11px' : '13px', 
-                          marginBottom: '4px' 
-                        }}>
-                          <span>{t('tax')} ({taxPercent}%):</span>
-                          <span>RM {order.tax?.toFixed(2) || '0.00'}</span>
-                        </div>
-                        <div style={{ 
-                          borderTop: `1px solid ${borderColor}`, 
-                          marginTop: '8px', 
-                          paddingTop: '8px', 
-                          display: 'flex', 
-                          justifyContent: 'space-between', 
-                          fontWeight: 'bold', 
-                          fontSize: isMobile ? '14px' : '18px' 
-                        }}>
-                          <span>{t('grand_total')}:</span>
-                          <span style={{ color: '#22c55e' }}>RM {grandTotal.toFixed(2)}</span>
-                        </div>
-                      </div>
-                      <button 
-                        onClick={() => openPaymentModal(order)} 
-                        style={{ 
-                          background: 'linear-gradient(135deg, #22c55e, #16a34a)', 
-                          color: 'white', 
-                          padding: isMobile ? '10px' : '12px', 
-                          border: 'none', 
-                          borderRadius: '40px', 
-                          cursor: 'pointer', 
-                          fontWeight: 'bold', 
-                          marginTop: '12px', 
-                          width: '100%', 
-                          fontSize: isMobile ? '13px' : '14px' 
-                        }}
-                      >
-                        {t('record_payment_btn')}
-                      </button>
+                      <button onClick={() => openPaymentModal(order)} style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)', color: 'white', padding: '12px 24px', border: 'none', borderRadius: '40px', cursor: 'pointer', fontWeight: 'bold', marginTop: '16px', width: '100%' }}>💰 {t('record_payment')}</button>
                     </div>
                   )
                 })}
@@ -1828,256 +650,45 @@ function StaffApp() {
         {/* HISTORY TAB */}
         {activeTab === 'history' && (
           <div>
-            <h2 style={{ 
-              color: textColor, 
-              marginBottom: '16px', 
-              fontSize: isMobile ? '16px' : '20px', 
-              fontWeight: 'bold', 
-              borderLeft: '4px solid #6c757d', 
-              paddingLeft: '12px' 
-            }}>
-              📜 {t('tab_history')}
-            </h2>
+            <h2 style={{ color: textColor, marginBottom: '24px', fontSize: '20px', fontWeight: 'bold', borderLeft: '4px solid #6c757d', paddingLeft: '14px' }}>📜 {language === 'bm' ? 'Sejarah Pesanan' : 'Order History'}</h2>
             {orderHistory.length === 0 ? (
-              <div style={{ 
-                textAlign: 'center', 
-                padding: '40px 20px', 
-                ...glassEffect, 
-                borderRadius: '20px' 
-              }}>
-                <span style={{ fontSize: '48px', opacity: 0.5 }}>📜</span>
-                <p style={{ color: textMuted, marginTop: '12px' }}>{t('no_history')}</p>
-              </div>
+              <div style={{ textAlign: 'center', padding: '80px 20px', ...glassEffect, borderRadius: '28px' }}><span style={{ fontSize: '64px', opacity: 0.5 }}>📜</span><p style={{ color: textMuted, marginTop: '16px' }}>{t('no_data')}</p></div>
             ) : (
               <>
-                <div style={{ 
-                  overflowX: 'auto', 
-                  ...glassEffect, 
-                  borderRadius: '20px', 
-                  padding: '4px' 
-                }}>
-                  <table style={{ 
-                    width: '100%', 
-                    borderCollapse: 'collapse', 
-                    minWidth: isMobile ? '600px' : 'auto' 
-                  }}>
-                    <thead>
-                      <tr style={{ 
-                        background: darkMode ? 'rgba(30,30,46,0.8)' : '#f1f5f9' 
-                      }}>
-                        <th style={{ 
-                          padding: '10px', 
-                          textAlign: 'left', 
-                          color: textColor, 
-                          fontSize: isMobile ? '10px' : '13px' 
-                        }}>
-                          {t('id')}
-                        </th>
-                        <th style={{ 
-                          padding: '10px', 
-                          textAlign: 'left', 
-                          color: textColor, 
-                          fontSize: isMobile ? '10px' : '13px' 
-                        }}>
-                          {t('customer')}
-                        </th>
-                        <th style={{ 
-                          padding: '10px', 
-                          textAlign: 'left', 
-                          color: textColor, 
-                          fontSize: isMobile ? '10px' : '13px' 
-                        }}>
-                          {t('type')}
-                        </th>
-                        <th style={{ 
-                          padding: '10px', 
-                          textAlign: 'left', 
-                          color: textColor, 
-                          fontSize: isMobile ? '10px' : '13px' 
-                        }}>
-                          {t('total')}
-                        </th>
-                        <th style={{ 
-                          padding: '10px', 
-                          textAlign: 'left', 
-                          color: textColor, 
-                          fontSize: isMobile ? '10px' : '13px' 
-                        }}>
-                          {t('method')}
-                        </th>
-                        <th style={{ 
-                          padding: '10px', 
-                          textAlign: 'left', 
-                          color: textColor, 
-                          fontSize: isMobile ? '10px' : '13px' 
-                        }}>
-                          {t('time')}
-                        </th>
-                        <th style={{ 
-                          padding: '10px', 
-                          textAlign: 'left', 
-                          color: textColor, 
-                          fontSize: isMobile ? '10px' : '13px' 
-                        }}>
-                          {t('action')}
-                        </th>
-                      </tr>
+                <div style={{ overflowX: 'auto', ...glassEffect, borderRadius: '24px', padding: '4px' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead><tr style={{ background: darkMode ? 'rgba(30,30,46,0.8)' : '#f1f5f9' }}>
+                      <th style={{ padding: '14px', textAlign: 'left', color: textColor, fontSize: '13px' }}>{t('id')}</th>
+                      <th style={{ padding: '14px', textAlign: 'left', color: textColor, fontSize: '13px' }}>{t('customer_name')}</th>
+                      <th style={{ padding: '14px', textAlign: 'left', color: textColor, fontSize: '13px' }}>{t('order_type')}</th>
+                      <th style={{ padding: '14px', textAlign: 'left', color: textColor, fontSize: '13px' }}>{t('total')}</th>
+                      <th style={{ padding: '14px', textAlign: 'left', color: textColor, fontSize: '13px' }}>{t('payment_method')}</th>
+                      <th style={{ padding: '14px', textAlign: 'left', color: textColor, fontSize: '13px' }}>{t('date')}</th>
+                      <th style={{ padding: '14px', textAlign: 'left', color: textColor, fontSize: '13px' }}>{language === 'bm' ? 'Tindakan' : 'Action'}</th>
+                    </tr>
                     </thead>
                     <tbody>
                       {orderHistory.slice((historyPage - 1) * historyItemsPerPage, historyPage * historyItemsPerPage).map(order => (
                         <tr key={order.id} style={{ borderBottom: `1px solid ${borderColor}` }}>
-                          <td style={{ 
-                            padding: '8px', 
-                            color: textColor, 
-                            fontSize: isMobile ? '10px' : '13px' 
-                          }}>
-                            {order.order_number || `ORD-${order.id}`}
-                          </td>
-                          <td style={{ 
-                            padding: '8px', 
-                            color: textColor, 
-                            fontSize: isMobile ? '10px' : '13px' 
-                          }}>
-                            {order.customer_name || t('guest')}
-                          </td>
-                          <td style={{ 
-                            padding: '8px', 
-                            color: textColor, 
-                            fontSize: isMobile ? '10px' : '13px' 
-                          }}>
-                            {order.order_type === 'take_away' ? `🥡 ${t('takeaway')}` : `🍽️ ${t('table')} ${order.table_number}`}
-                          </td>
-                          <td style={{ 
-                            padding: '8px', 
-                            color: '#22c55e', 
-                            fontWeight: 'bold', 
-                            fontSize: isMobile ? '10px' : '13px' 
-                          }}>
-                            RM {getOrderGrandTotal(order).toFixed(2)}
-                          </td>
-                          <td style={{ 
-                            padding: '8px', 
-                            color: textColor, 
-                            fontSize: isMobile ? '10px' : '13px' 
-                          }}>
-                            {getPaymentMethodDisplay(order.payment_method)}
-                          </td>
-                          <td style={{ 
-                            padding: '8px', 
-                            color: textColor, 
-                            fontSize: isMobile ? '10px' : '13px' 
-                          }}>
-                            {formatMalaysiaTime(order.created_at)}
-                          </td>
-                          <td style={{ padding: '8px' }}>
-                            <button 
-                              onClick={() => reprintReceipt(order)} 
-                              style={{ 
-                                background: 'linear-gradient(135deg, #2563eb, #1d4ed8)', 
-                                color: 'white', 
-                                padding: '4px 14px', 
-                                border: 'none', 
-                                borderRadius: '30px', 
-                                cursor: 'pointer', 
-                                fontSize: isMobile ? '10px' : '12px', 
-                                fontWeight: 'bold',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '4px'
-                              }}
-                            >
-                              🧾 {t('reprint')}
-                            </button>
-                          </td>
+                          <td style={{ padding: '12px', color: textColor, fontSize: '13px' }}>{order.order_number || `ORD-${order.id}`}</td>
+                          <td style={{ padding: '12px', color: textColor, fontSize: '13px' }}>{order.customer_name || 'Walk-in'}</td>
+                          <td style={{ padding: '12px', color: textColor, fontSize: '13px' }}>{order.order_type === 'take_away' ? '🥡 Take Away' : `🍽️ ${t('table')} ${order.table_number}`}</td>
+                          <td style={{ padding: '12px', color: '#22c55e', fontWeight: 'bold', fontSize: '13px' }}>RM {order.grand_total || order.total}</td>
+                          <td style={{ padding: '12px', color: textColor, fontSize: '13px' }}>{order.payment_method === 'cash' ? '💵 Tunai' : order.payment_method === 'tng' ? '📱 TnG' : '🏦 Bank'}</td>
+                          <td style={{ padding: '12px', color: textColor, fontSize: '13px' }}>{formatMalaysiaTime(order.created_at)}</td>
+                          <td style={{ padding: '12px' }}><button onClick={() => reprintReceipt(order)} style={{ background: 'linear-gradient(135deg, #2563eb, #1d4ed8)', color: 'white', padding: '6px 16px', border: 'none', borderRadius: '40px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>🧾 {t('btn_receipt')}</button></td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
-                {/* Pagination */}
                 {Math.ceil(orderHistory.length / historyItemsPerPage) > 1 && (
-                  <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'center', 
-                    alignItems: 'center', 
-                    gap: '6px', 
-                    marginTop: '16px', 
-                    flexWrap: 'wrap' 
-                  }}>
-                    <button 
-                      onClick={() => setHistoryPage(1)} 
-                      disabled={historyPage === 1} 
-                      style={{ 
-                        padding: isMobile ? '4px 10px' : '8px 14px', 
-                        background: historyPage === 1 ? secondaryBg : '#2563eb', 
-                        color: historyPage === 1 ? textMuted : 'white', 
-                        border: 'none', 
-                        borderRadius: '30px', 
-                        cursor: historyPage === 1 ? 'not-allowed' : 'pointer', 
-                        fontSize: isMobile ? '10px' : '12px', 
-                        fontWeight: 'bold' 
-                      }}
-                    >
-                      « {t('first')}
-                    </button>
-                    <button 
-                      onClick={() => setHistoryPage(prev => Math.max(1, prev - 1))} 
-                      disabled={historyPage === 1} 
-                      style={{ 
-                        padding: isMobile ? '4px 10px' : '8px 14px', 
-                        background: historyPage === 1 ? secondaryBg : '#2563eb', 
-                        color: historyPage === 1 ? textMuted : 'white', 
-                        border: 'none', 
-                        borderRadius: '30px', 
-                        cursor: historyPage === 1 ? 'not-allowed' : 'pointer', 
-                        fontSize: isMobile ? '10px' : '12px', 
-                        fontWeight: 'bold' 
-                      }}
-                    >
-                      ‹ {t('prev')}
-                    </button>
-                    <span style={{ 
-                      padding: isMobile ? '4px 10px' : '8px 16px', 
-                      background: cardBg, 
-                      borderRadius: '30px', 
-                      color: textColor, 
-                      fontSize: isMobile ? '11px' : '13px', 
-                      border: `1px solid ${borderColor}` 
-                    }}>
-                      {historyPage} / {Math.ceil(orderHistory.length / historyItemsPerPage)}
-                    </span>
-                    <button 
-                      onClick={() => setHistoryPage(prev => Math.min(Math.ceil(orderHistory.length / historyItemsPerPage), prev + 1))} 
-                      disabled={historyPage === Math.ceil(orderHistory.length / historyItemsPerPage)} 
-                      style={{ 
-                        padding: isMobile ? '4px 10px' : '8px 14px', 
-                        background: historyPage === Math.ceil(orderHistory.length / historyItemsPerPage) ? secondaryBg : '#2563eb', 
-                        color: historyPage === Math.ceil(orderHistory.length / historyItemsPerPage) ? textMuted : 'white', 
-                        border: 'none', 
-                        borderRadius: '30px', 
-                        cursor: historyPage === Math.ceil(orderHistory.length / historyItemsPerPage) ? 'not-allowed' : 'pointer', 
-                        fontSize: isMobile ? '10px' : '12px', 
-                        fontWeight: 'bold' 
-                      }}
-                    >
-                      {t('next')} ›
-                    </button>
-                    <button 
-                      onClick={() => setHistoryPage(Math.ceil(orderHistory.length / historyItemsPerPage))} 
-                      disabled={historyPage === Math.ceil(orderHistory.length / historyItemsPerPage)} 
-                      style={{ 
-                        padding: isMobile ? '4px 10px' : '8px 14px', 
-                        background: historyPage === Math.ceil(orderHistory.length / historyItemsPerPage) ? secondaryBg : '#2563eb', 
-                        color: historyPage === Math.ceil(orderHistory.length / historyItemsPerPage) ? textMuted : 'white', 
-                        border: 'none', 
-                        borderRadius: '30px', 
-                        cursor: historyPage === Math.ceil(orderHistory.length / historyItemsPerPage) ? 'not-allowed' : 'pointer', 
-                        fontSize: isMobile ? '10px' : '12px', 
-                        fontWeight: 'bold' 
-                      }}
-                    >
-                      {t('last')} »
-                    </button>
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '24px', flexWrap: 'wrap' }}>
+                    <button onClick={() => setHistoryPage(1)} disabled={historyPage === 1} style={{ padding: '8px 14px', background: historyPage === 1 ? secondaryBg : '#2563eb', color: historyPage === 1 ? textMuted : 'white', border: 'none', borderRadius: '40px', cursor: historyPage === 1 ? 'not-allowed' : 'pointer', fontSize: '12px', fontWeight: 'bold' }}>« {t('first')}</button>
+                    <button onClick={() => setHistoryPage(prev => Math.max(1, prev - 1))} disabled={historyPage === 1} style={{ padding: '8px 14px', background: historyPage === 1 ? secondaryBg : '#2563eb', color: historyPage === 1 ? textMuted : 'white', border: 'none', borderRadius: '40px', cursor: historyPage === 1 ? 'not-allowed' : 'pointer', fontSize: '12px', fontWeight: 'bold' }}>‹ {t('prev')}</button>
+                    <span style={{ padding: '8px 16px', background: cardBg, borderRadius: '40px', color: textColor, fontSize: '13px', border: `1px solid ${borderColor}` }}>{historyPage} / {Math.ceil(orderHistory.length / historyItemsPerPage)}</span>
+                    <button onClick={() => setHistoryPage(prev => Math.min(Math.ceil(orderHistory.length / historyItemsPerPage), prev + 1))} disabled={historyPage === Math.ceil(orderHistory.length / historyItemsPerPage)} style={{ padding: '8px 14px', background: historyPage === Math.ceil(orderHistory.length / historyItemsPerPage) ? secondaryBg : '#2563eb', color: historyPage === Math.ceil(orderHistory.length / historyItemsPerPage) ? textMuted : 'white', border: 'none', borderRadius: '40px', cursor: historyPage === Math.ceil(orderHistory.length / historyItemsPerPage) ? 'not-allowed' : 'pointer', fontSize: '12px', fontWeight: 'bold' }}>{t('next')} ›</button>
+                    <button onClick={() => setHistoryPage(Math.ceil(orderHistory.length / historyItemsPerPage))} disabled={historyPage === Math.ceil(orderHistory.length / historyItemsPerPage)} style={{ padding: '8px 14px', background: historyPage === Math.ceil(orderHistory.length / historyItemsPerPage) ? secondaryBg : '#2563eb', color: historyPage === Math.ceil(orderHistory.length / historyItemsPerPage) ? textMuted : 'white', border: 'none', borderRadius: '40px', cursor: historyPage === Math.ceil(orderHistory.length / historyItemsPerPage) ? 'not-allowed' : 'pointer', fontSize: '12px', fontWeight: 'bold' }}>{t('last')} »</button>
                   </div>
                 )}
               </>
@@ -2085,478 +696,86 @@ function StaffApp() {
           </div>
         )}
 
-        {/* Size Options Modal */}
-        {showSizeModal && selectedSizeItem && (
-          <div style={{ 
-            position: 'fixed', 
-            top: 0, 
-            left: 0, 
-            right: 0, 
-            bottom: 0, 
-            background: 'rgba(0,0,0,0.85)', 
-            backdropFilter: 'blur(8px)', 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
-            zIndex: 2000, 
-            animation: 'fadeIn 0.2s ease' 
-          }}>
-            <div style={{ 
-              background: cardBg, 
-              borderRadius: '24px', 
-              padding: isMobile ? '20px' : '28px', 
-              maxWidth: '380px', 
-              width: '90%', 
-              textAlign: 'center', 
-              animation: 'popIn 0.3s ease',
-              ...glassEffect
-            }}>
-              <h2 style={{ 
-                marginBottom: '6px', 
-                fontSize: isMobile ? '18px' : '22px', 
-                fontWeight: 'bold',
-                color: textColor 
-              }}>
-                {selectedSizeItem.name}
-              </h2>
-              <p style={{ 
-                color: textMuted, 
-                marginBottom: '20px', 
-                fontSize: isMobile ? '12px' : '14px' 
-              }}>
-                {t('choose_size')}
-              </p>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
-                {menuOptions.map(opt => {
-                  const finalPrice = opt.is_absolute_price ? opt.price_adjustment : (selectedSizeItem.price + opt.price_adjustment)
-                  return (
-                    <button 
-                      key={opt.id} 
-                      onClick={() => addToCartWithOption(selectedSizeItem, opt)} 
-                      style={{ 
-                        padding: isMobile ? '12px 16px' : '14px 20px',
-                        background: 'linear-gradient(135deg, #f59e0b, #ea580c)',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '50px',
-                        cursor: 'pointer',
-                        fontWeight: 'bold',
-                        fontSize: isMobile ? '14px' : '16px',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center'
-                      }}
-                    >
-                      <span>{opt.option_name}</span>
-                      <span>RM {finalPrice.toFixed(2)}</span>
-                    </button>
-                  )
-                })}
-              </div>
-              
-              <button 
-                onClick={() => setShowSizeModal(false)} 
-                style={{ 
-                  width: '100%', 
-                  padding: isMobile ? '12px' : '14px', 
-                  background: '#64748b', 
-                  color: 'white', 
-                  border: 'none', 
-                  borderRadius: '50px', 
-                  cursor: 'pointer', 
-                  fontWeight: 'bold' 
-                }}
-              >
-                ❌ {t('close')}
-              </button>
-            </div>
-          </div>
-        )}
-
         {/* Drink Options Modal */}
         {showDrinkModal && selectedDrinkItem && (
-          <div style={{ 
-            position: 'fixed', 
-            top: 0, 
-            left: 0, 
-            right: 0, 
-            bottom: 0, 
-            background: 'rgba(0,0,0,0.85)', 
-            backdropFilter: 'blur(8px)', 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
-            zIndex: 2000, 
-            animation: 'fadeIn 0.2s ease' 
-          }}>
-            <div style={{ 
-              background: cardBg, 
-              borderRadius: '24px', 
-              padding: isMobile ? '20px' : '28px', 
-              maxWidth: '380px', 
-              width: '90%', 
-              textAlign: 'center', 
-              animation: 'popIn 0.3s ease',
-              ...glassEffect
-            }}>
-              <h2 style={{ 
-                marginBottom: '6px', 
-                fontSize: isMobile ? '18px' : '22px', 
-                fontWeight: 'bold',
-                color: textColor 
-              }}>
-                🥤 {selectedDrinkItem.name}
-              </h2>
-              <p style={{ 
-                color: textMuted, 
-                marginBottom: '20px', 
-                fontSize: isMobile ? '12px' : '14px' 
-              }}>
-                {t('drink_type')}
-              </p>
-              
-              <div style={{ 
-                display: 'flex', 
-                gap: '10px', 
-                marginBottom: '20px', 
-                flexWrap: 'wrap', 
-                justifyContent: 'center' 
-              }}>
-                {drinkOptions[selectedDrinkItem.name]?.some(o => o.type === 'Panas') && (
-                  <button 
-                    onClick={() => setSelectedDrinkOption('Panas')} 
-                    style={{ 
-                      flex: 1, 
-                      minWidth: isMobile ? '80px' : '100px',
-                      padding: isMobile ? '12px' : '16px', 
-                      background: selectedDrinkOption === 'Panas' ? 'linear-gradient(135deg, #f97316, #ea580c)' : secondaryBg, 
-                      color: selectedDrinkOption === 'Panas' ? 'white' : textColor, 
-                      border: selectedDrinkOption === 'Panas' ? 'none' : `1px solid ${borderColor}`, 
-                      borderRadius: '14px', 
-                      cursor: 'pointer', 
-                      fontWeight: 'bold', 
-                      fontSize: isMobile ? '12px' : '14px',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    🔥 {t('hot')}<br />
-                    <small>RM {drinkOptions[selectedDrinkItem.name]?.find(o => o.type === 'Panas')?.price?.toFixed(2) || '0.00'}</small>
-                  </button>
-                )}
-                
-                {drinkOptions[selectedDrinkItem.name]?.some(o => o.type === 'Sejuk') && (
-                  <button 
-                    onClick={() => setSelectedDrinkOption('Sejuk')} 
-                    style={{ 
-                      flex: 1, 
-                      minWidth: isMobile ? '80px' : '100px',
-                      padding: isMobile ? '12px' : '16px', 
-                      background: selectedDrinkOption === 'Sejuk' ? 'linear-gradient(135deg, #06b6d4, #0891b2)' : secondaryBg, 
-                      color: selectedDrinkOption === 'Sejuk' ? 'white' : textColor, 
-                      border: selectedDrinkOption === 'Sejuk' ? 'none' : `1px solid ${borderColor}`, 
-                      borderRadius: '14px', 
-                      cursor: 'pointer', 
-                      fontWeight: 'bold', 
-                      fontSize: isMobile ? '12px' : '14px',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    🧊 {t('cold')}<br />
-                    <small>RM {drinkOptions[selectedDrinkItem.name]?.find(o => o.type === 'Sejuk')?.price?.toFixed(2) || '0.00'}</small>
-                  </button>
-                )}
-                
-                {drinkOptions[selectedDrinkItem.name]?.some(o => o.type === 'Bungkus') && (
-                  <button 
-                    onClick={() => setSelectedDrinkOption('Bungkus')} 
-                    style={{ 
-                      flex: 1, 
-                      minWidth: isMobile ? '80px' : '100px',
-                      padding: isMobile ? '12px' : '16px', 
-                      background: selectedDrinkOption === 'Bungkus' ? 'linear-gradient(135deg, #8b5cf6, #7c3aed)' : secondaryBg, 
-                      color: selectedDrinkOption === 'Bungkus' ? 'white' : textColor, 
-                      border: selectedDrinkOption === 'Bungkus' ? 'none' : `1px solid ${borderColor}`, 
-                      borderRadius: '14px', 
-                      cursor: 'pointer', 
-                      fontWeight: 'bold', 
-                      fontSize: isMobile ? '12px' : '14px',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    📦 {t('takeaway_drink')}<br />
-                    <small>RM {drinkOptions[selectedDrinkItem.name]?.find(o => o.type === 'Bungkus')?.price?.toFixed(2) || '0.00'}</small>
-                  </button>
-                )}
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000 }}>
+            <div style={{ background: cardBg, borderRadius: '32px', padding: '32px', maxWidth: '380px', width: '90%', textAlign: 'center', ...glassEffect }}>
+              <h2 style={{ marginBottom: '12px', color: textColor, fontSize: '24px' }}>🥤 {selectedDrinkItem.name}</h2>
+              <p style={{ color: textMuted, marginBottom: '28px' }}>Pilih suhu minuman</p>
+              <div style={{ display: 'flex', gap: '16px', marginBottom: '28px' }}>
+                <button onClick={() => setSelectedDrinkOption('Panas')} style={{ flex: 1, padding: '18px', background: selectedDrinkOption === 'Panas' ? 'linear-gradient(135deg, #f97316, #ea580c)' : darkMode ? '#2a2a3e' : '#f1f5f9', color: selectedDrinkOption === 'Panas' ? 'white' : textColor, border: `1px solid ${borderColor}`, borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold' }}>🔥 {t('hot')}<br /><small>RM {drinkOptions[selectedDrinkItem.name]?.find(o => o.type === 'Panas')?.price}</small></button>
+                <button onClick={() => setSelectedDrinkOption('Sejuk')} style={{ flex: 1, padding: '18px', background: selectedDrinkOption === 'Sejuk' ? 'linear-gradient(135deg, #06b6d4, #0891b2)' : darkMode ? '#2a2a3e' : '#f1f5f9', color: selectedDrinkOption === 'Sejuk' ? 'white' : textColor, border: `1px solid ${borderColor}`, borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold' }}>🧊 {t('cold')}<br /><small>RM {drinkOptions[selectedDrinkItem.name]?.find(o => o.type === 'Sejuk')?.price}</small></button>
               </div>
-              
-              <button 
-                onClick={addDrinkToCart} 
-                style={{ 
-                  width: '100%', 
-                  padding: isMobile ? '12px' : '14px', 
-                  background: 'linear-gradient(135deg, #22c55e, #16a34a)', 
-                  color: 'white', 
-                  border: 'none', 
-                  borderRadius: '50px', 
-                  cursor: 'pointer', 
-                  fontWeight: 'bold', 
-                  marginBottom: '10px',
-                  fontSize: isMobile ? '13px' : '14px'
-                }}
-              >
-                {t('add_to_cart')}
-              </button>
-              <button 
-                onClick={() => setShowDrinkModal(false)} 
-                style={{ 
-                  width: '100%', 
-                  padding: isMobile ? '12px' : '14px', 
-                  background: '#64748b', 
-                  color: 'white', 
-                  border: 'none', 
-                  borderRadius: '50px', 
-                  cursor: 'pointer',
-                  fontSize: isMobile ? '13px' : '14px'
-                }}
-              >
-                {t('close')}
-              </button>
+              <button onClick={addDrinkToCart} style={{ width: '100%', padding: '16px', background: 'linear-gradient(135deg, #22c55e, #16a34a)', color: 'white', border: 'none', borderRadius: '60px', cursor: 'pointer', fontWeight: 'bold', marginBottom: '12px' }}>➕ {t('add_to_cart')}</button>
+              <button onClick={() => setShowDrinkModal(false)} style={{ width: '100%', padding: '16px', background: darkMode ? 'rgba(255,255,255,0.1)' : '#e2e8f0', color: textColor, border: 'none', borderRadius: '60px', cursor: 'pointer' }}>{t('cancel')}</button>
             </div>
           </div>
         )}
 
         {/* Payment Modal */}
         {showPaymentModal && selectedOrder && (
-          <div style={{ 
-            position: 'fixed', 
-            top: 0, 
-            left: 0, 
-            right: 0, 
-            bottom: 0, 
-            background: 'rgba(0,0,0,0.85)', 
-            backdropFilter: 'blur(8px)', 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
-            zIndex: 2000, 
-            animation: 'fadeIn 0.2s ease' 
-          }}>
-            <div style={{ 
-              background: cardBg, 
-              padding: isMobile ? '20px' : '28px', 
-              borderRadius: '24px', 
-              maxWidth: '420px', 
-              width: '90%', 
-              ...glassEffect, 
-              animation: 'popIn 0.3s ease' 
-            }}>
-              <div style={{ textAlign: 'center', marginBottom: '16px' }}>
-                <div style={{ 
-                  width: isMobile ? '48px' : '56px', 
-                  height: isMobile ? '48px' : '56px', 
-                  background: 'linear-gradient(135deg, #2563eb, #1d4ed8)', 
-                  borderRadius: '50%', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center', 
-                  margin: '0 auto 10px auto' 
-                }}>
-                  <span style={{ fontSize: isMobile ? '24px' : '28px' }}>💰</span>
-                </div>
-                <h2 style={{ 
-                  margin: 0, 
-                  color: textColor, 
-                  fontSize: isMobile ? '18px' : '22px', 
-                  fontWeight: 'bold' 
-                }}>
-                  {t('record_payment')}
-                </h2>
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000 }}>
+            <div style={{ background: cardBg, padding: '28px', borderRadius: '32px', maxWidth: '420px', width: '90%', ...glassEffect }}>
+              <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                <div style={{ width: '56px', height: '56px', background: 'linear-gradient(135deg, #2563eb, #1d4ed8)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px auto' }}><span style={{ fontSize: '28px' }}>💰</span></div>
+                <h2 style={{ margin: 0, color: textColor, fontSize: '22px', fontWeight: 'bold' }}>{t('record_payment')}</h2>
+                <p style={{ color: textMuted, fontSize: '13px', marginTop: '4px' }}>{language === 'bm' ? 'Sila pilih kaedah bayaran' : 'Please select payment method'}</p>
               </div>
-              <div style={{ 
-                background: secondaryBg, 
-                padding: '12px', 
-                borderRadius: '16px', 
-                marginBottom: '16px' 
-              }}>
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  marginBottom: '6px', 
-                  fontSize: isMobile ? '11px' : '13px' 
-                }}>
-                  <span>{t('id')}:</span>
-                  <span style={{ fontWeight: 'bold' }}>{selectedOrder.order_number || `ORD-${selectedOrder.id}`}</span>
-                </div>
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  marginBottom: '6px', 
-                  fontSize: isMobile ? '11px' : '13px' 
-                }}>
-                  <span>{t('table_no')}:</span>
-                  <span style={{ fontWeight: 'bold' }}>{selectedOrder.table_number || t('no_table')}</span>
-                </div>
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  fontSize: isMobile ? '11px' : '13px' 
-                }}>
-                  <span>{t('customer')}:</span>
-                  <span style={{ fontWeight: 'bold' }}>{selectedOrder.customer_name || t('guest')}</span>
-                </div>
+
+              <div style={{ background: secondaryBg, padding: '16px', borderRadius: '20px', marginBottom: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}><span style={{ color: textMuted }}>No. Pesanan:</span><span style={{ color: textColor, fontWeight: 'bold' }}>{selectedOrder.order_number || `ORD-${selectedOrder.id}`}</span></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}><span style={{ color: textMuted }}>{t('table_number')}:</span><span style={{ color: textColor, fontWeight: 'bold' }}>{selectedOrder.table_number || 'Take Away'}</span></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: textMuted }}>{t('customer_name')}:</span><span style={{ color: textColor, fontWeight: 'bold' }}>{selectedOrder.customer_name || 'Walk-in'}</span></div>
               </div>
+
+              <div style={{ background: secondaryBg, padding: '16px', borderRadius: '20px', marginBottom: '20px' }}>
+                <div style={{ fontWeight: 'bold', marginBottom: '12px', color: textColor, fontSize: '14px' }}>🛒 {language === 'bm' ? 'Ringkasan Pesanan' : 'Order Summary'}</div>
+                {selectedOrder.items?.slice(0, 3).map((item, idx) => (
+                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '6px' }}><span style={{ color: textColor }}>{item.name} x{item.quantity}</span><span style={{ color: '#22c55e' }}>RM {(item.price * item.quantity).toFixed(2)}</span></div>
+                ))}
+                {selectedOrder.items?.length > 3 && <div style={{ fontSize: '12px', color: textMuted, textAlign: 'center', marginTop: '8px' }}>+ {selectedOrder.items.length - 3} {t('items')} lain</div>}
+              </div>
+
               {(() => {
                 const subtotal = selectedOrder.subtotal || selectedOrder.total || 0
-                const sc = selectedOrder.order_type === 'take_away' ? 0 : (selectedOrder.service_charge || (subtotal * (serviceChargePercent / 100)))
+                const sc = selectedOrder.service_charge || (subtotal * (serviceChargePercent / 100))
                 const tax = selectedOrder.tax || (subtotal * (taxPercent / 100))
                 const grandTotal = selectedOrder.grand_total || (subtotal + sc + tax)
                 return (
-                  <div style={{ 
-                    background: secondaryBg, 
-                    padding: '12px', 
-                    borderRadius: '16px', 
-                    marginBottom: '16px' 
-                  }}>
-                    <div style={{ 
-                      display: 'flex', 
-                      justifyContent: 'space-between', 
-                      marginBottom: '6px', 
-                      fontSize: isMobile ? '11px' : '13px' 
-                    }}>
-                      <span>{t('subtotal')}:</span>
-                      <span>RM {subtotal.toFixed(2)}</span>
-                    </div>
-                    {selectedOrder.order_type !== 'take_away' && (
-                      <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        marginBottom: '6px', 
-                        fontSize: isMobile ? '11px' : '13px' 
-                      }}>
-                        <span>{t('service')} ({serviceChargePercent}%):</span>
-                        <span>RM {sc.toFixed(2)}</span>
-                      </div>
-                    )}
-                    <div style={{ 
-                      display: 'flex', 
-                      justifyContent: 'space-between', 
-                      marginBottom: '6px', 
-                      fontSize: isMobile ? '11px' : '13px' 
-                    }}>
-                      <span>{t('tax')} ({taxPercent}%):</span>
-                      <span>RM {tax.toFixed(2)}</span>
-                    </div>
-                    <div style={{ 
-                      borderTop: `1px solid ${borderColor}`, 
-                      marginTop: '8px', 
-                      paddingTop: '8px', 
-                      display: 'flex', 
-                      justifyContent: 'space-between', 
-                      fontWeight: 'bold', 
-                      fontSize: isMobile ? '16px' : '18px' 
-                    }}>
-                      <span>{t('grand_total')}:</span>
-                      <span style={{ color: '#22c55e' }}>RM {grandTotal.toFixed(2)}</span>
-                    </div>
+                  <div style={{ background: secondaryBg, padding: '16px', borderRadius: '20px', marginBottom: '20px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}><span>{t('subtotal')}:</span><span>RM {subtotal.toFixed(2)}</span></div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}><span>{t('service_charge')} ({serviceChargePercent}%):</span><span>RM {sc.toFixed(2)}</span></div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}><span>{t('tax')} ({taxPercent}%):</span><span>RM {tax.toFixed(2)}</span></div>
+                    <div style={{ borderTop: `1px solid ${borderColor}`, marginTop: '10px', paddingTop: '10px', display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '18px' }}><span>{t('total')}:</span><span style={{ color: '#22c55e' }}>RM {grandTotal.toFixed(2)}</span></div>
                   </div>
                 )
               })()}
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ 
-                  display: 'block', 
-                  marginBottom: '8px', 
-                  fontWeight: 'bold', 
-                  color: textColor, 
-                  fontSize: isMobile ? '12px' : '14px' 
-                }}>
-                  {t('method')}:
-                </label>
-                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                  {['cash', 'tng', 'bank'].map(method => (
-                    <button 
-                      key={method} 
-                      onClick={() => setPaymentMethod(method)} 
-                      style={{ 
-                        flex: 1, 
-                        padding: isMobile ? '10px' : '12px', 
-                        background: paymentMethod === method ? 'linear-gradient(135deg, #2563eb, #1d4ed8)' : secondaryBg, 
-                        color: paymentMethod === method ? 'white' : textColor, 
-                        border: paymentMethod === method ? 'none' : `1px solid ${borderColor}`, 
-                        borderRadius: '14px', 
-                        cursor: 'pointer', 
-                        fontWeight: 'bold', 
-                        fontSize: isMobile ? '12px' : '14px',
-                        transition: 'all 0.2s'
-                      }}
-                    >
-                      {method === 'cash' ? t('cash') : method === 'tng' ? t('tng') : t('bank')}
-                    </button>
-                  ))}
+
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '10px', fontWeight: 'bold', color: textColor, fontSize: '14px' }}>💳 {t('payment_method')}</label>
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                  <button onClick={() => setPaymentMethod('cash')} style={{ flex: 1, padding: '12px', background: paymentMethod === 'cash' ? '#22c55e' : secondaryBg, color: paymentMethod === 'cash' ? 'white' : textColor, border: paymentMethod === 'cash' ? 'none' : `1px solid ${borderColor}`, borderRadius: '16px', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}>💵 {t('cash')}</button>
+                  <button onClick={() => setPaymentMethod('tng')} style={{ flex: 1, padding: '12px', background: paymentMethod === 'tng' ? '#06b6d4' : secondaryBg, color: paymentMethod === 'tng' ? 'white' : textColor, border: paymentMethod === 'tng' ? 'none' : `1px solid ${borderColor}`, borderRadius: '16px', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}>📱 {t('tng')}</button>
+                  <button onClick={() => setPaymentMethod('bank')} style={{ flex: 1, padding: '12px', background: paymentMethod === 'bank' ? '#8b5cf6' : secondaryBg, color: paymentMethod === 'bank' ? 'white' : textColor, border: paymentMethod === 'bank' ? 'none' : `1px solid ${borderColor}`, borderRadius: '16px', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}>🏦 {t('bank')}</button>
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button 
-                  onClick={() => markAsPaid(selectedOrder)} 
-                  style={{ 
-                    flex: 1, 
-                    background: 'linear-gradient(135deg, #22c55e, #16a34a)', 
-                    color: 'white', 
-                    padding: isMobile ? '12px' : '14px', 
-                    border: 'none', 
-                    borderRadius: '50px', 
-                    cursor: 'pointer', 
-                    fontWeight: 'bold', 
-                    fontSize: isMobile ? '13px' : '14px' 
-                  }}
-                >
-                  ✅ {t('save')}
-                </button>
-                <button 
-                  onClick={() => { setShowPaymentModal(false); setSelectedOrder(null); }} 
-                  style={{ 
-                    flex: 1, 
-                    background: '#64748b', 
-                    color: 'white', 
-                    padding: isMobile ? '12px' : '14px', 
-                    border: 'none', 
-                    borderRadius: '50px', 
-                    cursor: 'pointer', 
-                    fontSize: isMobile ? '13px' : '14px' 
-                  }}
-                >
-                  ❌ {t('close')}
-                </button>
+
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button onClick={() => markAsPaid(selectedOrder)} style={{ flex: 1, background: 'linear-gradient(135deg, #22c55e, #16a34a)', color: 'white', padding: '14px', border: 'none', borderRadius: '60px', cursor: 'pointer', fontWeight: 'bold', fontSize: '15px' }}>✅ {t('save')}</button>
+                <button onClick={() => { setShowPaymentModal(false); setSelectedOrder(null); }} style={{ flex: 1, background: darkMode ? 'rgba(255,255,255,0.1)' : '#e2e8f0', color: textColor, padding: '14px', border: 'none', borderRadius: '60px', cursor: 'pointer', fontWeight: 'bold', fontSize: '15px' }}>❌ {t('cancel')}</button>
               </div>
             </div>
           </div>
         )}
 
-        {/* Receipt Modal */}
-        {showReceipt && currentReceiptOrder && (
-          <ReceiptModal 
-            order={currentReceiptOrder} 
-            onClose={() => { setShowReceipt(false); setCurrentReceiptOrder(null); }} 
-          />
-        )}
-        {showHistoryReceipt && selectedHistoryOrder && (
-          <ReceiptModal 
-            order={selectedHistoryOrder} 
-            onClose={() => { setShowHistoryReceipt(false); setSelectedHistoryOrder(null); }} 
-          />
-        )}
+        {/* Receipt Modals */}
+        {showReceipt && currentReceiptOrder && <ReceiptModal order={currentReceiptOrder} onClose={() => { setShowReceipt(false); setCurrentReceiptOrder(null); }} />}
+        {showHistoryReceipt && selectedHistoryOrder && <ReceiptModal order={selectedHistoryOrder} onClose={() => { setShowHistoryReceipt(false); setSelectedHistoryOrder(null); }} />}
         
         <style>
           {`
             @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
             @keyframes popIn { 0% { opacity: 0; transform: scale(0.9); } 100% { opacity: 1; transform: scale(1); } }
-            ::-webkit-scrollbar { width: 6px; }
-            ::-webkit-scrollbar-track { background: ${darkMode ? '#2a2a3e' : '#e2e8f0'}; border-radius: 10px; }
-            ::-webkit-scrollbar-thumb { background: ${darkMode ? '#555' : '#94a3b8'}; border-radius: 10px; }
-            button { transition: all 0.2s; }
-            button:hover:not(:disabled) { opacity: 0.85; transform: scale(0.98); }
-            button:disabled { opacity: 0.5; cursor: not-allowed; }
-            input:focus, select:focus, textarea:focus { outline: none; border-color: #3b82f6; }
           `}
         </style>
       </div>
