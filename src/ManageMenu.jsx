@@ -349,7 +349,7 @@ function ManageMenu() {
   }
 
   // ============================================================
-  // THEME COLORS - FIXED FOR VISIBILITY
+  // THEME COLORS
   // ============================================================
   const bgColor = darkMode ? '#0a0a16' : '#f1f5f9'
   const cardBg = darkMode ? 'rgba(20, 20, 40, 0.95)' : 'rgba(255, 255, 255, 0.95)'
@@ -589,7 +589,6 @@ function ManageMenu() {
       if (itemsData) { 
         try { 
           const items = JSON.parse(itemsData.value)
-          // Sync prices with menu table
           const syncedItems = []
           for (const item of items) {
             if (item.menu_id) {
@@ -651,10 +650,11 @@ function ManageMenu() {
   }
 
   // ============================================================
-  // CATEGORY HELPERS - FIXED: SHOW ALL CATEGORIES
+  // CATEGORY HELPERS - FIXED: SHOW ALL CATEGORIES (NO FILTERING)
   // ============================================================
   const getCategoriesForFilter = () => {
-    // SHOW ALL CATEGORIES from database (including sub-categories)
+    // SHOW ALL CATEGORIES from database (NO FILTERING)
+    // This will show ALL categories including sub-categories
     return categories
       .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
       .map(cat => cat.name)
@@ -824,7 +824,8 @@ function ManageMenu() {
       const fileName = imageUrl.split('/').pop()
       const { error } = await supabase.storage.from(STORAGE_BUCKET).remove([fileName])
       if (error) return false
-      return true    } catch (err) {
+      return true
+    } catch (err) {
       return false
     }
   }
@@ -1053,7 +1054,7 @@ function ManageMenu() {
   }
 
   // ============================================================
-  // SPECIAL MENU FUNCTIONS - SYNC WITH MENU TABLE
+  // SPECIAL MENU FUNCTIONS
   // ============================================================
   async function addSpecialItem() {
     if (!specialFormData.name || !specialFormData.price) { 
@@ -1067,7 +1068,6 @@ function ManageMenu() {
       if (uploadedUrl) imageUrl = uploadedUrl
     }
     
-    // Check if item exists in menu table
     const { data: existingMenu } = await supabase
       .from('menu')
       .select('id, name, price, image_url')
@@ -1077,7 +1077,6 @@ function ManageMenu() {
     let menuItemId
     
     if (existingMenu) {
-      // Update existing menu item
       menuItemId = existingMenu.id
       await supabase
         .from('menu')
@@ -1088,7 +1087,6 @@ function ManageMenu() {
         })
         .eq('id', menuItemId)
     } else {
-      // Create new menu item
       const { data: newMenu, error: menuError } = await supabase
         .from('menu')
         .insert([{ 
@@ -1166,7 +1164,6 @@ function ManageMenu() {
     )
     setSpecialItems(updatedItems)
     
-    // Update in menu table
     const specialItem = updatedItems.find(item => item.id === selectedSpecialItem.id)
     if (specialItem && specialItem.menu_id) {
       await supabase
@@ -1888,7 +1885,7 @@ function ManageMenu() {
             </div>
 
             {/* ========================================================== */}
-            {/* CATEGORY FILTERS - FIXED: SHOW ALL CATEGORIES */}
+            {/* CATEGORY FILTERS - FIXED: SHOW ALL CATEGORIES (NO FILTERING) */}
             {/* ========================================================== */}
             <div style={{ 
               display: 'flex', 
@@ -2376,25 +2373,201 @@ function ManageMenu() {
         )}
 
         {/* ========================================================== */}
-        {/* SPECIAL TAB - SAME AS BEFORE */}
+        {/* SPECIAL TAB */}
         {/* ========================================================== */}
         {activeTab === 'special' && (
-          // ... (special tab code - same as before)
-          <div>Special Menu Content</div>
+          <div style={{ 
+            ...glassEffect, 
+            borderRadius: '20px', 
+            padding: isMobile ? '16px' : '24px', 
+            marginBottom: '20px' 
+          }}>
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center', 
+              flexWrap: 'wrap', 
+              gap: '12px' 
+            }}>
+              <div>
+                <h3 style={{ margin: 0, color: textColor, fontSize: isMobile ? '15px' : '17px' }}>
+                  {translate('activate_special')}
+                </h3>
+                <p style={{ margin: '4px 0 0 0', fontSize: isMobile ? '11px' : '13px', color: textMuted }}>
+                  {translate('activate_special_desc')}
+                </p>
+              </div>
+              <label style={{ position: 'relative', display: 'inline-block', width: '52px', height: '26px' }}>
+                <input 
+                  type="checkbox" 
+                  checked={specialMenuEnabled} 
+                  onChange={async (e) => { 
+                    setSpecialMenuEnabled(e.target.checked); 
+                    await supabase.from('settings').upsert({ key: 'special_menu_enabled', value: e.target.checked.toString() }, { onConflict: 'key' }) 
+                  }} 
+                  style={{ opacity: 0, width: 0, height: 0 }} 
+                />
+                <span style={{ 
+                  position: 'absolute', 
+                  cursor: 'pointer', 
+                  top: 0, 
+                  left: 0, 
+                  right: 0, 
+                  bottom: 0, 
+                  backgroundColor: specialMenuEnabled ? '#22c55e' : '#64748b', 
+                  transition: '.3s', 
+                  borderRadius: '34px' 
+                }}>
+                  <span style={{ 
+                    position: 'absolute', 
+                    height: '20px', 
+                    width: '20px', 
+                    left: '3px', 
+                    bottom: '3px', 
+                    backgroundColor: 'white', 
+                    transition: '.3s', 
+                    borderRadius: '50%', 
+                    transform: specialMenuEnabled ? 'translateX(26px)' : 'none' 
+                  }} />
+                </span>
+              </label>
+            </div>
+          </div>
         )}
 
         {/* ========================================================== */}
-        {/* PROMOTIONS TAB - SAME AS BEFORE */}
+        {/* PROMOTIONS TAB */}
         {/* ========================================================== */}
         {activeTab === 'promotions' && (
-          // ... (promotions tab code - same as before)
-          <div>Promotions Content</div>
+          <div style={{ 
+            ...glassEffect, 
+            borderRadius: '20px', 
+            padding: isMobile ? '16px' : '24px' 
+          }}>
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center', 
+              marginBottom: '16px', 
+              flexWrap: 'wrap', 
+              gap: '10px' 
+            }}>
+              <h3 style={{ margin: 0, color: textColor, fontSize: isMobile ? '15px' : '17px' }}>
+                {translate('promotions')}
+              </h3>
+              <button 
+                onClick={() => { resetPromoForm(); setShowAddPromoModal(true) }} 
+                style={{ 
+                  background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)', 
+                  color: 'white', 
+                  padding: isMobile ? '8px 18px' : '10px 24px', 
+                  border: 'none', 
+                  borderRadius: '40px', 
+                  cursor: 'pointer', 
+                  fontWeight: 'bold', 
+                  fontSize: isMobile ? '12px' : '14px',
+                  boxShadow: '0 4px 15px rgba(139,92,246,0.3)',
+                  transition: 'all 0.2s'
+                }}
+              >
+                + {translate('add_promotion')}
+              </button>
+            </div>
+            
+            {promotions.length === 0 ? (
+              <p style={{ textAlign: 'center', padding: '30px', color: textMuted }}>
+                {translate('no_promotions')}
+              </p>
+            ) : (
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(300px, 1fr))', 
+                gap: '16px' 
+              }}>
+                {promotions.map(promo => (
+                  <div key={promo.id} style={{ 
+                    ...glassEffect, 
+                    borderRadius: '16px', 
+                    padding: '16px', 
+                    borderLeft: `4px solid ${promo.is_active ? '#22c55e' : '#ef4444'}` 
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <h4 style={{ margin: 0, color: textColor, fontSize: isMobile ? '14px' : '16px' }}>
+                        {promo.name}
+                      </h4>
+                      <span style={{ 
+                        background: promo.is_active ? '#22c55e' : '#ef4444', 
+                        color: 'white', 
+                        padding: '2px 10px', 
+                        borderRadius: '20px', 
+                        fontSize: '10px', 
+                        fontWeight: 'bold' 
+                      }}>
+                        {promo.is_active ? translate('active') : translate('inactive')}
+                      </span>
+                    </div>
+                    <div style={{ 
+                      display: 'flex', 
+                      gap: '8px', 
+                      marginTop: '12px', 
+                      justifyContent: 'flex-end' 
+                    }}>
+                      <button 
+                        onClick={() => togglePromoStatus(promo.id, promo.is_active)} 
+                        style={{ 
+                          background: promo.is_active ? '#ef4444' : '#22c55e', 
+                          color: 'white', 
+                          padding: '4px 14px', 
+                          border: 'none', 
+                          borderRadius: '20px', 
+                          cursor: 'pointer', 
+                          fontSize: '11px', 
+                          fontWeight: 'bold' 
+                        }}
+                      >
+                        {promo.is_active ? translate('disable') : translate('enable')}
+                      </button>
+                      <button 
+                        onClick={() => openEditPromoModal(promo)} 
+                        style={{ 
+                          background: '#f59e0b', 
+                          color: 'white', 
+                          padding: '4px 14px', 
+                          border: 'none', 
+                          borderRadius: '20px', 
+                          cursor: 'pointer', 
+                          fontSize: '11px', 
+                          fontWeight: 'bold' 
+                        }}
+                      >
+                        ✏️ {translate('edit')}
+                      </button>
+                      <button 
+                        onClick={() => deletePromotion(promo.id, promo.name)} 
+                        style={{ 
+                          background: '#ef4444', 
+                          color: 'white', 
+                          padding: '4px 14px', 
+                          border: 'none', 
+                          borderRadius: '20px', 
+                          cursor: 'pointer', 
+                          fontSize: '11px', 
+                          fontWeight: 'bold' 
+                        }}
+                      >
+                        🗑️ {translate('delete')}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         )}
 
         {/* ========================================================== */}
-        {/* MODALS - SAME AS BEFORE */}
+        {/* MODALS - Placeholder (keep your existing modals) */}
         {/* ========================================================== */}
-        {/* ... (all modals - same as before) */}
         
         <style>
           {`
