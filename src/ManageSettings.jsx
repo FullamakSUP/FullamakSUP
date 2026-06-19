@@ -44,88 +44,89 @@ function ManageSettings() {
   // COMPLETE TRANSLATIONS
   // ============================================================
   const translations = {
-    // Header
-    system_settings: { en: '⚙️ System Settings', ms: '⚙️ Tetapan Sistem' },
-    settings_subtitle: { en: 'Manage your restaurant system settings', ms: 'Urus tetapan sistem restoran anda' },
-    
-    // Sections
-    language: { en: 'Language', ms: 'Bahasa' },
-    restaurant_info: { en: '🏪 Restaurant Info', ms: '🏪 Maklumat Restoran' },
-    tax_service: { en: '💰 Tax & Service Charge', ms: '💰 Cukai & Caj Perkhidmatan' },
-    printing: { en: '🖨️ Printing', ms: '🖨️ Pencetakan' },
-    digital_kitchen: { en: '🍳 Digital Kitchen', ms: '🍳 Dapur Digital' },
-    special_menu: { en: '⭐ Special Menu', ms: '⭐ Menu Istimewa' },
-    business_hours: { en: '⏰ Business Hours', ms: '⏰ Waktu Perniagaan' },
-    login_page: { en: '🔐 Login Page', ms: '🔐 Halaman Log Masuk' },
-    preview: { en: '📊 Preview', ms: '📊 Pratonton' },
-    danger_zone: { en: '⚠️ Danger Zone', ms: '⚠️ Zon Berbahaya' },
-    
-    // Labels
-    restaurant_name: { en: 'Restaurant Name', ms: 'Nama Restoran' },
-    restaurant_logo: { en: 'Restaurant Logo', ms: 'Logo Restoran' },
-    service_charge: { en: 'Service Charge', ms: 'Caj Perkhidmatan' },
-    tax: { en: 'Tax', ms: 'Cukai' },
-    printer_type: { en: 'Printer Type', ms: 'Jenis Pencetak' },
-    thermal_printer: { en: 'Thermal Printer', ms: 'Pencetak Thermal' },
-    a4_printer: { en: 'A4 Printer', ms: 'Pencetak A4' },
-    no_printer: { en: 'No Printer', ms: 'Tiada Pencetak' },
-    auto_print: { en: 'Auto Print', ms: 'Cetak Automatik' },
-    notification_sound: { en: 'Notification Sound', ms: 'Bunyi Notifikasi' },
-    kitchen_app: { en: 'Kitchen App', ms: 'Aplikasi Dapur' },
-    kitchen_on_off: { en: 'Enable/disable digital kitchen', ms: 'Aktifkan/nyahaktifkan dapur digital' },
-    enable_special_menu: { en: 'Enable Special Menu', ms: 'Aktifkan Menu Istimewa' },
-    special_menu_title: { en: 'Special Menu Title', ms: 'Tajuk Menu Istimewa' },
-    start: { en: 'Start', ms: 'Mula' },
-    end: { en: 'End', ms: 'Tamat' },
-    welcome_text: { en: 'Welcome Text', ms: 'Teks Selamat Datang' },
-    subtitle_text: { en: 'Subtitle Text', ms: 'Teks Subtitle' },
-    branding_text: { en: 'Branding Text', ms: 'Teks Jenama' },
-    footer_text: { en: 'Footer Text', ms: 'Teks Footer' },
-    auto_complete: { en: 'Auto Complete', ms: 'Auto Lengkap' },
-    minutes_to_complete: { en: 'Minutes to Auto Complete', ms: 'Minit untuk Auto Lengkap' },
-    example: { en: 'Example', ms: 'Contoh' },
-    
-    // Buttons
-    save: { en: '💾 Save', ms: '💾 Simpan' },
-    saving: { en: '⏳ Saving...', ms: '⏳ Menyimpan...' },
-    select_logo: { en: '📤 Select Logo', ms: '📤 Pilih Logo' },
-    uploading: { en: '⏳ Uploading...', ms: '⏳ Memuat naik...' },
-    
-    // Messages
-    settings_saved: { en: '✅ Settings saved successfully!', ms: '✅ Tetapan berjaya disimpan!' },
-    save_error: { en: '❌ Error saving settings!', ms: '❌ Ralat menyimpan tetapan!' },
-    error_updating: { en: 'Error updating', ms: 'Ralat mengemaskini' },
-    logo_uploaded: { en: '✅ Logo uploaded successfully!', ms: '✅ Logo berjaya dimuat naik!' },
-    logo_deleted: { en: '✅ Logo deleted!', ms: '✅ Logo dipadam!' },
-    upload_failed: { en: '❌ Upload failed!', ms: '❌ Muat naik gagal!' },
-    delete_image: { en: 'Delete this logo image?', ms: 'Padam gambar logo ini?' },
-    
-    // Delete Modal
-    delete_orders: { en: 'Delete All Orders?', ms: 'Padam Semua Pesanan?' },
-    delete_menu: { en: 'Delete All Menu?', ms: 'Padam Semua Menu?' },
-    delete_categories: { en: 'Delete All Categories?', ms: 'Padam Semua Kategori?' },
-    reset_tables: { en: 'Reset All Tables?', ms: 'Reset Semua Meja?' },
-    delete_promotions: { en: 'Delete All Promotions?', ms: 'Padam Semua Promosi?' },
-    reset_all_data: { en: 'Reset ALL Data?', ms: 'Reset SEMUA Data?' },
-    delete_warning: { en: 'This action CANNOT be undone! All data will be lost.', ms: 'Tindakan ini TIDAK BOLEH dibatalkan! Semua data akan hilang.' },
-    delete_all_warning: { en: 'This will delete ALL orders, menu, categories, promotions, and tables. Staff and settings will remain.', ms: 'Tindakan ini akan memadam SEMUA data pesanan, menu, kategori, promosi, dan meja. Staff dan tetapan akan kekal.' },
-    type_delete: { en: 'Type DELETE to confirm:', ms: 'Taip DELETE untuk sahkan:' },
-    confirm_delete: { en: '✅ Yes, Delete', ms: '✅ Ya, Padam' },
-    cancel: { en: '❌ Cancel', ms: '❌ Batal' },
-    
-    // Danger Zone Buttons
-    delete_all_orders: { en: '🗑️ Delete All Orders', ms: '🗑️ Padam Semua Pesanan' },
-    delete_all_menu: { en: '🗑️ Delete All Menu', ms: '🗑️ Padam Semua Menu' },
-    delete_all_categories: { en: '🗑️ Delete All Categories', ms: '🗑️ Padam Semua Kategori' },
-    reset_all_tables: { en: '🗑️ Reset All Tables', ms: '🗑️ Reset Semua Meja' },
-    delete_all_promotions: { en: '🗑️ Delete All Promotions', ms: '🗑️ Padam Semua Promosi' },
-    reset_all_data: { en: '⚠️ Reset ALL Data', ms: '⚠️ Reset SEMUA Data' },
-    
-    // Subtotal
-    subtotal: { en: 'Subtotal', ms: 'Subtotal' },
-    total: { en: 'Total', ms: 'Jumlah' },
-    save_all: { en: '💾 Save All Settings', ms: '💾 Simpan Semua Tetapan' },
-  }
+  // Header
+  system_settings: { en: 'System Settings', ms: 'Tetapan Sistem' },
+  settings_subtitle: { en: 'Manage your restaurant system settings', ms: 'Urus tetapan sistem restoran anda' },
+  
+  // Sections
+  language: { en: 'Language', ms: 'Bahasa' },
+  restaurant_info: { en: 'Restaurant Info', ms: 'Maklumat Restoran' },
+  tax_service: { en: 'Tax & Service Charge', ms: 'Cukai & Caj Perkhidmatan' },
+  printing: { en: 'Printing', ms: 'Pencetakan' },
+  digital_kitchen: { en: 'Digital Kitchen', ms: 'Dapur Digital' },
+  special_menu: { en: 'Special Menu', ms: 'Menu Istimewa' },
+  business_hours: { en: 'Business Hours', ms: 'Waktu Perniagaan' },
+  login_page: { en: 'Login Page', ms: 'Halaman Log Masuk' },
+  preview: { en: 'Preview', ms: 'Pratonton' },
+  danger_zone: { en: 'Danger Zone', ms: 'Zon Berbahaya' },
+  
+  // Labels
+  restaurant_name: { en: 'Restaurant Name', ms: 'Nama Restoran' },
+  restaurant_logo: { en: 'Restaurant Logo', ms: 'Logo Restoran' },
+  service_charge: { en: 'Service Charge', ms: 'Caj Perkhidmatan' },
+  tax: { en: 'Tax', ms: 'Cukai' },
+  printer_type: { en: 'Printer Type', ms: 'Jenis Pencetak' },
+  thermal_printer: { en: 'Thermal Printer', ms: 'Pencetak Thermal' },
+  a4_printer: { en: 'A4 Printer', ms: 'Pencetak A4' },
+  no_printer: { en: 'No Printer', ms: 'Tiada Pencetak' },
+  auto_print: { en: 'Auto Print', ms: 'Cetak Automatik' },
+  notification_sound: { en: 'Notification Sound', ms: 'Bunyi Notifikasi' },
+  kitchen_app: { en: 'Kitchen App', ms: 'Aplikasi Dapur' },
+  kitchen_on_off: { en: 'Enable/disable digital kitchen', ms: 'Aktifkan/nyahaktifkan dapur digital' },
+  enable_special_menu: { en: 'Enable Special Menu', ms: 'Aktifkan Menu Istimewa' },
+  special_menu_title: { en: 'Special Menu Title', ms: 'Tajuk Menu Istimewa' },
+  start: { en: 'Start', ms: 'Mula' },
+  end: { en: 'End', ms: 'Tamat' },
+  welcome_text: { en: 'Welcome Text', ms: 'Teks Selamat Datang' },
+  subtitle_text: { en: 'Subtitle Text', ms: 'Teks Subtitle' },
+  branding_text: { en: 'Branding Text', ms: 'Teks Jenama' },
+  footer_text: { en: 'Footer Text', ms: 'Teks Footer' },
+  auto_complete: { en: 'Auto Complete', ms: 'Auto Lengkap' },
+  minutes_to_complete: { en: 'Minutes to Auto Complete', ms: 'Minit untuk Auto Lengkap' },
+  example: { en: 'Example', ms: 'Contoh' },
+  
+  // Buttons
+  save: { en: 'Save', ms: 'Simpan' },
+  saving: { en: 'Saving...', ms: 'Menyimpan...' },
+  select_logo: { en: 'Select Logo', ms: 'Pilih Logo' },
+  uploading: { en: 'Uploading...', ms: 'Memuat naik...' },
+  
+  // Messages
+  settings_saved: { en: 'Settings saved successfully!', ms: 'Tetapan berjaya disimpan!' },
+  save_error: { en: 'Error saving settings!', ms: 'Ralat menyimpan tetapan!' },
+  error_updating: { en: 'Error updating', ms: 'Ralat mengemaskini' },
+  logo_uploaded: { en: 'Logo uploaded successfully!', ms: 'Logo berjaya dimuat naik!' },
+  logo_deleted: { en: 'Logo deleted!', ms: 'Logo dipadam!' },
+  upload_failed: { en: 'Upload failed!', ms: 'Muat naik gagal!' },
+  delete_image: { en: 'Delete this logo image?', ms: 'Padam gambar logo ini?' },
+  
+  // Delete Modal
+  delete_orders: { en: 'Delete All Orders?', ms: 'Padam Semua Pesanan?' },
+  delete_menu: { en: 'Delete All Menu?', ms: 'Padam Semua Menu?' },
+  delete_categories: { en: 'Delete All Categories?', ms: 'Padam Semua Kategori?' },
+  reset_tables: { en: 'Reset All Tables?', ms: 'Reset Semua Meja?' },
+  delete_promotions: { en: 'Delete All Promotions?', ms: 'Padam Semua Promosi?' },
+  reset_all_data: { en: 'Reset ALL Data?', ms: 'Reset SEMUA Data?' },
+  delete_warning: { en: 'This action CANNOT be undone! All data will be lost.', ms: 'Tindakan ini TIDAK BOLEH dibatalkan! Semua data akan hilang.' },
+  delete_all_warning: { en: 'This will delete ALL orders, menu, categories, promotions, and tables. Staff and settings will remain.', ms: 'Tindakan ini akan memadam SEMUA data pesanan, menu, kategori, promosi, dan meja. Staff dan tetapan akan kekal.' },
+  type_delete: { en: 'Type DELETE to confirm:', ms: 'Taip DELETE untuk sahkan:' },
+  confirm_delete: { en: 'Yes, Delete', ms: 'Ya, Padam' },
+  cancel: { en: 'Cancel', ms: 'Batal' },
+  
+  // Danger Zone Buttons
+  delete_all_orders: { en: 'Delete All Orders', ms: 'Padam Semua Pesanan' },
+  delete_all_menu: { en: 'Delete All Menu', ms: 'Padam Semua Menu' },
+  delete_all_categories: { en: 'Delete All Categories', ms: 'Padam Semua Kategori' },
+  reset_all_tables: { en: 'Reset All Tables', ms: 'Reset Semua Meja' },
+  delete_all_promotions: { en: 'Delete All Promotions', ms: 'Padam Semua Promosi' },
+  reset_all_data: { en: 'Reset ALL Data', ms: 'Reset SEMUA Data' },
+  
+  // Subtotal
+  subtotal: { en: 'Subtotal', ms: 'Subtotal' },
+  total: { en: 'Total', ms: 'Jumlah' },
+  save_all: { en: 'Save All Settings', ms: 'Simpan Semua Tetapan' },
+}
+
 
   const t = (key) => {
     if (!translations[key]) return key

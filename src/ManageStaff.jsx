@@ -31,11 +31,11 @@ function ManageStaff() {
   })
 
   // ============================================================
-  // COMPLETE TRANSLATIONS
+  // COMPLETE TRANSLATIONS - TANPA EMOJI
   // ============================================================
   const translations = {
     // Header
-    team_access: { en: '👥 Team & Access', ms: '👥 Pasukan & Akses' },
+    team_access: { en: 'Team & Access', ms: 'Pasukan & Akses' },
     team_subtitle: { en: 'Manage restaurant staff and system access control', ms: 'Urus kakitangan restoran dan kawalan akses sistem' },
     
     // Stats
@@ -45,8 +45,8 @@ function ManageStaff() {
     stats_pos_staff: { en: 'POS Staff', ms: 'Staff POS' },
     
     // Search & Buttons
-    search_staff: { en: '🔍 Search staff...', ms: '🔍 Cari staff...' },
-    add_staff: { en: '➕ Add Staff', ms: '➕ Tambah Staff' },
+    search_staff: { en: 'Search staff...', ms: 'Cari staff...' },
+    add_staff: { en: 'Add Staff', ms: 'Tambah Staff' },
     staff_found: { en: 'staff found', ms: 'staff dijumpai' },
     no_staff: { en: 'No staff members found', ms: 'Tiada staff dijumpai' },
     
@@ -61,13 +61,13 @@ function ManageStaff() {
     access: { en: 'Access', ms: 'Akses' },
     
     // Buttons
-    edit: { en: '✏️ Edit', ms: '✏️ Edit' },
-    delete: { en: '🗑️ Delete', ms: '🗑️ Hapus' },
-    reset_password: { en: '🔑 Reset Password', ms: '🔑 Reset Kata Laluan' },
-    save: { en: '💾 Save', ms: '💾 Simpan' },
-    cancel: { en: '❌ Cancel', ms: '❌ Batal' },
-    add: { en: '✅ Add', ms: '✅ Tambah' },
-    reset: { en: '🔑 Reset', ms: '🔑 Reset' },
+    edit: { en: 'Edit', ms: 'Edit' },
+    delete: { en: 'Delete', ms: 'Hapus' },
+    reset_password: { en: 'Reset Password', ms: 'Reset Kata Laluan' },
+    save: { en: 'Save', ms: 'Simpan' },
+    cancel: { en: 'Cancel', ms: 'Batal' },
+    add: { en: 'Add', ms: 'Tambah' },
+    reset: { en: 'Reset', ms: 'Reset' },
     
     // Form Labels
     username: { en: 'Username', ms: 'Nama Pengguna' },
@@ -80,30 +80,30 @@ function ManageStaff() {
     min_6_chars: { en: 'min 6 characters', ms: 'min 6 aksara' },
     
     // Modals
-    add_staff_title: { en: '➕ Add Staff', ms: '➕ Tambah Staff' },
-    edit_staff_title: { en: '✏️ Edit Staff', ms: '✏️ Edit Staff' },
-    reset_password_title: { en: '🔑 Reset Password', ms: '🔑 Reset Kata Laluan' },
+    add_staff_title: { en: 'Add Staff', ms: 'Tambah Staff' },
+    edit_staff_title: { en: 'Edit Staff', ms: 'Edit Staff' },
+    reset_password_title: { en: 'Reset Password', ms: 'Reset Kata Laluan' },
     reset_password_for: { en: 'Reset password for', ms: 'Reset kata laluan untuk' },
     
     // Messages
-    staff_added: { en: '✅ Staff added successfully!', ms: '✅ Staff berjaya ditambah!' },
-    staff_updated: { en: '✅ Staff updated successfully!', ms: '✅ Staff berjaya dikemaskini!' },
-    staff_deleted: { en: '✅ Staff deleted successfully!', ms: '✅ Staff berjaya dihapus!' },
-    password_reset_success: { en: '✅ Password reset successfully!', ms: '✅ Kata laluan berjaya direset!' },
-    password_required: { en: '⚠️ Password is required!', ms: '⚠️ Kata laluan diperlukan!' },
-    password_min_length: { en: '⚠️ Password must be at least 6 characters!', ms: '⚠️ Kata laluan sekurang-kurangnya 6 aksara!' },
+    staff_added: { en: 'Staff added successfully!', ms: 'Staff berjaya ditambah!' },
+    staff_updated: { en: 'Staff updated successfully!', ms: 'Staff berjaya dikemaskini!' },
+    staff_deleted: { en: 'Staff deleted successfully!', ms: 'Staff berjaya dihapus!' },
+    password_reset_success: { en: 'Password reset successfully!', ms: 'Kata laluan berjaya direset!' },
+    password_required: { en: 'Password is required!', ms: 'Kata laluan diperlukan!' },
+    password_min_length: { en: 'Password must be at least 6 characters!', ms: 'Kata laluan sekurang-kurangnya 6 aksara!' },
     not_match: { en: 'do not match!', ms: 'tidak sepadan!' },
     required: { en: 'is required!', ms: 'diperlukan!' },
     already_exists: { en: 'already exists!', ms: 'sudah wujud!' },
     error_updating: { en: 'Error updating', ms: 'Ralat mengemaskini' },
-    cannot_delete_admin: { en: '⚠️ Cannot delete admin account!', ms: '⚠️ Tidak boleh hapus akaun admin!' },
-    cannot_delete_self: { en: '⚠️ You cannot delete your own account!', ms: '⚠️ Anda tidak boleh hapus akaun sendiri!' },
-    cannot_change_role: { en: '⚠️ Cannot change role of admin or yourself', ms: '⚠️ Tidak boleh tukar peranan admin atau diri sendiri' },
+    cannot_delete_admin: { en: 'Cannot delete admin account!', ms: 'Tidak boleh hapus akaun admin!' },
+    cannot_delete_self: { en: 'You cannot delete your own account!', ms: 'Anda tidak boleh hapus akaun sendiri!' },
+    cannot_change_role: { en: 'Cannot change role of admin or yourself', ms: 'Tidak boleh tukar peranan admin atau diri sendiri' },
     confirm_delete: { en: 'Confirm Delete', ms: 'Sahkan Hapus' },
     
     // Permissions
-    pos: { en: '🧾 POS', ms: '🧾 POS' },
-    kitchen: { en: '🍳 Kitchen', ms: '🍳 Dapur' },
+    pos: { en: 'POS', ms: 'POS' },
+    kitchen: { en: 'Kitchen', ms: 'Dapur' },
     select_access: { en: 'Select which apps this staff can access', ms: 'Pilih aplikasi yang boleh diakses oleh kakitangan ini' },
   }
 

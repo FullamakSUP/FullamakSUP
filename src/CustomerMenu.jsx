@@ -393,14 +393,13 @@ function CustomerMenu() {
   // HELPERS
   // ============================================================
   const getSubCategoriesForMenu = () => {
-    // SHOW ALL SUB CATEGORIES INCLUDING DRINKS
-    return categories
-      .filter(cat => {
-        if (cat.parent_id === null) return false
-        return true  // Show ALL sub categories including drinks
-      })
-      .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
-  }
+  return categories
+    .filter(cat => {
+      if (cat.parent_id === null) return false
+      return true  // ✅ Paparkan SEMUA sub kategori termasuk minuman
+    })
+    .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
+}
 
   const getDefaultIcon = (category) => {
     const foundCat = categories.find(c => c.name === category)
@@ -891,7 +890,7 @@ function CustomerMenu() {
                   fontSize: isMobile ? '14px' : '18px',
                   fontWeight: 'bold',
                   background: 'transparent',
-                  color: textInput,
+                  color: darkMode ? '#ffffff' : '#1e293b',
                 }}
               />
               <span style={{ fontSize: isMobile ? '18px' : '24px' }}>🪑</span>
