@@ -393,21 +393,26 @@ function CustomerMenu() {
   // HELPERS
   // ============================================================
   // ============================================================
-  // GET CATEGORIES - PARENT CATEGORIES + FORCE "Minuman"
+  // GET CATEGORIES - SYNC WITH STAFFAPP + MANAGE MENU
   // ============================================================
   const getCategoriesForMenu = () => {
-    // Get parent categories (parent_id === null)
-    const parentCats = categories
-      .filter(cat => cat.parent_id === null)
+    // Get ALL categories from database (same as StaffApp)
+    const allCats = categories
       .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
       .map(cat => cat.name)
     
-    // Force "Minuman" to appear even if empty
-    if (!parentCats.includes('Minuman')) {
-      parentCats.push('Minuman')
+    // Sub-categories to hide (drink sub-categories)
+    const hideCategories = ['Teh', 'Kopi', 'Jus', 'Air']
+    
+    // Filter out hidden sub-categories
+    const filtered = allCats.filter(cat => !hideCategories.includes(cat))
+    
+    // Force 'Minuman' to appear (sync with Manage Menu)
+    if (!filtered.includes('Minuman')) {
+      filtered.push('Minuman')
     }
     
-    return parentCats
+    return filtered
   }
 
   const getDefaultIcon = (category) => {
@@ -721,13 +726,13 @@ function CustomerMenu() {
   const getCartItemCount = () => cart.reduce((sum, item) => sum + item.quantity, 0)
 
   // ============================================================
-  // FILTERS - PARENT CATEGORIES + FORCE "Minuman"
+  // FILTERS - SYNC WITH STAFFAPP + MANAGE MENU
   // ============================================================
-  const parentCategories = getCategoriesForMenu()
+  const displayCategories = getCategoriesForMenu()
   
-  // Build category names: 'All' + parent categories + force "Minuman"
+  // Build category names: 'All' + display categories
   const categoryNames = ['All']
-  parentCategories.forEach(cat => categoryNames.push(cat))
+  displayCategories.forEach(cat => categoryNames.push(cat))
   
   // Add Promo category if there are promotions
   if (promoItems.length > 0 && !categoryNames.includes('🔥 Promosi')) {
@@ -1178,7 +1183,7 @@ function CustomerMenu() {
         </div>
       )}
 
-      {/* ===== CATEGORY FILTERS - PARENT CATEGORIES + FORCE "Minuman" ===== */}
+      {/* ===== CATEGORY FILTERS - SYNC WITH STAFFAPP ===== */}
       <div style={{ maxWidth: '1280px', margin: '16px auto', padding: isMobile ? '0 12px' : '0 20px' }}>
         <div style={{ 
           display: 'flex',
