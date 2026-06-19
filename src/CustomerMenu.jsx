@@ -136,11 +136,11 @@ function CustomerMenu() {
   const cardBg = darkMode ? 'rgba(20, 20, 40, 0.95)' : 'rgba(255, 255, 255, 0.98)'
   
   // FONT COLORS - JELAS UNTUK KEDUA-DUA MODE
-  const textColor = darkMode ? '#ffffff' : '#1e293b'        // PUTIH TERANG untuk dark
-  const textMuted = darkMode ? '#cbd5e1' : '#64748b'        // KELABU MUDA untuk dark
-  const textLight = darkMode ? '#f8fafc' : '#0f172a'        // PUTIH SANGAT TERANG
-  const textInput = darkMode ? '#ffffff' : '#1e293b'        // Untuk input - JELAS
-  const textPrice = '#22c55e'                                // Hijau - sama untuk kedua-dua mode
+  const textColor = darkMode ? '#ffffff' : '#1e293b'
+  const textMuted = darkMode ? '#cbd5e1' : '#64748b'
+  const textLight = darkMode ? '#f8fafc' : '#0f172a'
+  const textInput = darkMode ? '#ffffff' : '#1e293b'
+  const textPrice = '#22c55e'
   
   const borderColor = darkMode ? 'rgba(71, 85, 105, 0.4)' : 'rgba(203, 213, 225, 0.4)'
   const inputBg = darkMode ? '#1a1a2e' : '#ffffff'
@@ -895,8 +895,9 @@ function CustomerMenu() {
                   fontSize: isMobile ? '14px' : '18px',
                   fontWeight: 'bold',
                   background: 'transparent',
-                  color: '#000000', // HITAM - JELAS
-                  caretColor: '#1e293b',
+                  color: '#000000',
+                  caretColor: '#000000',
+                  WebkitTextFillColor: '#000000',
                 }}
               />
               <span style={{ fontSize: isMobile ? '18px' : '24px' }}>🪑</span>
@@ -2221,13 +2222,20 @@ function CustomerMenu() {
           
           input:focus, textarea:focus { 
             outline: none; 
-            border-color: #f59e0b;
+            border-color: #0b49f5;
             box-shadow: 0 0 0 3px rgba(245,158,11,0.12);
           }
           
-          /* Table number input - always visible */
+          /* Table number input - ALWAYS BLACK */
           input[type="number"] {
             color: #000000 !important;
+            -webkit-text-fill-color: #000000 !important;
+          }
+          
+          /* Dark mode override for table number */
+          .dark-mode input[type="number"] {
+            color: #000000 !important;
+            -webkit-text-fill-color: #000000 !important;
           }
         `}
       </style>
