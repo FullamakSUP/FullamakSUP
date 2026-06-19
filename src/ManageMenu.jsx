@@ -548,6 +548,7 @@ function ManageMenu() {
     await loadMenu()
     await loadDrinkOptions()
     setLoading(false)
+    console.log('✅ All data loaded!')
   }
 
   async function loadCategories() {
