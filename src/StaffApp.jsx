@@ -58,25 +58,44 @@ function StaffApp() {
   const [historyPage, setHistoryPage] = useState(1)
   const historyItemsPerPage = 10
 
-  // Modern theme colors
-  const bgColor = darkMode ? '#0f0f1a' : '#f1f5f9'
-  const cardBg = darkMode ? 'rgba(30, 30, 46, 0.95)' : 'rgba(255, 255, 255, 0.95)'
+  // ============================================================
+  // CHECK MOBILE
+  // ============================================================
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  // ============================================================
+  // THEME COLORS - CANTIK & JELAS
+  // ============================================================
+  const bgColor = darkMode ? '#0a0a16' : '#f0f4f8'
+  const cardBg = darkMode ? 'rgba(20, 20, 40, 0.95)' : 'rgba(255, 255, 255, 0.95)'
   const textColor = darkMode ? '#f1f5f9' : '#0f172a'
   const textMuted = darkMode ? '#94a3b8' : '#64748b'
-  const borderColor = darkMode ? 'rgba(71, 85, 105, 0.3)' : 'rgba(203, 213, 225, 0.6)'
-  const inputBg = darkMode ? '#1e1e2e' : '#ffffff'
-  const inputBorder = darkMode ? '#334155' : '#cbd5e1'
-  const secondaryBg = darkMode ? 'rgba(30, 30, 46, 0.8)' : 'rgba(248, 250, 252, 0.9)'
+  const textLight = darkMode ? '#f8fafc' : '#1e293b'
+  const borderColor = darkMode ? 'rgba(71, 85, 105, 0.3)' : 'rgba(203, 213, 225, 0.5)'
+  const inputBg = darkMode ? '#1a1a2e' : '#ffffff'
+  const inputBorder = darkMode ? '#3d3d5c' : '#cbd5e1'
+  const secondaryBg = darkMode ? 'rgba(30, 30, 50, 0.6)' : 'rgba(248, 250, 252, 0.8)'
+  const accentColor = '#3b82f6'
+  const successColor = '#22c55e'
+  const dangerColor = '#ef4444'
+  const warningColor = '#f59e0b'
   
   const glassEffect = {
     background: cardBg,
-    backdropFilter: 'blur(10px)',
+    backdropFilter: 'blur(16px)',
     border: `1px solid ${borderColor}`,
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)'
+    boxShadow: darkMode 
+      ? '0 8px 40px rgba(0,0,0,0.5)' 
+      : '0 8px 40px rgba(0,0,0,0.06)'
   }
 
   // ============================================================
-  // LOAD CATEGORIES FROM DATABASE - FIXED: SHOW ALL (NO FILTER)
+  // LOAD CATEGORIES FROM DATABASE - SHOW ALL (NO FILTER)
   // ============================================================
   async function loadCategoriesFromDB() {
     console.log('🔄 Loading categories from database...')
@@ -92,7 +111,7 @@ function StaffApp() {
     
     if (data) {
       console.log('✅ Categories loaded:', data.map(c => c.name))
-      // SET ALL CATEGORIES - NO FILTERING
+      // SET ALL CATEGORIES - NO FILTERING (includes sub-categories)
       setDbCategories(data)
     }
   }
@@ -102,7 +121,6 @@ function StaffApp() {
   // ============================================================
   const getCategoryIcon = (catName) => {
     if (catName === 'Semua') return '🍽️'
-    if (catName === 'Minuman') return '🥤'
     const found = dbCategories.find(c => c.name === catName)
     return found?.icon || '📂'
   }
@@ -116,13 +134,6 @@ function StaffApp() {
       sound.load()
       setAudio(sound)
     }
-  }, [])
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768)
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
   useEffect(() => {
@@ -540,7 +551,7 @@ function StaffApp() {
   }
 
   // ============================================================
-  // GET CATEGORIES - FIXED: SHOW ALL (NO FILTER)
+  // GET CATEGORIES - SHOW ALL (NO FILTER)
   // ============================================================
   // Build categories list: 'Semua' + ALL categories from database (NO FILTER)
   const categoryNames = ['Semua', ...dbCategories.map(cat => cat.name)]
@@ -554,19 +565,17 @@ function StaffApp() {
   // HELPERS
   // ============================================================
   const getDefaultIcon = (category) => {
-    if (category === 'Minuman') return '🥤'
     const found = dbCategories.find(c => c.name === category)
     if (found && found.icon) return found.icon
     switch(category) {
       case 'Makanan': return '🍚'
-      case 'SUP': return '🍜'
+      case 'Minuman': return '🥤'
       default: return '🍽️'
     }
   }
 
   const getCategoryIconForFilter = (cat) => {
     if (cat === 'Semua') return '🍽️'
-    if (cat === 'Minuman') return '🥤'
     const found = dbCategories.find(c => c.name === cat)
     return found?.icon || '📂'
   }
@@ -587,7 +596,7 @@ function StaffApp() {
             {item.name} {optionLabel && <span style={{ fontSize: '12px' }}>{optionLabel}</span>}
           </span>
           <span style={{ color: textMuted, textAlign: 'center', flex: 1, fontSize: isMobile ? '11px' : '13px' }}>x{item.quantity}</span>
-          <span style={{ color: '#22c55e', fontWeight: 'bold', textAlign: 'right', flex: 1, fontSize: isMobile ? '12px' : '14px' }}>RM {(item.price * item.quantity).toFixed(2)}</span>
+          <span style={{ color: successColor, fontWeight: 'bold', textAlign: 'right', flex: 1, fontSize: isMobile ? '12px' : '14px' }}>RM {(item.price * item.quantity).toFixed(2)}</span>
         </div>
       )
     })
@@ -608,7 +617,7 @@ function StaffApp() {
             {item.name} {optionLabel && <span style={{ fontSize: '12px' }}>{optionLabel}</span>}
             <span style={{ color: textMuted, marginLeft: '4px' }}>x{item.quantity}</span>
           </span>
-          <span style={{ color: '#22c55e', fontWeight: 'bold', fontSize: isMobile ? '12px' : '14px' }}>RM {(item.price * item.quantity).toFixed(2)}</span>
+          <span style={{ color: successColor, fontWeight: 'bold', fontSize: isMobile ? '12px' : '14px' }}>RM {(item.price * item.quantity).toFixed(2)}</span>
         </div>
       )
     })
@@ -627,7 +636,7 @@ function StaffApp() {
         minHeight: '100vh' 
       }}>
         
-        {/* TOP BAR */}
+        {/* ===== TOP BAR ===== */}
         <div style={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
@@ -638,22 +647,22 @@ function StaffApp() {
         }}>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
             <div style={{ 
-              background: kitchenEnabled ? '#22c55e' : '#ef4444', 
+              background: kitchenEnabled ? successColor : dangerColor, 
               color: 'white', 
               padding: '6px 16px', 
               borderRadius: '40px', 
               fontSize: isMobile ? '10px' : '12px', 
               fontWeight: 'bold', 
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              boxShadow: kitchenEnabled ? '0 2px 12px rgba(34,197,94,0.3)' : '0 2px 12px rgba(239,68,68,0.3)',
               display: 'flex',
               alignItems: 'center',
-              gap: '4px'
+              gap: '6px'
             }}>
               🍳 {t('kitchen')}: {kitchenEnabled ? 'ON' : 'OFF'}
             </div>
             {!kitchenEnabled && autoCompleteEnabled && (
               <div style={{ 
-                background: '#3b82f6', 
+                background: accentColor, 
                 color: 'white', 
                 padding: '6px 16px', 
                 borderRadius: '40px', 
@@ -661,7 +670,8 @@ function StaffApp() {
                 fontWeight: 'bold',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '4px'
+                gap: '6px',
+                boxShadow: '0 2px 12px rgba(59,130,246,0.3)'
               }}>
                 ⏱️ Auto Complete: {autoCompleteMinutes} min
               </div>
@@ -673,16 +683,20 @@ function StaffApp() {
               style={{ 
                 background: 'linear-gradient(135deg, #06b6d4, #0891b2)', 
                 color: 'white', 
-                padding: isMobile ? '6px 14px' : '8px 20px', 
+                padding: isMobile ? '8px 16px' : '10px 20px', 
                 border: 'none', 
                 borderRadius: '40px', 
                 cursor: 'pointer', 
-                fontSize: isMobile ? '11px' : '13px', 
+                fontSize: isMobile ? '12px' : '13px', 
                 fontWeight: 'bold',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '4px'
+                gap: '6px',
+                boxShadow: '0 2px 12px rgba(6,182,212,0.3)',
+                transition: 'all 0.2s'
               }}
+              onMouseEnter={e => e.currentTarget.style.transform = 'scale(0.97)'}
+              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
             >
               🔄 <span style={{ display: isMobile ? 'none' : 'inline' }}>{t('refresh')}</span>
             </button>
@@ -694,30 +708,33 @@ function StaffApp() {
                 } 
               }} 
               style={{ 
-                background: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)', 
+                background: darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)', 
                 color: textColor, 
-                padding: isMobile ? '6px 14px' : '8px 20px', 
+                padding: isMobile ? '8px 16px' : '10px 20px', 
                 border: `1px solid ${borderColor}`, 
                 borderRadius: '40px', 
                 cursor: 'pointer', 
-                fontSize: isMobile ? '11px' : '13px', 
+                fontSize: isMobile ? '12px' : '13px', 
                 fontWeight: '500',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '4px'
+                gap: '6px',
+                transition: 'all 0.2s'
               }}
+              onMouseEnter={e => e.currentTarget.style.transform = 'scale(0.97)'}
+              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
             >
               🔊 <span style={{ display: isMobile ? 'none' : 'inline' }}>{t('sound')} Test</span>
             </button>
           </div>
         </div>
 
-        {/* SETTINGS BAR */}
+        {/* ===== SETTINGS BAR ===== */}
         <div style={{ 
           ...glassEffect, 
-          borderRadius: '24px', 
+          borderRadius: '20px', 
           padding: isMobile ? '10px 16px' : '12px 20px', 
-          marginBottom: '24px', 
+          marginBottom: '20px', 
           display: 'flex', 
           justifyContent: 'space-between', 
           flexWrap: 'wrap', 
@@ -735,11 +752,11 @@ function StaffApp() {
           </span>
         </div>
 
-        {/* ORDER TYPE SELECTION */}
+        {/* ===== ORDER TYPE SELECTION ===== */}
         <div style={{ 
           display: 'flex', 
           gap: '12px', 
-          marginBottom: '24px', 
+          marginBottom: '20px', 
           background: cardBg, 
           borderRadius: '60px', 
           padding: '4px', 
@@ -755,13 +772,14 @@ function StaffApp() {
             style={{ 
               flex: 1, 
               padding: isMobile ? '10px 16px' : '12px 20px', 
-              background: orderType === 'dine_in' ? 'linear-gradient(135deg, #2563eb, #1d4ed8)' : 'transparent', 
+              background: orderType === 'dine_in' ? `linear-gradient(135deg, ${accentColor}, #1d4ed8)` : 'transparent', 
               color: orderType === 'dine_in' ? 'white' : textColor, 
               border: 'none', 
               borderRadius: '50px', 
               cursor: 'pointer', 
-              fontWeight: 'bold', 
-              fontSize: isMobile ? '12px' : '14px' 
+              fontWeight: orderType === 'dine_in' ? 'bold' : '500', 
+              fontSize: isMobile ? '12px' : '14px',
+              transition: 'all 0.2s'
             }}
           >
             🍽️ {t('dine_in')}
@@ -776,25 +794,26 @@ function StaffApp() {
             style={{ 
               flex: 1, 
               padding: isMobile ? '10px 16px' : '12px 20px', 
-              background: orderType === 'take_away' ? 'linear-gradient(135deg, #22c55e, #16a34a)' : 'transparent', 
+              background: orderType === 'take_away' ? `linear-gradient(135deg, ${successColor}, #16a34a)` : 'transparent', 
               color: orderType === 'take_away' ? 'white' : textColor, 
               border: 'none', 
               borderRadius: '50px', 
               cursor: 'pointer', 
-              fontWeight: 'bold', 
-              fontSize: isMobile ? '12px' : '14px' 
+              fontWeight: orderType === 'take_away' ? 'bold' : '500', 
+              fontSize: isMobile ? '12px' : '14px',
+              transition: 'all 0.2s'
             }}
           >
             🥡 {t('take_away')}
           </button>
         </div>
 
-        {/* ORDER DETAILS INPUT */}
+        {/* ===== ORDER DETAILS INPUT ===== */}
         <div style={{ 
           ...glassEffect, 
-          borderRadius: '24px', 
+          borderRadius: '20px', 
           padding: isMobile ? '14px' : '20px', 
-          marginBottom: '24px', 
+          marginBottom: '20px', 
           display: 'flex', 
           gap: '12px', 
           flexWrap: 'wrap' 
@@ -807,16 +826,19 @@ function StaffApp() {
                 value={tableNumber} 
                 onChange={(e) => setTableNumber(e.target.value)} 
                 style={{ 
-                  padding: isMobile ? '10px 14px' : '14px 16px', 
-                  borderRadius: '16px', 
+                  padding: isMobile ? '10px 14px' : '12px 16px', 
+                  borderRadius: '14px', 
                   border: `1px solid ${inputBorder}`, 
                   background: inputBg, 
                   color: textColor, 
                   flex: 1, 
                   minWidth: '120px', 
                   outline: 'none', 
-                  fontSize: isMobile ? '13px' : '14px' 
-                }} 
+                  fontSize: isMobile ? '13px' : '14px',
+                  transition: 'all 0.2s'
+                }}
+                onFocus={e => e.currentTarget.style.borderColor = accentColor}
+                onBlur={e => e.currentTarget.style.borderColor = inputBorder}
               />
               <input 
                 type="text" 
@@ -824,15 +846,18 @@ function StaffApp() {
                 value={customerName} 
                 onChange={(e) => setCustomerName(e.target.value)} 
                 style={{ 
-                  padding: isMobile ? '10px 14px' : '14px 16px', 
-                  borderRadius: '16px', 
+                  padding: isMobile ? '10px 14px' : '12px 16px', 
+                  borderRadius: '14px', 
                   border: `1px solid ${inputBorder}`, 
                   background: inputBg, 
                   color: textColor, 
                   flex: 2, 
                   outline: 'none', 
-                  fontSize: isMobile ? '13px' : '14px' 
-                }} 
+                  fontSize: isMobile ? '13px' : '14px',
+                  transition: 'all 0.2s'
+                }}
+                onFocus={e => e.currentTarget.style.borderColor = accentColor}
+                onBlur={e => e.currentTarget.style.borderColor = inputBorder}
               />
             </>
           )}
@@ -844,15 +869,18 @@ function StaffApp() {
                 value={customerName} 
                 onChange={(e) => setCustomerName(e.target.value)} 
                 style={{ 
-                  padding: isMobile ? '10px 14px' : '14px 16px', 
-                  borderRadius: '16px', 
+                  padding: isMobile ? '10px 14px' : '12px 16px', 
+                  borderRadius: '14px', 
                   border: `1px solid ${inputBorder}`, 
                   background: inputBg, 
                   color: textColor, 
                   flex: 1, 
                   outline: 'none', 
-                  fontSize: isMobile ? '13px' : '14px' 
-                }} 
+                  fontSize: isMobile ? '13px' : '14px',
+                  transition: 'all 0.2s'
+                }}
+                onFocus={e => e.currentTarget.style.borderColor = accentColor}
+                onBlur={e => e.currentTarget.style.borderColor = inputBorder}
               />
               <input 
                 type="tel" 
@@ -860,25 +888,28 @@ function StaffApp() {
                 value={customerPhone} 
                 onChange={(e) => setCustomerPhone(e.target.value)} 
                 style={{ 
-                  padding: isMobile ? '10px 14px' : '14px 16px', 
-                  borderRadius: '16px', 
+                  padding: isMobile ? '10px 14px' : '12px 16px', 
+                  borderRadius: '14px', 
                   border: `1px solid ${inputBorder}`, 
                   background: inputBg, 
                   color: textColor, 
                   flex: 1, 
                   outline: 'none', 
-                  fontSize: isMobile ? '13px' : '14px' 
-                }} 
+                  fontSize: isMobile ? '13px' : '14px',
+                  transition: 'all 0.2s'
+                }}
+                onFocus={e => e.currentTarget.style.borderColor = accentColor}
+                onBlur={e => e.currentTarget.style.borderColor = inputBorder}
               />
             </>
           )}
         </div>
 
-        {/* TABS */}
+        {/* ===== TABS ===== */}
         <div style={{ 
           display: 'flex', 
           gap: '4px', 
-          marginBottom: '28px', 
+          marginBottom: '24px', 
           background: darkMode ? 'rgba(30, 30, 46, 0.5)' : 'rgba(0,0,0,0.03)', 
           borderRadius: '60px', 
           padding: '4px', 
@@ -901,27 +932,28 @@ function StaffApp() {
               }} 
               style={{ 
                 flex: 1, 
-                padding: isMobile ? '10px 12px' : '12px 20px', 
-                background: activeTab === tab.id ? 'linear-gradient(135deg, #2563eb, #1d4ed8)' : 'transparent', 
+                padding: isMobile ? '8px 12px' : '10px 18px', 
+                background: activeTab === tab.id ? `linear-gradient(135deg, ${accentColor}, #1d4ed8)` : 'transparent', 
                 color: activeTab === tab.id ? 'white' : textColor, 
                 border: 'none', 
                 borderRadius: '50px', 
                 cursor: 'pointer', 
                 fontWeight: activeTab === tab.id ? 'bold' : '500', 
-                fontSize: isMobile ? '12px' : '14px', 
+                fontSize: isMobile ? '12px' : '13px', 
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center', 
                 gap: '6px',
                 whiteSpace: 'nowrap',
-                minWidth: isMobile ? 'auto' : '80px'
+                minWidth: isMobile ? 'auto' : '70px',
+                transition: 'all 0.2s'
               }}
             >
               <span style={{ fontSize: isMobile ? '14px' : '16px' }}>{tab.icon}</span>
               <span>{tab.label}</span>
               {tab.badge > 0 && (
                 <span style={{ 
-                  background: activeTab === tab.id ? 'rgba(255,255,255,0.25)' : '#ef4444', 
+                  background: activeTab === tab.id ? 'rgba(255,255,255,0.25)' : dangerColor, 
                   color: 'white', 
                   borderRadius: '20px', 
                   padding: '1px 8px', 
@@ -937,7 +969,7 @@ function StaffApp() {
           ))}
         </div>
 
-        {/* NEW ORDERS ALERT */}
+        {/* ===== NEW ORDERS ALERT ===== */}
         {customerOrders.length > 0 && activeTab !== 'orders' && (
           <div 
             onClick={() => setActiveTab('orders')} 
@@ -945,14 +977,17 @@ function StaffApp() {
               background: 'linear-gradient(135deg, #ef4444, #dc2626)', 
               color: 'white', 
               padding: isMobile ? '14px 20px' : '16px 24px', 
-              borderRadius: '28px', 
-              marginBottom: '24px', 
+              borderRadius: '24px', 
+              marginBottom: '20px', 
               display: 'flex', 
               justifyContent: 'space-between', 
               alignItems: 'center', 
               cursor: 'pointer',
-              boxShadow: '0 8px 20px rgba(239,68,68,0.3)'
+              boxShadow: '0 8px 24px rgba(239,68,68,0.3)',
+              transition: 'all 0.2s'
             }}
+            onMouseEnter={e => e.currentTarget.style.transform = 'scale(0.99)'}
+            onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <span style={{ fontSize: isMobile ? '24px' : '28px' }}>🔔</span>
@@ -980,7 +1015,7 @@ function StaffApp() {
         )}
 
         {/* ========================================================== */}
-        {/* POS TAB - WITH FIXED CATEGORIES (SHOW ALL) */}
+        {/* POS TAB - WITH ALL CATEGORIES (INCLUDING SUB-CATEGORIES) */}
         {/* ========================================================== */}
         {activeTab === 'pos' && (
           <>
@@ -988,39 +1023,71 @@ function StaffApp() {
               color: textColor, 
               fontSize: isMobile ? '20px' : '26px', 
               marginBottom: '20px', 
-              fontWeight: 'bold' 
+              fontWeight: 'bold',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px'
             }}>
-              🧾 KedaiPOS - {t('staff')} {orderType === 'take_away' ? `(${t('take_away')})` : `(${t('dine_in')})`}
+              🧾 KedaiPOS - {t('staff')} 
+              <span style={{ 
+                fontSize: isMobile ? '12px' : '14px', 
+                fontWeight: '400', 
+                color: textMuted 
+              }}>
+                {orderType === 'take_away' ? `(${t('take_away')})` : `(${t('dine_in')})`}
+              </span>
             </h1>
             
-            {/* CATEGORY FILTERS - FIXED: SHOW ALL CATEGORIES */}
+            {/* ===== CATEGORY FILTERS - SHOW ALL CATEGORIES ===== */}
             <div style={{ 
               display: 'flex', 
               gap: '8px', 
               flexWrap: 'wrap', 
-              marginBottom: '24px',
+              marginBottom: '20px',
               padding: '4px'
             }}>
-              {categoryNames.map(cat => (
-                <button 
-                  key={cat} 
-                  onClick={() => setSelectedCategory(cat)} 
-                  style={{ 
-                    padding: isMobile ? '8px 18px' : '10px 24px', 
-                    background: selectedCategory === cat ? 'linear-gradient(135deg, #2563eb, #1d4ed8)' : 'transparent', 
-                    color: selectedCategory === cat ? 'white' : textColor, 
-                    border: selectedCategory === cat ? 'none' : `1px solid ${borderColor}`, 
-                    borderRadius: '50px', 
-                    cursor: 'pointer', 
-                    fontWeight: selectedCategory === cat ? 'bold' : '500', 
-                    fontSize: isMobile ? '12px' : '14px',
-                    transition: 'all 0.2s',
-                    whiteSpace: 'nowrap'
-                  }}
-                >
-                  {cat === 'Semua' ? '🍽️ Semua' : `${getCategoryIconForFilter(cat)} ${cat}`}
-                </button>
-              ))}
+              {categoryNames.map(cat => {
+                const isActive = selectedCategory === cat
+                const icon = getCategoryIconForFilter(cat)
+                const isSubCategory = dbCategories.find(c => c.name === cat)?.parent_id !== null && cat !== 'Semua'
+                
+                return (
+                  <button 
+                    key={cat} 
+                    onClick={() => setSelectedCategory(cat)} 
+                    style={{ 
+                      padding: isMobile ? '6px 14px' : '8px 18px', 
+                      background: isActive ? `linear-gradient(135deg, ${accentColor}, #1d4ed8)` : 'transparent', 
+                      color: isActive ? 'white' : textColor, 
+                      border: isActive ? 'none' : `1px solid ${borderColor}`, 
+                      borderRadius: '50px', 
+                      cursor: 'pointer', 
+                      fontWeight: isActive ? 'bold' : '500', 
+                      fontSize: isMobile ? '11px' : '13px',
+                      transition: 'all 0.2s',
+                      whiteSpace: 'nowrap',
+                      opacity: isSubCategory && !isActive ? 0.8 : 1,
+                      borderLeft: isSubCategory && !isActive ? `2px solid ${borderColor}` : 'none'
+                    }}
+                    onMouseEnter={e => !isActive && (e.currentTarget.style.background = darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)')}
+                    onMouseLeave={e => !isActive && (e.currentTarget.style.background = 'transparent')}
+                  >
+                    {icon} {cat}
+                    {isSubCategory && (
+                      <span style={{ 
+                        fontSize: '8px', 
+                        opacity: 0.5, 
+                        marginLeft: '4px',
+                        background: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+                        padding: '1px 6px',
+                        borderRadius: '10px'
+                      }}>
+                        ↳
+                      </span>
+                    )}
+                  </button>
+                )
+              })}
             </div>
             
             <div style={{ 
@@ -1029,12 +1096,12 @@ function StaffApp() {
               flexWrap: 'wrap', 
               flexDirection: isMobile ? 'column' : 'row' 
             }}>
-              {/* MENU GRID */}
+              {/* ===== MENU GRID ===== */}
               <div style={{ flex: 2 }}>
                 <div style={{ 
                   display: 'grid', 
                   gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(170px, 1fr))', 
-                  gap: isMobile ? '12px' : '20px' 
+                  gap: isMobile ? '12px' : '16px' 
                 }}>
                   {filteredMenu.map(item => {
                     const hasDrinkOptions = drinkOptions[item.name] && drinkOptions[item.name].length > 0
@@ -1049,8 +1116,8 @@ function StaffApp() {
                         key={item.id} 
                         style={{ 
                           ...glassEffect, 
-                          borderRadius: '24px', 
-                          padding: isMobile ? '14px' : '18px', 
+                          borderRadius: '20px', 
+                          padding: isMobile ? '14px' : '16px', 
                           textAlign: 'center', 
                           cursor: 'pointer', 
                           transition: 'transform 0.25s, box-shadow 0.25s' 
@@ -1058,8 +1125,8 @@ function StaffApp() {
                         onMouseEnter={e => { 
                           e.currentTarget.style.transform = 'translateY(-4px)'; 
                           e.currentTarget.style.boxShadow = darkMode 
-                            ? '0 20px 32px rgba(0,0,0,0.4)' 
-                            : '0 20px 32px rgba(0,0,0,0.12)' 
+                            ? '0 12px 40px rgba(0,0,0,0.4)' 
+                            : '0 12px 40px rgba(0,0,0,0.12)' 
                         }}
                         onMouseLeave={e => { 
                           e.currentTarget.style.transform = 'translateY(0)'; 
@@ -1071,11 +1138,11 @@ function StaffApp() {
                             src={item.image_url} 
                             alt={item.name} 
                             style={{ 
-                              width: isMobile ? '70px' : '90px', 
-                              height: isMobile ? '70px' : '90px', 
+                              width: isMobile ? '70px' : '80px', 
+                              height: isMobile ? '70px' : '80px', 
                               objectFit: 'cover', 
-                              borderRadius: '18px', 
-                              margin: '0 auto 12px auto', 
+                              borderRadius: '16px', 
+                              margin: '0 auto 10px auto', 
                               display: 'block',
                               boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                             }} 
@@ -1089,16 +1156,16 @@ function StaffApp() {
                             display: 'flex', 
                             alignItems: 'center', 
                             justifyContent: 'center', 
-                            margin: '0 auto 12px auto', 
-                            fontSize: isMobile ? '30px' : '36px',
+                            margin: '0 auto 10px auto', 
+                            fontSize: isMobile ? '30px' : '34px',
                             border: `1px solid ${borderColor}`
                           }}>
                             {getDefaultIcon(item.category)}
                           </div>
                         )}
                         <h3 style={{ 
-                          fontSize: isMobile ? '13px' : '15px', 
-                          margin: '8px 0', 
+                          fontSize: isMobile ? '13px' : '14px', 
+                          margin: '6px 0', 
                           color: textColor, 
                           fontWeight: 'bold' 
                         }}>
@@ -1107,7 +1174,7 @@ function StaffApp() {
                         
                         {hasDescription && (
                           <div style={{ 
-                            fontSize: isMobile ? '9px' : '11px', 
+                            fontSize: isMobile ? '9px' : '10px', 
                             color: textMuted, 
                             fontStyle: 'italic',
                             marginBottom: '6px',
@@ -1122,22 +1189,22 @@ function StaffApp() {
                         
                         {hasDrinkOptions ? (
                           <div style={{ 
-                            fontSize: isMobile ? '10px' : '12px', 
-                            marginBottom: '12px', 
+                            fontSize: isMobile ? '10px' : '11px', 
+                            marginBottom: '10px', 
                             display: 'flex', 
                             flexWrap: 'wrap', 
                             justifyContent: 'center', 
                             gap: '6px' 
                           }}>
-                            {panasPrice && <span style={{ color: '#f97316' }}>🔥 RM {panasPrice}</span>}
-                            {sejukPrice && <span style={{ color: '#06b6d4' }}>🧊 RM {sejukPrice}</span>}
+                            {panasPrice && <span style={{ color: '#f97316', fontWeight: 'bold' }}>🔥 RM {panasPrice}</span>}
+                            {sejukPrice && <span style={{ color: '#06b6d4', fontWeight: 'bold' }}>🧊 RM {sejukPrice}</span>}
                           </div>
                         ) : (
                           <p style={{ 
-                            color: darkMode ? '#4ade80' : '#22c55e', 
+                            color: successColor, 
                             fontSize: isMobile ? '16px' : '18px', 
                             fontWeight: 'bold', 
-                            margin: '8px 0' 
+                            margin: '6px 0' 
                           }}>
                             RM {item.price}
                           </p>
@@ -1146,17 +1213,19 @@ function StaffApp() {
                         <button 
                           onClick={() => addToCart(item)} 
                           style={{ 
-                            background: isAdding ? 'linear-gradient(135deg, #22c55e, #16a34a)' : 'linear-gradient(135deg, #3b82f6, #2563eb)', 
+                            background: isAdding ? `linear-gradient(135deg, ${successColor}, #16a34a)` : `linear-gradient(135deg, ${accentColor}, #1d4ed8)`, 
                             color: 'white', 
                             padding: isMobile ? '8px 0' : '10px 0', 
                             border: 'none', 
-                            borderRadius: '60px', 
+                            borderRadius: '50px', 
                             cursor: 'pointer', 
                             width: '100%', 
                             fontSize: isMobile ? '11px' : '13px', 
                             fontWeight: 'bold',
                             transition: 'all 0.2s'
                           }}
+                          onMouseEnter={e => !isAdding && (e.currentTarget.style.transform = 'scale(0.97)')}
+                          onMouseLeave={e => !isAdding && (e.currentTarget.style.transform = 'scale(1)')}
                         >
                           {isAdding ? '✓ Ditambah!' : `+ ${t('add')}`}
                         </button>
@@ -1166,11 +1235,11 @@ function StaffApp() {
                 </div>
               </div>
               
-              {/* CART SECTION */}
+              {/* ===== CART SECTION ===== */}
               <div style={{ 
                 flex: 1, 
                 ...glassEffect, 
-                borderRadius: '28px', 
+                borderRadius: '24px', 
                 padding: isMobile ? '16px' : '20px', 
                 position: isMobile ? 'relative' : 'sticky', 
                 top: '20px', 
@@ -1180,68 +1249,85 @@ function StaffApp() {
               }}>
                 <h2 style={{ 
                   color: textColor, 
-                  fontSize: isMobile ? '18px' : '20px', 
-                  marginBottom: '20px', 
-                  fontWeight: 'bold' 
+                  fontSize: isMobile ? '16px' : '18px', 
+                  marginBottom: '16px', 
+                  fontWeight: 'bold',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
                 }}>
-                  🛒 {t('cart')} ({cart.reduce((s, i) => s + i.quantity, 0)})
+                  <span>🛒 {t('cart')}</span>
+                  <span style={{ 
+                    background: secondaryBg, 
+                    padding: '2px 12px', 
+                    borderRadius: '20px',
+                    fontSize: isMobile ? '12px' : '14px',
+                    color: textMuted
+                  }}>
+                    {cart.reduce((s, i) => s + i.quantity, 0)}
+                  </span>
                 </h2>
                 
                 {cart.length === 0 ? (
-                  <p style={{ 
-                    color: textMuted, 
+                  <div style={{ 
                     textAlign: 'center', 
-                    padding: '40px 20px', 
-                    fontSize: isMobile ? '13px' : '14px' 
+                    padding: '40px 20px',
+                    color: textMuted,
+                    fontSize: isMobile ? '13px' : '14px'
                   }}>
+                    <span style={{ fontSize: '40px', display: 'block', marginBottom: '12px' }}>🛒</span>
                     {t('empty_cart')}
-                  </p>
+                  </div>
                 ) : (
                   <>
-                    <div style={{ marginBottom: '20px', maxHeight: '400px', overflowY: 'auto' }}>
+                    <div style={{ marginBottom: '16px', maxHeight: '350px', overflowY: 'auto' }}>
                       {cart.map(item => {
                         const optionLabel = item.option_type === 'Panas' ? '🔥' : item.option_type === 'Sejuk' ? '🧊' : ''
                         return (
                           <div key={item.id} style={{ 
                             borderBottom: `1px solid ${borderColor}`, 
-                            marginBottom: '12px', 
+                            marginBottom: '10px', 
                             paddingBottom: '10px' 
                           }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <div>
+                              <div style={{ flex: 1 }}>
                                 <span style={{ 
                                   color: textColor, 
                                   fontWeight: '500', 
-                                  fontSize: isMobile ? '12px' : '14px' 
+                                  fontSize: isMobile ? '12px' : '13px' 
                                 }}>
                                   {item.name} {optionLabel}
                                 </span>
                                 <div style={{ 
-                                  fontSize: isMobile ? '10px' : '12px', 
+                                  fontSize: isMobile ? '10px' : '11px', 
                                   color: textMuted 
                                 }}>
                                   x{item.quantity}
                                 </div>
                               </div>
                               <span style={{ 
-                                color: darkMode ? '#4ade80' : '#22c55e', 
+                                color: successColor, 
                                 fontWeight: 'bold', 
-                                fontSize: isMobile ? '12px' : '14px' 
+                                fontSize: isMobile ? '12px' : '14px',
+                                marginRight: '10px'
                               }}>
                                 RM {(item.price * item.quantity).toFixed(2)}
                               </span>
                               <button 
                                 onClick={() => removeFromCart(item.id)} 
                                 style={{ 
-                                  background: '#ef4444', 
+                                  background: dangerColor, 
                                   color: 'white', 
                                   border: 'none', 
                                   borderRadius: '30px', 
-                                  padding: '4px 12px', 
+                                  padding: '4px 10px', 
                                   cursor: 'pointer', 
-                                  fontSize: isMobile ? '10px' : '12px', 
-                                  fontWeight: 'bold' 
+                                  fontSize: isMobile ? '10px' : '11px', 
+                                  fontWeight: 'bold',
+                                  transition: 'all 0.2s'
                                 }}
+                                onMouseEnter={e => e.currentTarget.style.transform = 'scale(0.9)'}
+                                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
                               >
                                 ✕
                               </button>
@@ -1251,32 +1337,32 @@ function StaffApp() {
                       })}
                     </div>
                     
-                    <hr style={{ borderColor: borderColor, margin: '16px 0' }} />
+                    <hr style={{ borderColor: borderColor, margin: '12px 0' }} />
                     
-                    <div style={{ fontSize: isMobile ? '12px' : '14px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <div style={{ fontSize: isMobile ? '12px' : '13px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                         <span style={{ color: textColor }}>{t('subtotal')}:</span>
                         <span style={{ color: textColor }}>RM {getSubtotal().toFixed(2)}</span>
                       </div>
                       {orderType !== 'take_away' && (
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                           <span style={{ color: textColor }}>{t('service_charge')} ({serviceChargePercent}%):</span>
                           <span style={{ color: textColor }}>RM {getServiceCharge().toFixed(2)}</span>
                         </div>
                       )}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                         <span style={{ color: textColor }}>{t('tax')} ({taxPercent}%):</span>
                         <span style={{ color: textColor }}>RM {getTax().toFixed(2)}</span>
                       </div>
                     </div>
                     
-                    <hr style={{ borderColor: borderColor, margin: '16px 0' }} />
+                    <hr style={{ borderColor: borderColor, margin: '12px 0' }} />
                     
                     <h3 style={{ 
                       textAlign: 'right', 
-                      color: darkMode ? '#4ade80' : '#22c55e', 
-                      fontSize: isMobile ? '18px' : '22px', 
-                      marginBottom: '20px', 
+                      color: successColor, 
+                      fontSize: isMobile ? '18px' : '20px', 
+                      marginBottom: '16px', 
                       fontWeight: 'bold' 
                     }}>
                       {t('total')}: RM {getGrandTotal().toFixed(2)}
@@ -1285,16 +1371,20 @@ function StaffApp() {
                     <button 
                       onClick={saveOrder} 
                       style={{ 
-                        background: 'linear-gradient(135deg, #2563eb, #1d4ed8)', 
+                        background: `linear-gradient(135deg, ${successColor}, #16a34a)`, 
                         color: 'white', 
                         padding: isMobile ? '12px' : '14px', 
                         width: '100%', 
                         border: 'none', 
-                        borderRadius: '60px', 
+                        borderRadius: '50px', 
                         cursor: 'pointer', 
                         fontWeight: 'bold', 
-                        fontSize: isMobile ? '13px' : '15px' 
+                        fontSize: isMobile ? '13px' : '14px',
+                        boxShadow: '0 4px 16px rgba(34,197,94,0.3)',
+                        transition: 'all 0.2s'
                       }}
+                      onMouseEnter={e => e.currentTarget.style.transform = 'scale(0.98)'}
+                      onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
                     >
                       💾 {t('place_order')}
                     </button>
@@ -1312,10 +1402,10 @@ function StaffApp() {
           <div>
             <h2 style={{ 
               color: textColor, 
-              marginBottom: '24px', 
+              marginBottom: '20px', 
               fontSize: isMobile ? '18px' : '20px', 
               fontWeight: 'bold', 
-              borderLeft: '4px solid #ef4444', 
+              borderLeft: `4px solid ${dangerColor}`, 
               paddingLeft: '14px' 
             }}>
               🆕 {t('new_order')}
@@ -1323,33 +1413,33 @@ function StaffApp() {
             {customerOrders.length === 0 ? (
               <div style={{ 
                 textAlign: 'center', 
-                padding: isMobile ? '40px 20px' : '80px 20px', 
+                padding: isMobile ? '40px 20px' : '60px 20px', 
                 ...glassEffect, 
-                borderRadius: '28px' 
+                borderRadius: '24px' 
               }}>
-                <span style={{ fontSize: isMobile ? '48px' : '64px', opacity: 0.5 }}>🍽️</span>
-                <p style={{ color: textMuted, marginTop: '16px', fontSize: isMobile ? '14px' : '16px' }}>
+                <span style={{ fontSize: isMobile ? '48px' : '56px', opacity: 0.5 }}>🍽️</span>
+                <p style={{ color: textMuted, marginTop: '12px', fontSize: isMobile ? '14px' : '16px' }}>
                   {t('no_data')}
                 </p>
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {customerOrders.map(order => (
                   <div key={order.id} style={{ 
                     ...glassEffect, 
-                    borderRadius: '28px', 
+                    borderRadius: '24px', 
                     padding: isMobile ? '16px' : '24px', 
-                    borderLeft: `4px solid #ef4444` 
+                    borderLeft: `4px solid ${dangerColor}` 
                   }}>
                     <div style={{ 
                       display: 'flex', 
                       justifyContent: 'space-between', 
                       alignItems: 'center', 
-                      marginBottom: '16px', 
+                      marginBottom: '12px', 
                       flexWrap: 'wrap', 
-                      gap: '12px' 
+                      gap: '8px' 
                     }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <span style={{ fontSize: isMobile ? '24px' : '28px' }}>
                           {order.order_type === 'take_away' ? '🥡' : '🍽️'}
                         </span>
@@ -1362,7 +1452,7 @@ function StaffApp() {
                           {order.order_type === 'take_away' ? t('take_away') : `${t('table')} ${order.table_number}`}
                         </h3>
                         <span style={{ 
-                          background: '#ef4444', 
+                          background: dangerColor, 
                           color: 'white', 
                           padding: '4px 12px', 
                           borderRadius: '40px', 
@@ -1377,15 +1467,15 @@ function StaffApp() {
                       </div>
                     </div>
                     
-                    <div style={{ marginBottom: '16px' }}>
-                      <span style={{ fontWeight: 'bold', color: textColor, fontSize: isMobile ? '12px' : '14px' }}>
+                    <div style={{ marginBottom: '12px' }}>
+                      <span style={{ fontWeight: 'bold', color: textColor, fontSize: isMobile ? '12px' : '13px' }}>
                         {t('customer_name')}:
                       </span>
-                      <span style={{ color: textColor, marginLeft: '8px', fontSize: isMobile ? '12px' : '14px' }}>
+                      <span style={{ color: textColor, marginLeft: '6px', fontSize: isMobile ? '12px' : '13px' }}>
                         {order.customer_name || 'Walk-in'}
                       </span>
                       {order.customer_phone && (
-                        <span style={{ marginLeft: '12px', fontSize: isMobile ? '11px' : '12px', color: textMuted }}>
+                        <span style={{ marginLeft: '10px', fontSize: isMobile ? '10px' : '11px', color: textMuted }}>
                           📞 {order.customer_phone}
                         </span>
                       )}
@@ -1393,9 +1483,9 @@ function StaffApp() {
                     
                     <div style={{ 
                       background: secondaryBg, 
-                      borderRadius: '20px', 
+                      borderRadius: '16px', 
                       padding: isMobile ? '12px' : '16px', 
-                      margin: '16px 0' 
+                      margin: '12px 0' 
                     }}>
                       {renderOrderItems(order.items)}
                     </div>
@@ -1404,53 +1494,59 @@ function StaffApp() {
                       display: 'flex', 
                       justifyContent: 'space-between', 
                       alignItems: 'center', 
-                      marginTop: '16px', 
-                      paddingTop: '16px', 
+                      marginTop: '12px', 
+                      paddingTop: '12px', 
                       borderTop: `1px solid ${borderColor}`, 
                       flexWrap: 'wrap', 
-                      gap: '12px' 
+                      gap: '10px' 
                     }}>
                       <div>
-                        <span style={{ fontSize: isMobile ? '12px' : '14px', color: textMuted }}>
+                        <span style={{ fontSize: isMobile ? '12px' : '13px', color: textMuted }}>
                           {t('total')}:
                         </span>
                         <span style={{ 
                           fontSize: isMobile ? '20px' : '22px', 
                           fontWeight: 'bold', 
-                          color: '#22c55e', 
-                          marginLeft: '8px' 
+                          color: successColor, 
+                          marginLeft: '6px' 
                         }}>
                           RM {order.total || order.subtotal || '0.00'}
                         </span>
                       </div>
-                      <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                         <button 
                           onClick={() => updateOrderStatus(order.id, 'accepted')} 
                           style={{ 
-                            background: kitchenEnabled ? 'linear-gradient(135deg, #22c55e, #16a34a)' : 'linear-gradient(135deg, #06b6d4, #0891b2)', 
+                            background: kitchenEnabled ? `linear-gradient(135deg, ${successColor}, #16a34a)` : `linear-gradient(135deg, #06b6d4, #0891b2)`, 
                             color: 'white', 
                             padding: isMobile ? '8px 18px' : '10px 24px', 
                             border: 'none', 
                             borderRadius: '40px', 
                             cursor: 'pointer', 
                             fontWeight: 'bold', 
-                            fontSize: isMobile ? '11px' : '13px' 
+                            fontSize: isMobile ? '11px' : '13px',
+                            transition: 'all 0.2s'
                           }}
+                          onMouseEnter={e => e.currentTarget.style.transform = 'scale(0.97)'}
+                          onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
                         >
                           {kitchenEnabled ? `✅ ${t('accept')} & ${t('start_cooking')}` : `✅ ${t('accept')} (${t('ready')})`}
                         </button>
                         <button 
                           onClick={() => updateOrderStatus(order.id, 'cancelled')} 
                           style={{ 
-                            background: 'linear-gradient(135deg, #ef4444, #dc2626)', 
+                            background: `linear-gradient(135deg, ${dangerColor}, #dc2626)`, 
                             color: 'white', 
                             padding: isMobile ? '8px 18px' : '10px 24px', 
                             border: 'none', 
                             borderRadius: '40px', 
                             cursor: 'pointer', 
                             fontWeight: 'bold', 
-                            fontSize: isMobile ? '11px' : '13px' 
+                            fontSize: isMobile ? '11px' : '13px',
+                            transition: 'all 0.2s'
                           }}
+                          onMouseEnter={e => e.currentTarget.style.transform = 'scale(0.97)'}
+                          onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
                         >
                           ❌ {t('cancel')}
                         </button>
@@ -1470,10 +1566,10 @@ function StaffApp() {
           <div>
             <h2 style={{ 
               color: textColor, 
-              marginBottom: '24px', 
+              marginBottom: '20px', 
               fontSize: isMobile ? '18px' : '20px', 
               fontWeight: 'bold', 
-              borderLeft: '4px solid #eab308', 
+              borderLeft: `4px solid ${warningColor}`, 
               paddingLeft: '14px' 
             }}>
               💰 {t('unpaid')}
@@ -1481,17 +1577,17 @@ function StaffApp() {
             {unpaidOrders.length === 0 ? (
               <div style={{ 
                 textAlign: 'center', 
-                padding: isMobile ? '40px 20px' : '80px 20px', 
+                padding: isMobile ? '40px 20px' : '60px 20px', 
                 ...glassEffect, 
-                borderRadius: '28px' 
+                borderRadius: '24px' 
               }}>
-                <span style={{ fontSize: isMobile ? '48px' : '64px', opacity: 0.5 }}>✅</span>
-                <p style={{ color: textMuted, marginTop: '16px', fontSize: isMobile ? '14px' : '16px' }}>
+                <span style={{ fontSize: isMobile ? '48px' : '56px', opacity: 0.5 }}>✅</span>
+                <p style={{ color: textMuted, marginTop: '12px', fontSize: isMobile ? '14px' : '16px' }}>
                   {t('no_data')}
                 </p>
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {unpaidOrders.map(order => {
                   const subtotal = order.subtotal || order.total || 0
                   const sc = order.service_charge || (subtotal * (serviceChargePercent / 100))
@@ -1500,18 +1596,18 @@ function StaffApp() {
                   return (
                     <div key={order.id} style={{ 
                       ...glassEffect, 
-                      borderRadius: '28px', 
+                      borderRadius: '24px', 
                       padding: isMobile ? '16px' : '24px', 
-                      borderLeft: `4px solid #eab308` 
+                      borderLeft: `4px solid ${warningColor}` 
                     }}>
                       <div style={{ 
                         display: 'flex', 
                         justifyContent: 'space-between', 
-                        marginBottom: '16px', 
+                        marginBottom: '12px', 
                         flexWrap: 'wrap', 
-                        gap: '12px' 
+                        gap: '8px' 
                       }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                           <span style={{ fontSize: isMobile ? '20px' : '24px' }}>
                             {order.order_type === 'take_away' ? '🥡' : '🍽️'}
                           </span>
@@ -1523,13 +1619,13 @@ function StaffApp() {
                             {order.order_number || `ORD-${order.id}`}
                           </span>
                         </div>
-                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-                          <span style={{ color: textColor, fontSize: isMobile ? '12px' : '14px' }}>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                          <span style={{ color: textColor, fontSize: isMobile ? '12px' : '13px' }}>
                             {order.order_type === 'take_away' ? t('take_away') : `${t('table')} ${order.table_number}`}
                           </span>
                           <span style={{ 
-                            background: order.status === 'ready' ? '#22c55e' : 
-                                      order.status === 'preparing' ? '#eab308' : '#6c757d', 
+                            background: order.status === 'ready' ? successColor : 
+                                      order.status === 'preparing' ? warningColor : '#6c757d', 
                             color: order.status === 'preparing' ? '#333' : 'white', 
                             padding: '2px 12px', 
                             borderRadius: '40px', 
@@ -1543,81 +1639,87 @@ function StaffApp() {
                       </div>
                       
                       <p>
-                        <strong style={{ color: textColor, fontSize: isMobile ? '12px' : '14px' }}>
+                        <strong style={{ color: textColor, fontSize: isMobile ? '12px' : '13px' }}>
                           {order.customer_name || 'Walk-in'}
                         </strong>
                       </p>
                       
                       <div style={{ 
                         background: secondaryBg, 
-                        borderRadius: '20px', 
+                        borderRadius: '16px', 
                         padding: isMobile ? '12px' : '16px', 
-                        margin: '16px 0' 
+                        margin: '12px 0' 
                       }}>
                         {renderUnpaidItems(order.items)}
                       </div>
                       
                       <div style={{ 
                         background: secondaryBg, 
-                        padding: '16px', 
-                        borderRadius: '20px', 
-                        marginTop: '16px' 
+                        padding: '14px', 
+                        borderRadius: '16px', 
+                        marginTop: '12px' 
                       }}>
                         <div style={{ 
                           display: 'flex', 
                           justifyContent: 'space-between', 
                           fontSize: isMobile ? '11px' : '13px', 
-                          marginBottom: '6px' 
+                          marginBottom: '4px' 
                         }}>
                           <span>{t('subtotal')}:</span>
                           <span>RM {subtotal.toFixed(2)}</span>
                         </div>
+                        {order.order_type !== 'take_away' && (
+                          <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            fontSize: isMobile ? '11px' : '13px', 
+                            marginBottom: '4px' 
+                          }}>
+                            <span>{t('service_charge')} ({serviceChargePercent}%):</span>
+                            <span>RM {sc.toFixed(2)}</span>
+                          </div>
+                        )}
                         <div style={{ 
                           display: 'flex', 
                           justifyContent: 'space-between', 
                           fontSize: isMobile ? '11px' : '13px', 
-                          marginBottom: '6px' 
-                        }}>
-                          <span>{t('service_charge')} ({serviceChargePercent}%):</span>
-                          <span>RM {sc.toFixed(2)}</span>
-                        </div>
-                        <div style={{ 
-                          display: 'flex', 
-                          justifyContent: 'space-between', 
-                          fontSize: isMobile ? '11px' : '13px', 
-                          marginBottom: '6px' 
+                          marginBottom: '4px' 
                         }}>
                           <span>{t('tax')} ({taxPercent}%):</span>
                           <span>RM {tax.toFixed(2)}</span>
                         </div>
                         <div style={{ 
                           borderTop: `1px solid ${borderColor}`, 
-                          marginTop: '10px', 
-                          paddingTop: '10px', 
+                          marginTop: '8px', 
+                          paddingTop: '8px', 
                           display: 'flex', 
                           justifyContent: 'space-between', 
                           fontWeight: 'bold', 
                           fontSize: isMobile ? '16px' : '18px' 
                         }}>
                           <span>{t('total')}:</span>
-                          <span style={{ color: '#22c55e' }}>RM {grandTotal.toFixed(2)}</span>
+                          <span style={{ color: successColor }}>RM {grandTotal.toFixed(2)}</span>
                         </div>
                       </div>
                       
                       <button 
                         onClick={() => openPaymentModal(order)} 
                         style={{ 
-                          background: 'linear-gradient(135deg, #22c55e, #16a34a)', 
+                          background: `linear-gradient(135deg, ${successColor}, #16a34a)`, 
                           color: 'white', 
                           padding: isMobile ? '10px' : '12px', 
                           border: 'none', 
                           borderRadius: '40px', 
                           cursor: 'pointer', 
                           fontWeight: 'bold', 
-                          marginTop: '16px', 
+                          marginTop: '12px', 
                           width: '100%', 
-                          fontSize: isMobile ? '13px' : '14px' 
+                          fontSize: isMobile ? '13px' : '14px',
+                          boxShadow: '0 4px 16px rgba(34,197,94,0.2)',
+                          transition: 'all 0.2s'
                         }}
+                        onMouseEnter={e => e.currentTarget.style.transform = 'scale(0.98)'}
+                        onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
                       >
                         💰 {t('record_payment')}
                       </button>
@@ -1636,10 +1738,10 @@ function StaffApp() {
           <div>
             <h2 style={{ 
               color: textColor, 
-              marginBottom: '24px', 
+              marginBottom: '20px', 
               fontSize: isMobile ? '18px' : '20px', 
               fontWeight: 'bold', 
-              borderLeft: '4px solid #6c757d', 
+              borderLeft: `4px solid #6c757d`, 
               paddingLeft: '14px' 
             }}>
               📜 {language === 'bm' ? 'Sejarah Pesanan' : 'Order History'}
@@ -1647,12 +1749,12 @@ function StaffApp() {
             {orderHistory.length === 0 ? (
               <div style={{ 
                 textAlign: 'center', 
-                padding: isMobile ? '40px 20px' : '80px 20px', 
+                padding: isMobile ? '40px 20px' : '60px 20px', 
                 ...glassEffect, 
-                borderRadius: '28px' 
+                borderRadius: '24px' 
               }}>
-                <span style={{ fontSize: isMobile ? '48px' : '64px', opacity: 0.5 }}>📜</span>
-                <p style={{ color: textMuted, marginTop: '16px', fontSize: isMobile ? '14px' : '16px' }}>
+                <span style={{ fontSize: isMobile ? '48px' : '56px', opacity: 0.5 }}>📜</span>
+                <p style={{ color: textMuted, marginTop: '12px', fontSize: isMobile ? '14px' : '16px' }}>
                   {t('no_data')}
                 </p>
               </div>
@@ -1667,25 +1769,25 @@ function StaffApp() {
                   <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: isMobile ? '600px' : 'auto' }}>
                     <thead>
                       <tr style={{ background: darkMode ? 'rgba(30,30,46,0.8)' : '#f1f5f9' }}>
-                        <th style={{ padding: '14px', textAlign: 'left', color: textColor, fontSize: isMobile ? '10px' : '13px' }}>
+                        <th style={{ padding: '12px', textAlign: 'left', color: textColor, fontSize: isMobile ? '10px' : '12px' }}>
                           {t('id')}
                         </th>
-                        <th style={{ padding: '14px', textAlign: 'left', color: textColor, fontSize: isMobile ? '10px' : '13px' }}>
+                        <th style={{ padding: '12px', textAlign: 'left', color: textColor, fontSize: isMobile ? '10px' : '12px' }}>
                           {t('customer_name')}
                         </th>
-                        <th style={{ padding: '14px', textAlign: 'left', color: textColor, fontSize: isMobile ? '10px' : '13px' }}>
+                        <th style={{ padding: '12px', textAlign: 'left', color: textColor, fontSize: isMobile ? '10px' : '12px' }}>
                           {t('order_type')}
                         </th>
-                        <th style={{ padding: '14px', textAlign: 'left', color: textColor, fontSize: isMobile ? '10px' : '13px' }}>
+                        <th style={{ padding: '12px', textAlign: 'left', color: textColor, fontSize: isMobile ? '10px' : '12px' }}>
                           {t('total')}
                         </th>
-                        <th style={{ padding: '14px', textAlign: 'left', color: textColor, fontSize: isMobile ? '10px' : '13px' }}>
+                        <th style={{ padding: '12px', textAlign: 'left', color: textColor, fontSize: isMobile ? '10px' : '12px' }}>
                           {t('payment_method')}
                         </th>
-                        <th style={{ padding: '14px', textAlign: 'left', color: textColor, fontSize: isMobile ? '10px' : '13px' }}>
+                        <th style={{ padding: '12px', textAlign: 'left', color: textColor, fontSize: isMobile ? '10px' : '12px' }}>
                           {t('date')}
                         </th>
-                        <th style={{ padding: '14px', textAlign: 'left', color: textColor, fontSize: isMobile ? '10px' : '13px' }}>
+                        <th style={{ padding: '12px', textAlign: 'left', color: textColor, fontSize: isMobile ? '10px' : '12px' }}>
                           {language === 'bm' ? 'Tindakan' : 'Action'}
                         </th>
                       </tr>
@@ -1693,42 +1795,42 @@ function StaffApp() {
                     <tbody>
                       {orderHistory.slice((historyPage - 1) * historyItemsPerPage, historyPage * historyItemsPerPage).map(order => (
                         <tr key={order.id} style={{ borderBottom: `1px solid ${borderColor}` }}>
-                          <td style={{ padding: '12px', color: textColor, fontSize: isMobile ? '10px' : '13px' }}>
+                          <td style={{ padding: '10px', color: textColor, fontSize: isMobile ? '10px' : '12px' }}>
                             {order.order_number || `ORD-${order.id}`}
                           </td>
-                          <td style={{ padding: '12px', color: textColor, fontSize: isMobile ? '10px' : '13px' }}>
+                          <td style={{ padding: '10px', color: textColor, fontSize: isMobile ? '10px' : '12px' }}>
                             {order.customer_name || 'Walk-in'}
                           </td>
-                          <td style={{ padding: '12px', color: textColor, fontSize: isMobile ? '10px' : '13px' }}>
+                          <td style={{ padding: '10px', color: textColor, fontSize: isMobile ? '10px' : '12px' }}>
                             {order.order_type === 'take_away' ? '🥡 Take Away' : `🍽️ ${t('table')} ${order.table_number}`}
                           </td>
-                          <td style={{ padding: '12px', color: '#22c55e', fontWeight: 'bold', fontSize: isMobile ? '10px' : '13px' }}>
+                          <td style={{ padding: '10px', color: successColor, fontWeight: 'bold', fontSize: isMobile ? '10px' : '12px' }}>
                             RM {order.grand_total || order.total || '0.00'}
                           </td>
-                          <td style={{ padding: '12px', color: textColor, fontSize: isMobile ? '10px' : '13px' }}>
+                          <td style={{ padding: '10px', color: textColor, fontSize: isMobile ? '10px' : '12px' }}>
                             {order.payment_method === 'cash' ? '💵 Tunai' : 
                              order.payment_method === 'tng' ? '📱 TnG' : 
                              order.payment_method === 'bank' ? '🏦 Bank' : '—'}
                           </td>
-                          <td style={{ padding: '12px', color: textColor, fontSize: isMobile ? '10px' : '13px' }}>
+                          <td style={{ padding: '10px', color: textColor, fontSize: isMobile ? '10px' : '12px' }}>
                             {formatMalaysiaTime(order.created_at)}
                           </td>
-                          <td style={{ padding: '12px' }}>
+                          <td style={{ padding: '10px' }}>
                             <button 
                               onClick={() => reprintReceipt(order)} 
                               style={{ 
-                                background: 'linear-gradient(135deg, #2563eb, #1d4ed8)', 
+                                background: `linear-gradient(135deg, ${accentColor}, #1d4ed8)`, 
                                 color: 'white', 
-                                padding: '6px 16px', 
+                                padding: '4px 14px', 
                                 border: 'none', 
-                                borderRadius: '40px', 
+                                borderRadius: '30px', 
                                 cursor: 'pointer', 
-                                fontSize: isMobile ? '10px' : '12px', 
+                                fontSize: isMobile ? '10px' : '11px', 
                                 fontWeight: 'bold',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '4px'
+                                transition: 'all 0.2s'
                               }}
+                              onMouseEnter={e => e.currentTarget.style.transform = 'scale(0.95)'}
+                              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
                             >
                               🧾 {t('btn_receipt')}
                             </button>
@@ -1744,7 +1846,7 @@ function StaffApp() {
                     justifyContent: 'center', 
                     alignItems: 'center', 
                     gap: '6px', 
-                    marginTop: '24px', 
+                    marginTop: '20px', 
                     flexWrap: 'wrap' 
                   }}>
                     <button 
@@ -1752,13 +1854,14 @@ function StaffApp() {
                       disabled={historyPage === 1} 
                       style={{ 
                         padding: isMobile ? '6px 12px' : '8px 14px', 
-                        background: historyPage === 1 ? secondaryBg : '#2563eb', 
+                        background: historyPage === 1 ? secondaryBg : accentColor, 
                         color: historyPage === 1 ? textMuted : 'white', 
                         border: 'none', 
-                        borderRadius: '40px', 
+                        borderRadius: '30px', 
                         cursor: historyPage === 1 ? 'not-allowed' : 'pointer', 
                         fontSize: isMobile ? '10px' : '12px', 
-                        fontWeight: 'bold' 
+                        fontWeight: 'bold',
+                        transition: 'all 0.2s'
                       }}
                     >
                       « {t('first')}
@@ -1768,21 +1871,22 @@ function StaffApp() {
                       disabled={historyPage === 1} 
                       style={{ 
                         padding: isMobile ? '6px 12px' : '8px 14px', 
-                        background: historyPage === 1 ? secondaryBg : '#2563eb', 
+                        background: historyPage === 1 ? secondaryBg : accentColor, 
                         color: historyPage === 1 ? textMuted : 'white', 
                         border: 'none', 
-                        borderRadius: '40px', 
+                        borderRadius: '30px', 
                         cursor: historyPage === 1 ? 'not-allowed' : 'pointer', 
                         fontSize: isMobile ? '10px' : '12px', 
-                        fontWeight: 'bold' 
+                        fontWeight: 'bold',
+                        transition: 'all 0.2s'
                       }}
                     >
                       ‹ {t('prev')}
                     </button>
                     <span style={{ 
-                      padding: isMobile ? '6px 14px' : '8px 16px', 
+                      padding: isMobile ? '6px 12px' : '8px 16px', 
                       background: cardBg, 
-                      borderRadius: '40px', 
+                      borderRadius: '30px', 
                       color: textColor, 
                       fontSize: isMobile ? '12px' : '13px', 
                       border: `1px solid ${borderColor}` 
@@ -1794,13 +1898,14 @@ function StaffApp() {
                       disabled={historyPage === Math.ceil(orderHistory.length / historyItemsPerPage)} 
                       style={{ 
                         padding: isMobile ? '6px 12px' : '8px 14px', 
-                        background: historyPage === Math.ceil(orderHistory.length / historyItemsPerPage) ? secondaryBg : '#2563eb', 
+                        background: historyPage === Math.ceil(orderHistory.length / historyItemsPerPage) ? secondaryBg : accentColor, 
                         color: historyPage === Math.ceil(orderHistory.length / historyItemsPerPage) ? textMuted : 'white', 
                         border: 'none', 
-                        borderRadius: '40px', 
+                        borderRadius: '30px', 
                         cursor: historyPage === Math.ceil(orderHistory.length / historyItemsPerPage) ? 'not-allowed' : 'pointer', 
                         fontSize: isMobile ? '10px' : '12px', 
-                        fontWeight: 'bold' 
+                        fontWeight: 'bold',
+                        transition: 'all 0.2s'
                       }}
                     >
                       {t('next')} ›
@@ -1810,13 +1915,14 @@ function StaffApp() {
                       disabled={historyPage === Math.ceil(orderHistory.length / historyItemsPerPage)} 
                       style={{ 
                         padding: isMobile ? '6px 12px' : '8px 14px', 
-                        background: historyPage === Math.ceil(orderHistory.length / historyItemsPerPage) ? secondaryBg : '#2563eb', 
+                        background: historyPage === Math.ceil(orderHistory.length / historyItemsPerPage) ? secondaryBg : accentColor, 
                         color: historyPage === Math.ceil(orderHistory.length / historyItemsPerPage) ? textMuted : 'white', 
                         border: 'none', 
-                        borderRadius: '40px', 
+                        borderRadius: '30px', 
                         cursor: historyPage === Math.ceil(orderHistory.length / historyItemsPerPage) ? 'not-allowed' : 'pointer', 
                         fontSize: isMobile ? '10px' : '12px', 
-                        fontWeight: 'bold' 
+                        fontWeight: 'bold',
+                        transition: 'all 0.2s'
                       }}
                     >
                       {t('last')} »
@@ -1848,7 +1954,7 @@ function StaffApp() {
           }}>
             <div style={{ 
               background: cardBg, 
-              borderRadius: '32px', 
+              borderRadius: '28px', 
               padding: isMobile ? '24px' : '32px', 
               maxWidth: '380px', 
               width: '90%', 
@@ -1857,28 +1963,28 @@ function StaffApp() {
               animation: 'popIn 0.3s ease'
             }}>
               <h2 style={{ 
-                marginBottom: '8px', 
+                marginBottom: '6px', 
                 color: textColor, 
                 fontSize: isMobile ? '20px' : '24px',
                 fontWeight: 'bold'
               }}>
                 🥤 {selectedDrinkItem.name}
               </h2>
-              <p style={{ color: textMuted, marginBottom: '28px', fontSize: isMobile ? '13px' : '14px' }}>
-                Pilih suhu minuman
+              <p style={{ color: textMuted, marginBottom: '24px', fontSize: isMobile ? '13px' : '14px' }}>
+                {t('drink_type')}
               </p>
               
-              <div style={{ display: 'flex', gap: '16px', marginBottom: '28px' }}>
+              <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
                 {drinkOptions[selectedDrinkItem.name]?.some(o => o.type === 'Panas') && (
                   <button 
                     onClick={() => setSelectedDrinkOption('Panas')} 
                     style={{ 
                       flex: 1, 
-                      padding: isMobile ? '14px' : '18px', 
+                      padding: isMobile ? '14px' : '16px', 
                       background: selectedDrinkOption === 'Panas' ? 'linear-gradient(135deg, #f97316, #ea580c)' : secondaryBg, 
                       color: selectedDrinkOption === 'Panas' ? 'white' : textColor, 
                       border: selectedDrinkOption === 'Panas' ? 'none' : `1px solid ${borderColor}`, 
-                      borderRadius: '20px', 
+                      borderRadius: '16px', 
                       cursor: 'pointer', 
                       fontWeight: 'bold',
                       transition: 'all 0.2s',
@@ -1896,11 +2002,11 @@ function StaffApp() {
                     onClick={() => setSelectedDrinkOption('Sejuk')} 
                     style={{ 
                       flex: 1, 
-                      padding: isMobile ? '14px' : '18px', 
+                      padding: isMobile ? '14px' : '16px', 
                       background: selectedDrinkOption === 'Sejuk' ? 'linear-gradient(135deg, #06b6d4, #0891b2)' : secondaryBg, 
                       color: selectedDrinkOption === 'Sejuk' ? 'white' : textColor, 
                       border: selectedDrinkOption === 'Sejuk' ? 'none' : `1px solid ${borderColor}`, 
-                      borderRadius: '20px', 
+                      borderRadius: '16px', 
                       cursor: 'pointer', 
                       fontWeight: 'bold',
                       transition: 'all 0.2s',
@@ -1919,15 +2025,18 @@ function StaffApp() {
                 style={{ 
                   width: '100%', 
                   padding: isMobile ? '14px' : '16px', 
-                  background: 'linear-gradient(135deg, #22c55e, #16a34a)', 
+                  background: `linear-gradient(135deg, ${successColor}, #16a34a)`, 
                   color: 'white', 
                   border: 'none', 
-                  borderRadius: '60px', 
+                  borderRadius: '50px', 
                   cursor: 'pointer', 
                   fontWeight: 'bold', 
-                  marginBottom: '12px',
-                  fontSize: isMobile ? '14px' : '15px'
+                  marginBottom: '10px',
+                  fontSize: isMobile ? '14px' : '15px',
+                  transition: 'all 0.2s'
                 }}
+                onMouseEnter={e => e.currentTarget.style.transform = 'scale(0.97)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
               >
                 ➕ {t('add_to_cart')}
               </button>
@@ -1940,9 +2049,10 @@ function StaffApp() {
                   background: darkMode ? 'rgba(255,255,255,0.1)' : '#e2e8f0', 
                   color: textColor, 
                   border: 'none', 
-                  borderRadius: '60px', 
+                  borderRadius: '50px', 
                   cursor: 'pointer',
-                  fontSize: isMobile ? '14px' : '15px'
+                  fontSize: isMobile ? '14px' : '15px',
+                  transition: 'all 0.2s'
                 }}
               >
                 {t('cancel')}
@@ -1972,22 +2082,22 @@ function StaffApp() {
             <div style={{ 
               background: cardBg, 
               padding: isMobile ? '20px' : '28px', 
-              borderRadius: '32px', 
+              borderRadius: '28px', 
               maxWidth: '420px', 
               width: '90%', 
               ...glassEffect,
               animation: 'popIn 0.3s ease'
             }}>
-              <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+              <div style={{ textAlign: 'center', marginBottom: '16px' }}>
                 <div style={{ 
                   width: isMobile ? '48px' : '56px', 
                   height: isMobile ? '48px' : '56px', 
-                  background: 'linear-gradient(135deg, #2563eb, #1d4ed8)', 
+                  background: `linear-gradient(135deg, ${accentColor}, #1d4ed8)`, 
                   borderRadius: '50%', 
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'center', 
-                  margin: '0 auto 12px auto' 
+                  margin: '0 auto 10px auto' 
                 }}>
                   <span style={{ fontSize: isMobile ? '24px' : '28px' }}>💰</span>
                 </div>
@@ -2007,13 +2117,13 @@ function StaffApp() {
               <div style={{ 
                 background: secondaryBg, 
                 padding: isMobile ? '12px' : '16px', 
-                borderRadius: '20px', 
-                marginBottom: '20px' 
+                borderRadius: '16px', 
+                marginBottom: '16px' 
               }}>
                 <div style={{ 
                   display: 'flex', 
                   justifyContent: 'space-between', 
-                  marginBottom: '8px',
+                  marginBottom: '6px',
                   fontSize: isMobile ? '12px' : '13px'
                 }}>
                   <span style={{ color: textMuted }}>No. Pesanan:</span>
@@ -2024,7 +2134,7 @@ function StaffApp() {
                 <div style={{ 
                   display: 'flex', 
                   justifyContent: 'space-between', 
-                  marginBottom: '8px',
+                  marginBottom: '6px',
                   fontSize: isMobile ? '12px' : '13px'
                 }}>
                   <span style={{ color: textMuted }}>{t('table_number')}:</span>
@@ -2047,14 +2157,14 @@ function StaffApp() {
               <div style={{ 
                 background: secondaryBg, 
                 padding: isMobile ? '12px' : '16px', 
-                borderRadius: '20px', 
-                marginBottom: '20px' 
+                borderRadius: '16px', 
+                marginBottom: '16px' 
               }}>
                 <div style={{ 
                   fontWeight: 'bold', 
-                  marginBottom: '12px', 
+                  marginBottom: '10px', 
                   color: textColor, 
-                  fontSize: isMobile ? '12px' : '14px' 
+                  fontSize: isMobile ? '12px' : '13px' 
                 }}>
                   🛒 {language === 'bm' ? 'Ringkasan Pesanan' : 'Order Summary'}
                 </div>
@@ -2063,14 +2173,14 @@ function StaffApp() {
                     display: 'flex', 
                     justifyContent: 'space-between', 
                     fontSize: isMobile ? '11px' : '13px', 
-                    marginBottom: '6px' 
+                    marginBottom: '4px' 
                   }}>
                     <span style={{ color: textColor }}>{item.name} x{item.quantity}</span>
-                    <span style={{ color: '#22c55e' }}>RM {(item.price * item.quantity).toFixed(2)}</span>
+                    <span style={{ color: successColor }}>RM {(item.price * item.quantity).toFixed(2)}</span>
                   </div>
                 ))}
                 {selectedOrder.items?.length > 3 && (
-                  <div style={{ fontSize: isMobile ? '10px' : '12px', color: textMuted, textAlign: 'center', marginTop: '8px' }}>
+                  <div style={{ fontSize: isMobile ? '10px' : '12px', color: textMuted, textAlign: 'center', marginTop: '6px' }}>
                     + {selectedOrder.items.length - 3} {t('items')} lain
                   </div>
                 )}
@@ -2085,13 +2195,13 @@ function StaffApp() {
                   <div style={{ 
                     background: secondaryBg, 
                     padding: isMobile ? '12px' : '16px', 
-                    borderRadius: '20px', 
-                    marginBottom: '20px' 
+                    borderRadius: '16px', 
+                    marginBottom: '16px' 
                   }}>
                     <div style={{ 
                       display: 'flex', 
                       justifyContent: 'space-between', 
-                      marginBottom: '6px',
+                      marginBottom: '4px',
                       fontSize: isMobile ? '11px' : '13px'
                     }}>
                       <span>{t('subtotal')}:</span>
@@ -2101,7 +2211,7 @@ function StaffApp() {
                       <div style={{ 
                         display: 'flex', 
                         justifyContent: 'space-between', 
-                        marginBottom: '6px',
+                        marginBottom: '4px',
                         fontSize: isMobile ? '11px' : '13px'
                       }}>
                         <span>{t('service_charge')} ({serviceChargePercent}%):</span>
@@ -2111,7 +2221,7 @@ function StaffApp() {
                     <div style={{ 
                       display: 'flex', 
                       justifyContent: 'space-between', 
-                      marginBottom: '6px',
+                      marginBottom: '4px',
                       fontSize: isMobile ? '11px' : '13px'
                     }}>
                       <span>{t('tax')} ({taxPercent}%):</span>
@@ -2119,43 +2229,43 @@ function StaffApp() {
                     </div>
                     <div style={{ 
                       borderTop: `1px solid ${borderColor}`, 
-                      marginTop: '10px', 
-                      paddingTop: '10px', 
+                      marginTop: '8px', 
+                      paddingTop: '8px', 
                       display: 'flex', 
                       justifyContent: 'space-between', 
                       fontWeight: 'bold', 
                       fontSize: isMobile ? '16px' : '18px' 
                     }}>
                       <span>{t('total')}:</span>
-                      <span style={{ color: '#22c55e' }}>RM {grandTotal.toFixed(2)}</span>
+                      <span style={{ color: successColor }}>RM {grandTotal.toFixed(2)}</span>
                     </div>
                   </div>
                 )
               })()}
 
-              <div style={{ marginBottom: '20px' }}>
+              <div style={{ marginBottom: '16px' }}>
                 <label style={{ 
                   display: 'block', 
-                  marginBottom: '10px', 
+                  marginBottom: '8px', 
                   fontWeight: 'bold', 
                   color: textColor, 
-                  fontSize: isMobile ? '12px' : '14px' 
+                  fontSize: isMobile ? '12px' : '13px' 
                 }}>
                   💳 {t('payment_method')}
                 </label>
-                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                   <button 
                     onClick={() => setPaymentMethod('cash')} 
                     style={{ 
                       flex: 1, 
                       padding: isMobile ? '10px' : '12px', 
-                      background: paymentMethod === 'cash' ? 'linear-gradient(135deg, #22c55e, #16a34a)' : secondaryBg, 
+                      background: paymentMethod === 'cash' ? `linear-gradient(135deg, ${successColor}, #16a34a)` : secondaryBg, 
                       color: paymentMethod === 'cash' ? 'white' : textColor, 
                       border: paymentMethod === 'cash' ? 'none' : `1px solid ${borderColor}`, 
-                      borderRadius: '16px', 
+                      borderRadius: '14px', 
                       cursor: 'pointer', 
                       fontWeight: 'bold', 
-                      fontSize: isMobile ? '12px' : '14px',
+                      fontSize: isMobile ? '12px' : '13px',
                       transition: 'all 0.2s'
                     }}
                   >
@@ -2169,10 +2279,10 @@ function StaffApp() {
                       background: paymentMethod === 'tng' ? 'linear-gradient(135deg, #06b6d4, #0891b2)' : secondaryBg, 
                       color: paymentMethod === 'tng' ? 'white' : textColor, 
                       border: paymentMethod === 'tng' ? 'none' : `1px solid ${borderColor}`, 
-                      borderRadius: '16px', 
+                      borderRadius: '14px', 
                       cursor: 'pointer', 
                       fontWeight: 'bold', 
-                      fontSize: isMobile ? '12px' : '14px',
+                      fontSize: isMobile ? '12px' : '13px',
                       transition: 'all 0.2s'
                     }}
                   >
@@ -2186,10 +2296,10 @@ function StaffApp() {
                       background: paymentMethod === 'bank' ? 'linear-gradient(135deg, #8b5cf6, #7c3aed)' : secondaryBg, 
                       color: paymentMethod === 'bank' ? 'white' : textColor, 
                       border: paymentMethod === 'bank' ? 'none' : `1px solid ${borderColor}`, 
-                      borderRadius: '16px', 
+                      borderRadius: '14px', 
                       cursor: 'pointer', 
                       fontWeight: 'bold', 
-                      fontSize: isMobile ? '12px' : '14px',
+                      fontSize: isMobile ? '12px' : '13px',
                       transition: 'all 0.2s'
                     }}
                   >
@@ -2198,20 +2308,23 @@ function StaffApp() {
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '12px' }}>
+              <div style={{ display: 'flex', gap: '10px' }}>
                 <button 
                   onClick={() => markAsPaid(selectedOrder)} 
                   style={{ 
                     flex: 1, 
-                    background: 'linear-gradient(135deg, #22c55e, #16a34a)', 
+                    background: `linear-gradient(135deg, ${successColor}, #16a34a)`, 
                     color: 'white', 
                     padding: isMobile ? '12px' : '14px', 
                     border: 'none', 
-                    borderRadius: '60px', 
+                    borderRadius: '50px', 
                     cursor: 'pointer', 
                     fontWeight: 'bold', 
-                    fontSize: isMobile ? '13px' : '15px' 
+                    fontSize: isMobile ? '13px' : '14px',
+                    transition: 'all 0.2s'
                   }}
+                  onMouseEnter={e => e.currentTarget.style.transform = 'scale(0.97)'}
+                  onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
                 >
                   ✅ {t('save')}
                 </button>
@@ -2223,10 +2336,11 @@ function StaffApp() {
                     color: textColor, 
                     padding: isMobile ? '12px' : '14px', 
                     border: 'none', 
-                    borderRadius: '60px', 
+                    borderRadius: '50px', 
                     cursor: 'pointer', 
                     fontWeight: 'bold', 
-                    fontSize: isMobile ? '13px' : '15px' 
+                    fontSize: isMobile ? '13px' : '14px',
+                    transition: 'all 0.2s'
                   }}
                 >
                   ❌ {t('cancel')}
@@ -2268,8 +2382,8 @@ function StaffApp() {
               to { opacity: 1; } 
             }
             @keyframes popIn { 
-              0% { opacity: 0; transform: scale(0.9); } 
-              100% { opacity: 1; transform: scale(1); } 
+              0% { opacity: 0; transform: scale(0.95) translateY(10px); } 
+              100% { opacity: 1; transform: scale(1) translateY(0); } 
             }
             ::-webkit-scrollbar { 
               width: 6px; 
@@ -2277,17 +2391,17 @@ function StaffApp() {
             }
             ::-webkit-scrollbar-track { 
               background: ${darkMode ? '#1a1a2e' : '#e2e8f0'}; 
-              borderRadius: 10px; 
+              border-radius: 10px; 
             }
             ::-webkit-scrollbar-thumb { 
               background: ${darkMode ? '#3d3d5c' : '#94a3b8'}; 
-              borderRadius: 10px; 
+              border-radius: 10px; 
             }
             button { 
               transition: all 0.2s; 
             }
             button:hover:not(:disabled) { 
-              opacity: 0.88; 
+              opacity: 0.9; 
               transform: scale(0.97); 
             }
             button:active:not(:disabled) {
@@ -2301,6 +2415,15 @@ function StaffApp() {
               outline: none; 
               border-color: #3b82f6;
               box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+            }
+            .card-hover {
+              transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .card-hover:hover {
+              transform: translateY(-4px);
+              box-shadow: ${darkMode 
+                ? '0 12px 40px rgba(0,0,0,0.5)' 
+                : '0 12px 40px rgba(0,0,0,0.12)'};
             }
           `}
         </style>
