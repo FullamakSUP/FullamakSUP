@@ -428,9 +428,6 @@ function StaffApp() {
     setShowDrinkModal(true) 
   }
   
-  // ============================================================
-  // ADD DRINK TO CART - WITH BUNGKUS SUPPORT
-  // ============================================================
   const addDrinkToCart = () => {
     if (!selectedDrinkItem) return
     const options = drinkOptions[selectedDrinkItem.name]
@@ -561,10 +558,36 @@ function StaffApp() {
   // GET CATEGORIES - SHOW ALL (NO FILTER)
   // ============================================================
   const categoryNames = ['Semua', ...dbCategories.map(cat => cat.name)]
-  
-  const filteredMenu = selectedCategory === 'Semua' 
-    ? menu 
-    : menu.filter(item => item.category === selectedCategory)
+
+  // ============================================================
+  // GET FILTERED MENU - SHOW PARENT + SUB CATEGORIES (FOR ALL CATEGORIES)
+  // ============================================================
+  const getFilteredMenu = () => {
+    if (selectedCategory === 'Semua') {
+      return menu
+    }
+    
+    // Check if selected category is a parent category
+    const selectedCat = dbCategories.find(c => c.name === selectedCategory)
+    const isParentCategory = selectedCat?.parent_id === null
+    
+    if (isParentCategory) {
+      // If parent category, show all items in this parent + its sub-categories
+      const subCategoryNames = dbCategories
+        .filter(c => c.parent_id === selectedCat.id)
+        .map(c => c.name)
+      
+      return menu.filter(item => 
+        item.category === selectedCategory || 
+        subCategoryNames.includes(item.category)
+      )
+    }
+    
+    // If sub-category, show only items in that sub-category
+    return menu.filter(item => item.category === selectedCategory)
+  }
+
+  const filteredMenu = getFilteredMenu()
 
   // ============================================================
   // HELPERS
@@ -641,7 +664,7 @@ function StaffApp() {
         minHeight: '100vh' 
       }}>
         
-        {/* ===== TOP BAR ===== */}
+        {/* TOP BAR */}
         <div style={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
@@ -734,7 +757,7 @@ function StaffApp() {
           </div>
         </div>
 
-        {/* ===== SETTINGS BAR ===== */}
+        {/* SETTINGS BAR */}
         <div style={{ 
           ...glassEffect, 
           borderRadius: '20px', 
@@ -757,7 +780,7 @@ function StaffApp() {
           </span>
         </div>
 
-        {/* ===== ORDER TYPE SELECTION ===== */}
+        {/* ORDER TYPE SELECTION */}
         <div style={{ 
           display: 'flex', 
           gap: '12px', 
@@ -813,7 +836,7 @@ function StaffApp() {
           </button>
         </div>
 
-        {/* ===== ORDER DETAILS INPUT ===== */}
+        {/* ORDER DETAILS INPUT */}
         <div style={{ 
           ...glassEffect, 
           borderRadius: '20px', 
@@ -910,7 +933,7 @@ function StaffApp() {
           )}
         </div>
 
-        {/* ===== TABS ===== */}
+        {/* TABS */}
         <div style={{ 
           display: 'flex', 
           gap: '4px', 
@@ -974,7 +997,7 @@ function StaffApp() {
           ))}
         </div>
 
-        {/* ===== NEW ORDERS ALERT ===== */}
+        {/* NEW ORDERS ALERT */}
         {customerOrders.length > 0 && activeTab !== 'orders' && (
           <div 
             onClick={() => setActiveTab('orders')} 
@@ -1981,7 +2004,6 @@ function StaffApp() {
                 {t('drink_type')}
               </p>
               
-              {/* ✅ DRINK OPTIONS - WITH BUNGKUS */}
               <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
                 {drinkOptions[selectedDrinkItem.name]?.some(o => o.type === 'Panas') && (
                   <button 
@@ -2027,7 +2049,6 @@ function StaffApp() {
                   </button>
                 )}
                 
-                {/* ✅ BUNGKUS OPTION */}
                 {drinkOptions[selectedDrinkItem.name]?.some(o => o.type === 'Bungkus') && (
                   <button 
                     onClick={() => setSelectedDrinkOption('Bungkus')} 
