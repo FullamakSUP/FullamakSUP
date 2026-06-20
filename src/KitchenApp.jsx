@@ -11,7 +11,7 @@ function KitchenApp() {
   const { language } = useLanguage()
   
   // ============================================================
-  // COMPLETE TRANSLATIONS - TANPA EMOJI
+  // COMPLETE TRANSLATIONS
   // ============================================================
   const translations = {
     // Header
@@ -40,11 +40,11 @@ function KitchenApp() {
     order_ready_desc: { en: 'Order is ready for pickup', ms: 'Pesanan sedia untuk diambil' },
     
     // Tabs
-    food_kitchen: { en: 'Food', ms: 'Makanan' },
-    drink_kitchen: { en: 'Drinks', ms: 'Minuman' },
-    preparing_orders: { en: 'Cooking', ms: 'Sedang Masak' },
-    ready_orders: { en: 'Ready', ms: 'Sedia' },
-    completed_orders: { en: 'Done', ms: 'Selesai' },
+    food_kitchen: { en: '🍳 Food', ms: '🍳 Makanan' },
+    drink_kitchen: { en: '🥤 Drinks', ms: '🥤 Minuman' },
+    preparing_orders: { en: '🔪 Cooking', ms: '🔪 Sedang Masak' },
+    ready_orders: { en: '✅ Ready', ms: '✅ Sedia' },
+    completed_orders: { en: '📜 Done', ms: '📜 Selesai' },
     
     // Empty states
     no_food_orders: { en: 'No food orders waiting', ms: 'Tiada pesanan makanan menunggu' },
@@ -193,7 +193,10 @@ function KitchenApp() {
               item.name?.toLowerCase().includes('milo') ||
               item.name?.toLowerCase().includes('sirap') ||
               item.name?.toLowerCase().includes('coke') ||
-              item.name?.toLowerCase().includes('soda')
+              item.name?.toLowerCase().includes('soda') ||
+              item.name?.toLowerCase().includes('limau') ||
+              item.name?.toLowerCase().includes('mangga') ||
+              item.name?.toLowerCase().includes('oren')
             )
             
             // Check for food items
@@ -206,7 +209,10 @@ function KitchenApp() {
               !item.name?.toLowerCase().includes('milo') &&
               !item.name?.toLowerCase().includes('sirap') &&
               !item.name?.toLowerCase().includes('coke') &&
-              !item.name?.toLowerCase().includes('soda')
+              !item.name?.toLowerCase().includes('soda') &&
+              !item.name?.toLowerCase().includes('limau') &&
+              !item.name?.toLowerCase().includes('mangga') &&
+              !item.name?.toLowerCase().includes('oren')
             )
             
             // Add to food orders if has food items
@@ -229,12 +235,12 @@ function KitchenApp() {
               : `${t('table')} ${payload.new.table_number || '?'}`
             
             const itemTypes = []
-            if (hasFoodItems) itemTypes.push(t('food_kitchen'))
-            if (hasDrinkItems) itemTypes.push(t('drink_kitchen'))
+            if (hasFoodItems) itemTypes.push('🍳')
+            if (hasDrinkItems) itemTypes.push('🥤')
             
             sendNotification(
               t('new_order_alert'),
-              `${orderType} - ${itemTypes.join(' & ')} (${payload.new.items?.length} items)`,
+              `${orderType} ${itemTypes.join(' ')} (${payload.new.items?.length} items)`,
               '/kitchen'
             )
             
@@ -251,9 +257,9 @@ function KitchenApp() {
                 alignItems: 'center',
                 gap: '8px'
               }}>
-                <span>🍳</span>
-                <span>{t('new_orders')}! - {payload.new.order_type === 'take_away' ? t('take_away') : `${t('table')} ${payload.new.table_number || ''}`}</span>
-                {hasFoodItems && <span>🍽️</span>}
+                <span>🔔</span>
+                <span>{t('new_orders')}! {orderType}</span>
+                {hasFoodItems && <span>🍳</span>}
                 {hasDrinkItems && <span>🥤</span>}
               </div>
             ), { duration: 3000 })
@@ -319,6 +325,7 @@ function KitchenApp() {
       const ready = []
       
       pending?.forEach(order => {
+        // Check if order has drink items
         const hasDrinkItems = order.items?.some(item => 
           item.category === 'Minuman' || 
           item.name?.toLowerCase().includes('teh') ||
@@ -328,9 +335,13 @@ function KitchenApp() {
           item.name?.toLowerCase().includes('milo') ||
           item.name?.toLowerCase().includes('sirap') ||
           item.name?.toLowerCase().includes('coke') ||
-          item.name?.toLowerCase().includes('soda')
+          item.name?.toLowerCase().includes('soda') ||
+          item.name?.toLowerCase().includes('limau') ||
+          item.name?.toLowerCase().includes('mangga') ||
+          item.name?.toLowerCase().includes('oren')
         )
         
+        // Check if order has food items
         const hasFoodItems = order.items?.some(item => 
           item.category !== 'Minuman' && 
           !item.name?.toLowerCase().includes('teh') &&
@@ -340,7 +351,10 @@ function KitchenApp() {
           !item.name?.toLowerCase().includes('milo') &&
           !item.name?.toLowerCase().includes('sirap') &&
           !item.name?.toLowerCase().includes('coke') &&
-          !item.name?.toLowerCase().includes('soda')
+          !item.name?.toLowerCase().includes('soda') &&
+          !item.name?.toLowerCase().includes('limau') &&
+          !item.name?.toLowerCase().includes('mangga') &&
+          !item.name?.toLowerCase().includes('oren')
         )
         
         if (order.status === 'preparing') {
@@ -348,8 +362,30 @@ function KitchenApp() {
         } else if (order.status === 'ready') {
           ready.push(order)
         } else if (order.status === 'pending') {
-          if (hasFoodItems) food.push(order)
-          if (hasDrinkItems) drinks.push(order)
+          // Only add to food if it has food items (and not just drinks)
+          if (hasFoodItems) {
+            food.push({
+              ...order,
+              _hasDrinkItems: hasDrinkItems,
+              _hasFoodItems: hasFoodItems,
+              _itemTypes: {
+                food: hasFoodItems,
+                drink: hasDrinkItems
+              }
+            })
+          }
+          // Only add to drinks if it has drink items
+          if (hasDrinkItems) {
+            drinks.push({
+              ...order,
+              _hasDrinkItems: hasDrinkItems,
+              _hasFoodItems: hasFoodItems,
+              _itemTypes: {
+                food: hasFoodItems,
+                drink: hasDrinkItems
+              }
+            })
+          }
         }
       })
       
@@ -460,6 +496,21 @@ function KitchenApp() {
     return 'rgba(34, 197, 94, 0.12)'
   }
 
+  const isDrinkItem = (item) => {
+    return item.category === 'Minuman' || 
+      item.name?.toLowerCase().includes('teh') ||
+      item.name?.toLowerCase().includes('kopi') ||
+      item.name?.toLowerCase().includes('jus') ||
+      item.name?.toLowerCase().includes('air') ||
+      item.name?.toLowerCase().includes('milo') ||
+      item.name?.toLowerCase().includes('sirap') ||
+      item.name?.toLowerCase().includes('coke') ||
+      item.name?.toLowerCase().includes('soda') ||
+      item.name?.toLowerCase().includes('limau') ||
+      item.name?.toLowerCase().includes('mangga') ||
+      item.name?.toLowerCase().includes('oren')
+  }
+
   const filterOrders = (orders) => {
     let filtered = orders
     if (searchTerm) {
@@ -475,27 +526,19 @@ function KitchenApp() {
     return filtered
   }
 
-  const isDrinkItem = (item) => {
-    return item.category === 'Minuman' || 
-      item.name?.toLowerCase().includes('teh') ||
-      item.name?.toLowerCase().includes('kopi') ||
-      item.name?.toLowerCase().includes('jus') ||
-      item.name?.toLowerCase().includes('air') ||
-      item.name?.toLowerCase().includes('milo') ||
-      item.name?.toLowerCase().includes('sirap') ||
-      item.name?.toLowerCase().includes('coke') ||
-      item.name?.toLowerCase().includes('soda')
-  }
-
   // ============================================================
   // RENDER ORDER CARD
   // ============================================================
   const renderOrderCard = (order, showAcceptButton = true, acceptStatus = 'preparing') => {
     const hasDrinkItems = order.items?.some(item => isDrinkItem(item))
-    const cardBorderColor = hasDrinkItems ? borderLeftDrink : borderLeftFood
+    const hasFoodItems = order.items?.some(item => !isDrinkItem(item))
+    const cardBorderColor = hasDrinkItems && !hasFoodItems ? borderLeftDrink : borderLeftFood
     const waitingColor = getWaitingColor(order.created_at)
     const waitingBg = getWaitingBg(order.created_at)
-    const isFood = !hasDrinkItems
+    
+    // Show both badges if order has both food and drink
+    const showFoodBadge = hasFoodItems
+    const showDrinkBadge = hasDrinkItems
     
     return (
       <div 
@@ -533,16 +576,44 @@ function KitchenApp() {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <span style={{ 
-              background: hasDrinkItems ? 'rgba(6, 182, 212, 0.15)' : 'rgba(239, 68, 68, 0.15)', 
+              background: darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)', 
               padding: isMobile ? '4px 12px' : '6px 14px', 
               borderRadius: '40px',
               fontSize: isMobile ? '10px' : '12px',
               fontWeight: 'bold',
-              color: hasDrinkItems ? '#06b6d4' : '#ef4444'
+              color: textColor
             }}>
-              {getOrderTypeIcon(order)} 
-              {hasDrinkItems && <span style={{ marginLeft: '4px' }}>🥤</span>}
+              {getOrderTypeIcon(order)}
             </span>
+            
+            {/* Food Badge */}
+            {showFoodBadge && (
+              <span style={{ 
+                background: 'rgba(239, 68, 68, 0.15)', 
+                color: '#ef4444',
+                padding: isMobile ? '2px 10px' : '4px 12px', 
+                borderRadius: '40px',
+                fontSize: isMobile ? '9px' : '11px',
+                fontWeight: 'bold'
+              }}>
+                🍳 {t('food_kitchen')}
+              </span>
+            )}
+            
+            {/* Drink Badge */}
+            {showDrinkBadge && (
+              <span style={{ 
+                background: 'rgba(6, 182, 212, 0.15)', 
+                color: '#06b6d4',
+                padding: isMobile ? '2px 10px' : '4px 12px', 
+                borderRadius: '40px',
+                fontSize: isMobile ? '9px' : '11px',
+                fontWeight: 'bold'
+              }}>
+                🥤 {t('drink_kitchen')}
+              </span>
+            )}
+            
             <span style={{ 
               background: waitingBg,
               padding: isMobile ? '3px 10px' : '4px 12px',
@@ -580,7 +651,7 @@ function KitchenApp() {
           )}
         </div>
         
-        {/* Order Items */}
+        {/* Order Items with Category Labels */}
         <div style={{ 
           margin: '12px 0', 
           borderTop: `1px solid ${borderColor}`, 
@@ -593,28 +664,59 @@ function KitchenApp() {
               <div key={idx} style={{ 
                 display: 'flex', 
                 justifyContent: 'space-between', 
-                padding: '5px 0', 
+                padding: '6px 0', 
                 color: textColor,
-                borderBottom: idx !== order.items.length - 1 ? `1px solid ${borderColor}` : 'none'
+                borderBottom: idx !== order.items.length - 1 ? `1px solid ${borderColor}` : 'none',
+                alignItems: 'center'
               }}>
-                <span style={{ fontSize: isMobile ? '12px' : '13px' }}>
-                  {isDrink && <span style={{ marginRight: '4px' }}>🥤</span>}
-                  {isFood && <span style={{ marginRight: '4px' }}>🍽️</span>}
-                  {item.quantity}x {item.name}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                  {isDrink ? (
+                    <span style={{ fontSize: '10px', color: '#06b6d4' }}>🥤</span>
+                  ) : (
+                    <span style={{ fontSize: '10px', color: '#ef4444' }}>🍳</span>
+                  )}
+                  <span style={{ fontSize: isMobile ? '12px' : '13px' }}>
+                    {item.quantity}x {item.name}
+                  </span>
                   {item.option_type && (
                     <span style={{ 
-                      fontSize: isMobile ? '9px' : '10px', 
-                      color: textMuted, 
-                      display: 'block',
-                      marginLeft: '4px'
+                      fontSize: isMobile ? '8px' : '9px', 
+                      color: textMuted,
+                      background: secondaryBg,
+                      padding: '1px 6px',
+                      borderRadius: '12px'
                     }}>
-                      {item.option_type === 'Panas' ? '🔥 Panas' : 
-                       item.option_type === 'Sejuk' ? '🧊 Sejuk' : 
-                       item.option_type === 'Bungkus' ? '📦 Bungkus' : 
-                       item.option_type}
+                      {item.option_type === 'Panas' ? '🔥' : 
+                       item.option_type === 'Sejuk' ? '🧊' : 
+                       item.option_type === 'Bungkus' ? '📦' : ''}
+                      {item.option_type}
                     </span>
                   )}
-                </span>
+                  {isDrink && (
+                    <span style={{ 
+                      fontSize: '8px', 
+                      color: '#06b6d4',
+                      background: 'rgba(6,182,212,0.1)',
+                      padding: '1px 6px',
+                      borderRadius: '10px',
+                      fontWeight: 'bold'
+                    }}>
+                      Minuman
+                    </span>
+                  )}
+                  {!isDrink && (
+                    <span style={{ 
+                      fontSize: '8px', 
+                      color: '#ef4444',
+                      background: 'rgba(239,68,68,0.1)',
+                      padding: '1px 6px',
+                      borderRadius: '10px',
+                      fontWeight: 'bold'
+                    }}>
+                      Makanan
+                    </span>
+                  )}
+                </div>
                 <span style={{ 
                   color: priceColor, 
                   fontWeight: 'bold', 
@@ -984,10 +1086,35 @@ function KitchenApp() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '10px'
+            gap: '10px',
+            flexWrap: 'wrap'
           }}>
             <span>🔔</span>
             <span>{totalNew} {t('new_orders')}! - {t('process_immediately')}</span>
+            <span style={{ 
+              display: 'flex', 
+              gap: '8px', 
+              fontSize: isMobile ? '11px' : '13px' 
+            }}>
+              {foodOrders.length > 0 && (
+                <span style={{ 
+                  background: 'rgba(255,255,255,0.2)', 
+                  padding: '2px 10px', 
+                  borderRadius: '20px' 
+                }}>
+                  🍳 {foodOrders.length}
+                </span>
+              )}
+              {drinkOrders.length > 0 && (
+                <span style={{ 
+                  background: 'rgba(255,255,255,0.2)', 
+                  padding: '2px 10px', 
+                  borderRadius: '20px' 
+                }}>
+                  🥤 {drinkOrders.length}
+                </span>
+              )}
+            </span>
           </div>
         )}
         
@@ -1008,7 +1135,7 @@ function KitchenApp() {
               onClick={() => setActiveTab(tab.id)} 
               style={{ 
                 flex: 1,
-                minWidth: isMobile ? '70px' : 'auto',
+                minWidth: isMobile ? '60px' : 'auto',
                 padding: isMobile ? '8px 12px' : '12px 20px', 
                 background: activeTab === tab.id 
                   ? `linear-gradient(135deg, ${tab.color}, ${tab.color}dd)` 
@@ -1218,7 +1345,10 @@ function KitchenApp() {
                         color: textMuted, 
                         marginTop: '2px' 
                       }}>
-                        {order.items?.map((i, idx) => `${i.quantity}x ${i.name}`).join(', ')}
+                        {order.items?.map((i, idx) => {
+                          const isDrink = isDrinkItem(i)
+                          return `${i.quantity}x ${i.name}${isDrink ? ' 🥤' : ' 🍳'}`
+                        }).join(', ')}
                       </div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
