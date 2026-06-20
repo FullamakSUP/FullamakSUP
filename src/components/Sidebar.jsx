@@ -20,10 +20,9 @@ function Sidebar({ children }) {
   const user = userStr ? JSON.parse(userStr) : null
 
   // ============================================================
-  // COMPLETE TRANSLATIONS - TANPA EMOJI (emoji dah ada dalam icon)
+  // TRANSLATIONS
   // ============================================================
   const translations = {
-    // Navigation
     dashboard: { en: 'Dashboard', ms: 'Papan Pemuka' },
     pos: { en: 'POS', ms: 'POS' },
     kitchen: { en: 'Kitchen', ms: 'Dapur' },
@@ -34,13 +33,9 @@ function Sidebar({ children }) {
     table_qrs: { en: 'Table QR', ms: 'QR Meja' },
     system_settings: { en: 'Settings', ms: 'Tetapan' },
     reports: { en: 'Reports', ms: 'Laporan' },
-    
-    // User
     admin: { en: 'Admin', ms: 'Admin' },
     staff: { en: 'Staff', ms: 'Staff' },
     kitchen_role: { en: 'Kitchen', ms: 'Dapur' },
-    
-    // Actions
     logout: { en: 'Logout', ms: 'Log Keluar' },
     light_mode: { en: 'Light Mode', ms: 'Mod Terang' },
     dark_mode: { en: 'Dark Mode', ms: 'Mod Gelap' },
@@ -70,7 +65,7 @@ function Sidebar({ children }) {
   }, [])
 
   // ============================================================
-  // LOAD RESTAURANT INFO
+  // LOAD RESTAURANT INFO - FIXED REALTIME
   // ============================================================
   const loadRestaurantInfo = async () => {
     try {
@@ -99,10 +94,11 @@ function Sidebar({ children }) {
     }
   }
 
+  // ✅ FIXED: Correct order - create channel, add callback, then subscribe
   useEffect(() => {
     loadRestaurantInfo()
     
-    const settingsSubscription = supabase
+    const settingsChannel = supabase
       .channel('sidebar_settings_changes')
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'settings' },
@@ -119,7 +115,7 @@ function Sidebar({ children }) {
       .subscribe()
     
     return () => {
-      settingsSubscription.unsubscribe()
+      settingsChannel.unsubscribe()
     }
   }, [])
 
@@ -197,18 +193,15 @@ function Sidebar({ children }) {
     return item.roles.includes(user.role)
   })
 
-  // ============================================================
-  // SIDEBAR WIDTH
-  // ============================================================
   const sidebarWidth = collapsed ? '72px' : '260px'
 
   // ============================================================
-  // RENDER
+  // RENDER - KEEP ORIGINAL
   // ============================================================
   return (
     <div style={{ display: 'flex', minHeight: '100vh', width: '100%' }}>
       
-      {/* ===== DESKTOP SIDEBAR ===== */}
+      {/* DESKTOP SIDEBAR */}
       <div style={{
         width: isMobile ? '0px' : sidebarWidth,
         minWidth: isMobile ? '0px' : sidebarWidth,
@@ -229,7 +222,7 @@ function Sidebar({ children }) {
           : '4px 0 20px rgba(0,0,0,0.04)'
       }}>
         
-        {/* ===== LOGO SECTION ===== */}
+        {/* LOGO */}
         <div style={{
           padding: collapsed ? '16px 12px' : '20px 18px',
           borderBottom: `1px solid ${sidebarBorder}`,
@@ -239,7 +232,6 @@ function Sidebar({ children }) {
           gap: collapsed ? 0 : '14px',
           minHeight: '70px'
         }}>
-          {/* Logo */}
           {restaurantLogo && !logoError && restaurantLogo !== '' ? (
             <img 
               src={restaurantLogo} 
@@ -273,7 +265,6 @@ function Sidebar({ children }) {
             </div>
           )}
           
-          {/* Restaurant Name */}
           {!collapsed && (
             <span style={{ 
               fontWeight: 'bold', 
@@ -288,7 +279,6 @@ function Sidebar({ children }) {
             </span>
           )}
           
-          {/* Collapse Button */}
           {!isMobile && (
             <button
               onClick={() => setCollapsed(!collapsed)}
@@ -311,7 +301,7 @@ function Sidebar({ children }) {
           )}
         </div>
 
-        {/* ===== USER INFO ===== */}
+        {/* USER INFO */}
         <div style={{
           padding: collapsed ? '16px 12px' : '20px 18px',
           borderBottom: `1px solid ${sidebarBorder}`,
@@ -358,7 +348,7 @@ function Sidebar({ children }) {
           )}
         </div>
 
-        {/* ===== NAVIGATION ===== */}
+        {/* NAVIGATION */}
         <nav style={{ flex: 1, padding: '16px 12px', overflowY: 'auto' }}>
           {filteredMenu.map((item) => (
             <button
@@ -393,7 +383,6 @@ function Sidebar({ children }) {
                 }
               }}
             >
-              {/* Active Indicator */}
               {isActive(item.path) && (
                 <div style={{
                   position: 'absolute',
@@ -420,13 +409,12 @@ function Sidebar({ children }) {
           ))}
         </nav>
 
-        {/* ===== BOTTOM ACTIONS ===== */}
+        {/* BOTTOM ACTIONS */}
         <div style={{
           padding: collapsed ? '12px 12px' : '16px 18px',
           borderTop: `1px solid ${sidebarBorder}`,
           marginTop: 'auto'
         }}>
-          {/* Dark Mode Toggle */}
           <button
             onClick={toggleDarkMode}
             style={{
@@ -451,7 +439,6 @@ function Sidebar({ children }) {
             {!collapsed && <span>{darkMode ? t('light_mode') : t('dark_mode')}</span>}
           </button>
           
-          {/* Language Toggle */}
           <button
             onClick={() => setLanguage(language === 'bm' ? 'en' : 'bm')}
             style={{
@@ -478,7 +465,6 @@ function Sidebar({ children }) {
             {!collapsed && <span>{language === 'bm' ? t('english') : t('bahasa')}</span>}
           </button>
 
-          {/* Logout */}
           <button
             onClick={handleLogout}
             style={{
@@ -504,7 +490,7 @@ function Sidebar({ children }) {
         </div>
       </div>
 
-      {/* ===== MAIN CONTENT ===== */}
+      {/* MAIN CONTENT */}
       <div style={{
         marginLeft: isMobile ? '0px' : sidebarWidth,
         transition: 'margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -514,7 +500,7 @@ function Sidebar({ children }) {
         background: darkMode ? '#0a0a16' : '#f1f5f9'
       }}>
         
-        {/* ===== MOBILE HEADER ===== */}
+        {/* MOBILE HEADER */}
         <div style={{
           position: 'sticky',
           top: 0,
@@ -613,7 +599,7 @@ function Sidebar({ children }) {
           </div>
         </div>
         
-        {/* ===== CHILDREN CONTENT ===== */}
+        {/* CHILDREN */}
         <div style={{ 
           padding: isMobile ? '12px' : '24px',
           minHeight: 'calc(100vh - 60px)'
@@ -622,7 +608,7 @@ function Sidebar({ children }) {
         </div>
       </div>
 
-      {/* ===== MOBILE MENU OVERLAY ===== */}
+      {/* MOBILE MENU */}
       {mobileMenuOpen && (
         <div style={{
           position: 'fixed',
@@ -647,7 +633,6 @@ function Sidebar({ children }) {
           }}
           onClick={(e) => e.stopPropagation()}>
             
-            {/* Mobile Header */}
             <div style={{
               padding: '16px 20px',
               borderBottom: `1px solid ${sidebarBorder}`,
@@ -699,7 +684,6 @@ function Sidebar({ children }) {
               </button>
             </div>
             
-            {/* User Info */}
             <div style={{
               padding: '16px 20px',
               borderBottom: `1px solid ${sidebarBorder}`,
@@ -738,7 +722,6 @@ function Sidebar({ children }) {
               </div>
             </div>
             
-            {/* Menu */}
             <nav style={{ padding: '16px' }}>
               {filteredMenu.map((item) => (
                 <button
@@ -793,7 +776,6 @@ function Sidebar({ children }) {
               ))}
             </nav>
             
-            {/* Bottom Actions */}
             <div style={{ 
               padding: '16px', 
               borderTop: `1px solid ${sidebarBorder}`,
@@ -876,9 +858,6 @@ function Sidebar({ children }) {
         </div>
       )}
 
-      {/* ========================================================== */}
-      {/* STYLES */}
-      {/* ========================================================== */}
       <style>
         {`
           @keyframes fadeIn {

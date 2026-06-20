@@ -2,6 +2,7 @@ import { Navigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { useTheme } from './context/ThemeContext'
 import { useLanguage } from './context/LanguageContext'
+import { supabase } from './lib/supabase'
 
 function ProtectedRoute({ children, allowedRoles = [] }) {
   const [userRole, setUserRole] = useState(null)
@@ -44,10 +45,90 @@ function ProtectedRoute({ children, allowedRoles = [] }) {
   }
 
   // ============================================================
-  // CHECK AUTH
+  // CHECK AUTH - SUPABASE
   // ============================================================
   useEffect(() => {
-    const checkAuth = () => {
+    const checkAuth = async () => {
+      setLoading(true)
+      
+      // 1. Check Supabase session
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (session?.user) {
+        // 2. Get staff role from database
+        const { data: staffData } = await supabase
+          .from('staff')
+          .select('role, name')
+          .eq('auth_id', session.user.id)
+          .single()
+        
+        if (staffData) {
+          setUserRole(staffData.role)
+          setUserName(staffData.name || 'User')
+        } else {
+          // Fallback to sessionStorage for backward compatibility
+          const savedAuth = sessionStorage.getItem('staffAuth')
+          if (savedAuth) {
+            try {
+              const auth = JSON.parse(savedAuth)
+              setUserRole(auth.role)
+              setUserName(auth.name || auth.username || 'User')
+            } catch (e) {
+              setUserRole(null)
+              setUserName('')
+            }
+          } else {
+            setUserRole(null)
+            setUserName('')
+          }
+        }
+      } else {
+        // Check sessionStorage as fallback
+        const savedAuth = sessionStorage.getItem('staffAuth')
+        if (savedAuth) {
+          try {
+            const auth = JSON.parse(savedAuth)
+            setUserRole(auth.role)
+            setUserName(auth.name || auth.username || 'User')
+          } catch (e) {
+            setUserRole(null)
+            setUserName('')
+          }
+        } else {
+          setUserRole(null)
+          setUserName('')
+        }
+      }
+      
+      setLoading(false)
+    }
+    
+    checkAuth()
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          const { data: staffData } = await supabase
+            .from('staff')
+            .select('role, name')
+            .eq('auth_id', session.user.id)
+            .single()
+          
+          if (staffData) {
+            setUserRole(staffData.role)
+            setUserName(staffData.name || 'User')
+          }
+        } else {
+          setUserRole(null)
+          setUserName('')
+        }
+        setLoading(false)
+      }
+    )
+
+    // Listen for storage changes (for sessionStorage fallback)
+    const handleStorageChange = () => {
       const savedAuth = sessionStorage.getItem('staffAuth')
       if (savedAuth) {
         try {
@@ -62,14 +143,13 @@ function ProtectedRoute({ children, allowedRoles = [] }) {
         setUserRole(null)
         setUserName('')
       }
-      setLoading(false)
     }
     
-    checkAuth()
-    window.addEventListener('storage', checkAuth)
+    window.addEventListener('storage', handleStorageChange)
     
     return () => {
-      window.removeEventListener('storage', checkAuth)
+      subscription.unsubscribe()
+      window.removeEventListener('storage', handleStorageChange)
     }
   }, [])
 
@@ -133,6 +213,11 @@ function ProtectedRoute({ children, allowedRoles = [] }) {
   // ============================================================
   // If allowedRoles is empty, allow all authenticated users
   if (allowedRoles.length === 0) {
+    return children
+  }
+
+  // Admin can access everything
+  if (userRole === 'admin') {
     return children
   }
 

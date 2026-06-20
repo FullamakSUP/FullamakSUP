@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useTheme } from './context/ThemeContext'
 import { useLanguage } from './context/LanguageContext'
 import Sidebar from './components/Sidebar'
-import { supabase } from './lib/supabase'
+import { supabase, supabaseAdmin } from './lib/supabase'
 import toast from 'react-hot-toast'
 
 function ManageStaff() {
@@ -33,26 +33,19 @@ function ManageStaff() {
   })
 
   // ============================================================
-  // COMPLETE TRANSLATIONS - TANPA EMOJI
+  // TRANSLATIONS
   // ============================================================
   const translations = {
-    // Header
     team_access: { en: 'Team & Access', ms: 'Pasukan & Akses' },
     team_subtitle: { en: 'Manage restaurant staff and system access control', ms: 'Urus kakitangan restoran dan kawalan akses sistem' },
-    
-    // Stats
     stats_total_staff: { en: 'Total Staff', ms: 'Jumlah Staff' },
     stats_admin: { en: 'Admins', ms: 'Admin' },
     stats_kitchen_access: { en: 'Kitchen Access', ms: 'Akses Dapur' },
     stats_pos_staff: { en: 'POS Staff', ms: 'Staff POS' },
-    
-    // Search & Buttons
     search_staff: { en: 'Search staff...', ms: 'Cari staff...' },
     add_staff: { en: 'Add Staff', ms: 'Tambah Staff' },
     staff_found: { en: 'staff found', ms: 'staff dijumpai' },
     no_staff: { en: 'No staff members found', ms: 'Tiada staff dijumpai' },
-    
-    // Role Labels
     admin: { en: 'Admin', ms: 'Admin' },
     staff: { en: 'Staff', ms: 'Staff' },
     kitchen_staff: { en: 'Kitchen', ms: 'Dapur' },
@@ -61,8 +54,6 @@ function ManageStaff() {
     pos_only: { en: 'POS Only', ms: 'POS Sahaja' },
     both_access: { en: 'POS + Kitchen', ms: 'POS + Dapur' },
     access: { en: 'Access', ms: 'Akses' },
-    
-    // Buttons
     edit: { en: 'Edit', ms: 'Edit' },
     delete: { en: 'Delete', ms: 'Hapus' },
     reset_password: { en: 'Reset Password', ms: 'Reset Kata Laluan' },
@@ -70,8 +61,6 @@ function ManageStaff() {
     cancel: { en: 'Cancel', ms: 'Batal' },
     add: { en: 'Add', ms: 'Tambah' },
     reset: { en: 'Reset', ms: 'Reset' },
-    
-    // Form Labels
     email: { en: 'Email', ms: 'Emel' },
     username: { en: 'Username', ms: 'Nama Pengguna' },
     password: { en: 'Password', ms: 'Kata Laluan' },
@@ -81,14 +70,10 @@ function ManageStaff() {
     full_name: { en: 'Full Name', ms: 'Nama Penuh' },
     password_optional: { en: 'Password (optional - leave blank to keep current)', ms: 'Kata Laluan (optional - kosongkan untuk kekal)' },
     min_6_chars: { en: 'min 6 characters', ms: 'min 6 aksara' },
-    
-    // Modals
     add_staff_title: { en: 'Add Staff', ms: 'Tambah Staff' },
     edit_staff_title: { en: 'Edit Staff', ms: 'Edit Staff' },
     reset_password_title: { en: 'Reset Password', ms: 'Reset Kata Laluan' },
     reset_password_for: { en: 'Reset password for', ms: 'Reset kata laluan untuk' },
-    
-    // Messages
     staff_added: { en: 'Staff added successfully!', ms: 'Staff berjaya ditambah!' },
     staff_updated: { en: 'Staff updated successfully!', ms: 'Staff berjaya dikemaskini!' },
     staff_deleted: { en: 'Staff deleted successfully!', ms: 'Staff berjaya dihapus!' },
@@ -103,11 +88,10 @@ function ManageStaff() {
     cannot_delete_self: { en: 'You cannot delete your own account!', ms: 'Anda tidak boleh hapus akaun sendiri!' },
     cannot_change_role: { en: 'Cannot change role of admin or yourself', ms: 'Tidak boleh tukar peranan admin atau diri sendiri' },
     confirm_delete: { en: 'Confirm Delete', ms: 'Sahkan Hapus' },
-    
-    // Permissions
     pos: { en: 'POS', ms: 'POS' },
     kitchen: { en: 'Kitchen', ms: 'Dapur' },
     select_access: { en: 'Select which apps this staff can access', ms: 'Pilih aplikasi yang boleh diakses oleh kakitangan ini' },
+    update_email: { en: 'Update Email', ms: 'Kemaskini Emel' },
   }
 
   const t = (key) => {
@@ -204,10 +188,10 @@ function ManageStaff() {
   }
 
   // ============================================================
-  // CRUD FUNCTIONS - WITH SUPABASE AUTH
+  // CRUD FUNCTIONS - DENGAN SERVICE ROLE KEY
   // ============================================================
   
-  // ✅ ADD STAFF - Create user in Auth + staff table
+  // ✅ ADD STAFF
   async function addStaff() {
     if (!formData.email || !formData.username || !formData.password) {
       setMessage(`⚠️ ${t('email')}, ${t('username')} & ${t('password')} ${t('required')}`)
@@ -235,8 +219,8 @@ function ManageStaff() {
     }
 
     try {
-      // 1. Create user in Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+      // 1. Create user using ADMIN client (service role)
+      const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
         email: formData.email.toLowerCase(),
         password: formData.password,
         email_confirm: true,
@@ -248,7 +232,7 @@ function ManageStaff() {
 
       if (authError) throw authError
 
-      // 2. Insert into staff table with auth_id
+      // 2. Insert into staff table
       let permissions = formData.permissions
       if (formData.role === 'admin') {
         permissions = 'all'
@@ -260,7 +244,7 @@ function ManageStaff() {
         role: formData.role,
         permissions: permissions,
         auth_id: authData.user.id,
-        password: null // NULL because using Supabase Auth
+        password: null
       }])
 
       if (staffError) throw staffError
@@ -279,7 +263,7 @@ function ManageStaff() {
     }
   }
 
-  // ✅ UPDATE STAFF - Update Auth + staff table
+  // ✅ UPDATE STAFF
   async function updateStaff() {
     if (!formData.username) {
       setMessage(`⚠️ ${t('username')} ${t('required')}`)
@@ -306,9 +290,9 @@ function ManageStaff() {
 
       if (staffError) throw staffError
 
-      // Update auth user metadata if role changed
+      // Update auth user metadata
       if (selectedStaff.auth_id) {
-        const { error: authError } = await supabase.auth.admin.updateUserById(
+        const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(
           selectedStaff.auth_id,
           {
             user_metadata: {
@@ -331,7 +315,7 @@ function ManageStaff() {
           return
         }
 
-        const { error: passError } = await supabase.auth.admin.updateUserById(
+        const { error: passError } = await supabaseAdmin.auth.admin.updateUserById(
           selectedStaff.auth_id,
           { password: formData.password }
         )
@@ -353,7 +337,39 @@ function ManageStaff() {
     }
   }
 
-  // ✅ RESET PASSWORD - Via Supabase Auth
+  // ✅ UPDATE EMAIL
+  async function updateStaffEmail() {
+    if (!formData.email) {
+      setMessage(`⚠️ ${t('email')} ${t('required')}`)
+      return
+    }
+
+    try {
+      if (!selectedStaff?.auth_id) {
+        toast.error('Staff not linked to auth')
+        return
+      }
+
+      const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(
+        selectedStaff.auth_id,
+        { email: formData.email.toLowerCase() }
+      )
+
+      if (authError) throw authError
+
+      setMessage(`✅ Email updated successfully!`)
+      toast.success('Email updated!')
+      setTimeout(() => setMessage(''), 3000)
+      loadStaff()
+
+    } catch (error) {
+      console.error('Update email error:', error)
+      setMessage(`❌ ${t('error_updating')}: ${error.message}`)
+      toast.error(error.message)
+    }
+  }
+
+  // ✅ RESET PASSWORD
   async function resetPassword() {
     if (!resetPasswordData.password) {
       setMessage(`⚠️ ${t('password_required')}`)
@@ -374,8 +390,7 @@ function ManageStaff() {
     }
 
     try {
-      // Update password in Supabase Auth
-      const { error: authError } = await supabase.auth.admin.updateUserById(
+      const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(
         selectedStaff.auth_id,
         { password: resetPasswordData.password }
       )
@@ -396,7 +411,7 @@ function ManageStaff() {
     }
   }
 
-  // ✅ DELETE STAFF - Delete from Auth + staff table
+  // ✅ DELETE STAFF
   async function deleteStaff(id, username) {
     setShowDeleteConfirm(null)
     
@@ -415,7 +430,6 @@ function ManageStaff() {
     }
 
     try {
-      // Get staff record to get auth_id
       const { data: staffData, error: fetchError } = await supabase
         .from('staff')
         .select('auth_id')
@@ -424,15 +438,13 @@ function ManageStaff() {
 
       if (fetchError) throw fetchError
 
-      // Delete from Supabase Auth if auth_id exists
       if (staffData?.auth_id) {
-        const { error: authError } = await supabase.auth.admin.deleteUser(
+        const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(
           staffData.auth_id
         )
         if (authError) console.error('Auth delete error:', authError)
       }
 
-      // Delete from staff table
       const { error: staffError } = await supabase
         .from('staff')
         .delete()
@@ -458,7 +470,7 @@ function ManageStaff() {
   const openEditModal = (staffMember) => {
     setSelectedStaff(staffMember)
     setFormData({
-      email: staffMember.email || '',
+      email: '',
       username: staffMember.username,
       password: '',
       confirmPassword: '',
@@ -540,7 +552,7 @@ function ManageStaff() {
   }
 
   // ============================================================
-  // RENDER (SAME AS BEFORE - JUST USE UPDATED FUNCTIONS)
+  // RENDER
   // ============================================================
   return (
     <Sidebar>
@@ -552,7 +564,7 @@ function ManageStaff() {
         minHeight: '100vh' 
       }}>
         
-        {/* ===== HEADER ===== */}
+        {/* HEADER */}
         <div style={{ marginBottom: '32px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '12px' }}>
             <div style={{
@@ -569,19 +581,10 @@ function ManageStaff() {
               👥
             </div>
             <div>
-              <h1 style={{ 
-                margin: 0, 
-                color: textColor, 
-                fontSize: isMobile ? '22px' : '28px', 
-                fontWeight: 'bold' 
-              }}>
+              <h1 style={{ margin: 0, color: textColor, fontSize: isMobile ? '22px' : '28px', fontWeight: 'bold' }}>
                 {t('team_access')}
               </h1>
-              <p style={{ 
-                color: textMuted, 
-                marginTop: '4px', 
-                fontSize: isMobile ? '12px' : '14px' 
-              }}>
+              <p style={{ color: textMuted, marginTop: '4px', fontSize: isMobile ? '12px' : '14px' }}>
                 {t('team_subtitle')}
               </p>
             </div>
@@ -595,7 +598,7 @@ function ManageStaff() {
           }} />
         </div>
 
-        {/* ===== MESSAGE ===== */}
+        {/* MESSAGE */}
         {message && (
           <div style={{ 
             background: message.includes('✅') 
@@ -620,104 +623,36 @@ function ManageStaff() {
           </div>
         )}
 
-        {/* ===== STATS ===== */}
+        {/* STATS */}
         <div style={{ 
           display: 'grid', 
           gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(180px, 1fr))', 
           gap: '16px', 
           marginBottom: '28px' 
         }}>
-          <div style={{ 
-            ...glassEffect, 
-            borderRadius: '24px', 
-            padding: '16px 20px', 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '14px',
-            transition: 'transform 0.2s'
-          }}>
-            <div style={{ 
-              width: '48px', 
-              height: '48px', 
-              background: 'linear-gradient(135deg, #3b82f6, #2563eb)', 
-              borderRadius: '24px', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              fontSize: '24px' 
-            }}>👥</div>
+          <div style={{ ...glassEffect, borderRadius: '24px', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <div style={{ width: '48px', height: '48px', background: 'linear-gradient(135deg, #3b82f6, #2563eb)', borderRadius: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>👥</div>
             <div>
               <div style={{ fontSize: '24px', fontWeight: 'bold', color: textColor }}>{totalStaff}</div>
               <div style={{ fontSize: '12px', color: textMuted }}>{t('stats_total_staff')}</div>
             </div>
           </div>
-          <div style={{ 
-            ...glassEffect, 
-            borderRadius: '24px', 
-            padding: '16px 20px', 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '14px',
-            transition: 'transform 0.2s'
-          }}>
-            <div style={{ 
-              width: '48px', 
-              height: '48px', 
-              background: 'linear-gradient(135deg, #ef4444, #dc2626)', 
-              borderRadius: '24px', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              fontSize: '24px' 
-            }}>👑</div>
+          <div style={{ ...glassEffect, borderRadius: '24px', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <div style={{ width: '48px', height: '48px', background: 'linear-gradient(135deg, #ef4444, #dc2626)', borderRadius: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>👑</div>
             <div>
               <div style={{ fontSize: '24px', fontWeight: 'bold', color: textColor }}>{adminCount}</div>
               <div style={{ fontSize: '12px', color: textMuted }}>{t('stats_admin')}</div>
             </div>
           </div>
-          <div style={{ 
-            ...glassEffect, 
-            borderRadius: '24px', 
-            padding: '16px 20px', 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '14px',
-            transition: 'transform 0.2s'
-          }}>
-            <div style={{ 
-              width: '48px', 
-              height: '48px', 
-              background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)', 
-              borderRadius: '24px', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              fontSize: '24px' 
-            }}>🍳</div>
+          <div style={{ ...glassEffect, borderRadius: '24px', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <div style={{ width: '48px', height: '48px', background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)', borderRadius: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>🍳</div>
             <div>
               <div style={{ fontSize: '24px', fontWeight: 'bold', color: textColor }}>{kitchenCount}</div>
               <div style={{ fontSize: '12px', color: textMuted }}>{t('stats_kitchen_access')}</div>
             </div>
           </div>
-          <div style={{ 
-            ...glassEffect, 
-            borderRadius: '24px', 
-            padding: '16px 20px', 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '14px',
-            transition: 'transform 0.2s'
-          }}>
-            <div style={{ 
-              width: '48px', 
-              height: '48px', 
-              background: 'linear-gradient(135deg, #22c55e, #16a34a)', 
-              borderRadius: '24px', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              fontSize: '24px' 
-            }}>🧾</div>
+          <div style={{ ...glassEffect, borderRadius: '24px', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <div style={{ width: '48px', height: '48px', background: 'linear-gradient(135deg, #22c55e, #16a34a)', borderRadius: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>🧾</div>
             <div>
               <div style={{ fontSize: '24px', fontWeight: 'bold', color: textColor }}>{staffCount}</div>
               <div style={{ fontSize: '12px', color: textMuted }}>{t('stats_pos_staff')}</div>
@@ -725,99 +660,30 @@ function ManageStaff() {
           </div>
         </div>
 
-        {/* ===== SEARCH & ADD ===== */}
-        <div style={{ 
-          display: 'flex', 
-          gap: '16px', 
-          marginBottom: '24px', 
-          flexWrap: 'wrap' 
-        }}>
-          <div style={{ 
-            flex: 1, 
-            ...glassEffect, 
-            borderRadius: '60px', 
-            padding: '4px 20px', 
-            display: 'flex', 
-            alignItems: 'center',
-            minWidth: isMobile ? '150px' : '200px'
-          }}>
+        {/* SEARCH & ADD */}
+        <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, ...glassEffect, borderRadius: '60px', padding: '4px 20px', display: 'flex', alignItems: 'center', minWidth: isMobile ? '150px' : '200px' }}>
             <span style={{ fontSize: '18px', marginRight: '12px', color: textMuted }}>🔍</span>
-            <input 
-              type="text" 
-              placeholder={t('search_staff')} 
-              value={searchTerm} 
-              onChange={(e) => setSearchTerm(e.target.value)} 
-              style={{ 
-                width: '100%', 
-                padding: '14px 0', 
-                border: 'none', 
-                background: 'transparent', 
-                color: textColor, 
-                fontSize: isMobile ? '13px' : '14px', 
-                outline: 'none' 
-              }} 
-            />
+            <input type="text" placeholder={t('search_staff')} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ width: '100%', padding: '14px 0', border: 'none', background: 'transparent', color: textColor, fontSize: isMobile ? '13px' : '14px', outline: 'none' }} />
             {searchTerm && (
-              <button 
-                onClick={() => setSearchTerm('')} 
-                style={{ 
-                  background: 'transparent', 
-                  border: 'none', 
-                  color: textMuted, 
-                  cursor: 'pointer',
-                  fontSize: '16px',
-                  padding: '4px'
-                }}
-              >
-                ✕
-              </button>
+              <button onClick={() => setSearchTerm('')} style={{ background: 'transparent', border: 'none', color: textMuted, cursor: 'pointer', fontSize: '16px', padding: '4px' }}>✕</button>
             )}
           </div>
-          <button 
-            onClick={() => setShowAddModal(true)} 
-            style={{ 
-              background: 'linear-gradient(135deg, #22c55e, #16a34a)', 
-              color: 'white', 
-              padding: isMobile ? '10px 20px' : '12px 28px', 
-              border: 'none', 
-              borderRadius: '40px', 
-              cursor: 'pointer', 
-              fontWeight: 'bold', 
-              fontSize: isMobile ? '13px' : '14px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              transition: 'all 0.2s',
-              whiteSpace: 'nowrap'
-            }}
-            onMouseEnter={e => e.currentTarget.style.transform = 'scale(0.97)'}
-            onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-          >
+          <button onClick={() => setShowAddModal(true)} style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)', color: 'white', padding: isMobile ? '10px 20px' : '12px 28px', border: 'none', borderRadius: '40px', cursor: 'pointer', fontWeight: 'bold', fontSize: isMobile ? '13px' : '14px', display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.2s', whiteSpace: 'nowrap' }}>
             <span style={{ fontSize: '18px' }}>+</span> {t('add_staff')}
           </button>
         </div>
 
-        {/* ===== STAFF COUNT ===== */}
-        <div style={{ 
-          marginBottom: '16px', 
-          fontSize: isMobile ? '12px' : '13px', 
-          color: textMuted 
-        }}>
+        {/* STAFF COUNT */}
+        <div style={{ marginBottom: '16px', fontSize: isMobile ? '12px' : '13px', color: textMuted }}>
           📊 {filteredStaff.length} {t('staff_found')}
         </div>
 
-        {/* ===== STAFF LIST ===== */}
+        {/* STAFF LIST */}
         {filteredStaff.length === 0 ? (
-          <div style={{ 
-            textAlign: 'center', 
-            padding: isMobile ? '40px 20px' : '80px 20px', 
-            ...glassEffect, 
-            borderRadius: '28px' 
-          }}>
+          <div style={{ textAlign: 'center', padding: isMobile ? '40px 20px' : '80px 20px', ...glassEffect, borderRadius: '28px' }}>
             <span style={{ fontSize: isMobile ? '48px' : '64px', opacity: 0.5 }}>👥</span>
-            <p style={{ color: textMuted, marginTop: '16px', fontSize: isMobile ? '14px' : '16px' }}>
-              {t('no_staff')}
-            </p>
+            <p style={{ color: textMuted, marginTop: '16px', fontSize: isMobile ? '14px' : '16px' }}>{t('no_staff')}</p>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -827,129 +693,27 @@ function ManageStaff() {
               const permissionsText = getPermissionsText(member.permissions, member.role)
               
               return (
-                <div key={member.id} style={{ 
-                  ...glassEffect, 
-                  borderRadius: '20px', 
-                  padding: isMobile ? '14px 16px' : '16px 20px', 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center', 
-                  flexWrap: 'wrap', 
-                  gap: '12px',
-                  transition: 'transform 0.2s'
-                }}>
+                <div key={member.id} style={{ ...glassEffect, borderRadius: '20px', padding: isMobile ? '14px 16px' : '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                    <div style={{ 
-                      width: isMobile ? '48px' : '60px', 
-                      height: isMobile ? '48px' : '60px', 
-                      background: secondaryBg, 
-                      borderRadius: '30px', 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center', 
-                      fontSize: isMobile ? '28px' : '36px', 
-                      border: `2px solid ${borderColor}` 
-                    }}>
+                    <div style={{ width: isMobile ? '48px' : '60px', height: isMobile ? '48px' : '60px', background: secondaryBg, borderRadius: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: isMobile ? '28px' : '36px', border: `2px solid ${borderColor}` }}>
                       {avatarIcon}
                     </div>
                     <div>
-                      <div style={{ 
-                        fontWeight: 'bold', 
-                        fontSize: isMobile ? '15px' : '17px', 
-                        color: textColor 
-                      }}>
-                        {member.name || member.username}
-                      </div>
-                      <div style={{ 
-                        fontSize: isMobile ? '11px' : '12px', 
-                        color: textMuted, 
-                        marginTop: '2px' 
-                      }}>
-                        @{member.username}
-                      </div>
-                      <div style={{ 
-                        fontSize: isMobile ? '10px' : '11px', 
-                        color: '#8b5cf6', 
-                        marginTop: '2px' 
-                      }}>
-                        {permissionsText}
-                      </div>
+                      <div style={{ fontWeight: 'bold', fontSize: isMobile ? '15px' : '17px', color: textColor }}>{member.name || member.username}</div>
+                      <div style={{ fontSize: isMobile ? '11px' : '12px', color: textMuted, marginTop: '2px' }}>@{member.username}</div>
+                      <div style={{ fontSize: isMobile ? '10px' : '11px', color: '#8b5cf6', marginTop: '2px' }}>{permissionsText}</div>
                     </div>
                   </div>
                   
-                  <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '10px', 
-                    flexWrap: 'wrap' 
-                  }}>
-                    <span style={{ 
-                      background: roleBadge.bg, 
-                      color: 'white', 
-                      padding: isMobile ? '4px 12px' : '6px 16px', 
-                      borderRadius: '40px', 
-                      fontSize: isMobile ? '10px' : '12px', 
-                      fontWeight: 'bold', 
-                      display: 'inline-flex', 
-                      alignItems: 'center', 
-                      gap: '4px' 
-                    }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                    <span style={{ background: roleBadge.bg, color: 'white', padding: isMobile ? '4px 12px' : '6px 16px', borderRadius: '40px', fontSize: isMobile ? '10px' : '12px', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                       {roleBadge.icon} {roleBadge.text}
                     </span>
                     
-                    <div style={{ 
-                      display: 'flex', 
-                      gap: '6px', 
-                      flexWrap: 'wrap' 
-                    }}>
-                      <button 
-                        onClick={() => openEditModal(member)} 
-                        style={{ 
-                          background: 'linear-gradient(135deg, #f59e0b, #d97706)', 
-                          color: 'white', 
-                          padding: isMobile ? '6px 12px' : '8px 16px', 
-                          border: 'none', 
-                          borderRadius: '40px', 
-                          cursor: 'pointer', 
-                          fontWeight: 'bold', 
-                          fontSize: isMobile ? '10px' : '12px',
-                          transition: 'all 0.2s'
-                        }}
-                      >
-                        ✏️ {t('edit')}
-                      </button>
-                      <button 
-                        onClick={() => openResetPasswordModal(member)} 
-                        style={{ 
-                          background: 'linear-gradient(135deg, #3b82f6, #2563eb)', 
-                          color: 'white', 
-                          padding: isMobile ? '6px 12px' : '8px 16px', 
-                          border: 'none', 
-                          borderRadius: '40px', 
-                          cursor: 'pointer', 
-                          fontWeight: 'bold', 
-                          fontSize: isMobile ? '10px' : '12px',
-                          transition: 'all 0.2s'
-                        }}
-                      >
-                        🔑 {t('reset_password')}
-                      </button>
-                      <button 
-                        onClick={() => setShowDeleteConfirm({ id: member.id, username: member.username, name: member.name })} 
-                        style={{ 
-                          background: 'linear-gradient(135deg, #ef4444, #dc2626)', 
-                          color: 'white', 
-                          padding: isMobile ? '6px 12px' : '8px 16px', 
-                          border: 'none', 
-                          borderRadius: '40px', 
-                          cursor: 'pointer', 
-                          fontWeight: 'bold', 
-                          fontSize: isMobile ? '10px' : '12px',
-                          transition: 'all 0.2s'
-                        }}
-                      >
-                        🗑️ {t('delete')}
-                      </button>
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                      <button onClick={() => openEditModal(member)} style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: 'white', padding: isMobile ? '6px 12px' : '8px 16px', border: 'none', borderRadius: '40px', cursor: 'pointer', fontWeight: 'bold', fontSize: isMobile ? '10px' : '12px', transition: 'all 0.2s' }}>✏️ {t('edit')}</button>
+                      <button onClick={() => openResetPasswordModal(member)} style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)', color: 'white', padding: isMobile ? '6px 12px' : '8px 16px', border: 'none', borderRadius: '40px', cursor: 'pointer', fontWeight: 'bold', fontSize: isMobile ? '10px' : '12px', transition: 'all 0.2s' }}>🔑 {t('reset_password')}</button>
+                      <button onClick={() => setShowDeleteConfirm({ id: member.id, username: member.username, name: member.name })} style={{ background: 'linear-gradient(135deg, #ef4444, #dc2626)', color: 'white', padding: isMobile ? '6px 12px' : '8px 16px', border: 'none', borderRadius: '40px', cursor: 'pointer', fontWeight: 'bold', fontSize: isMobile ? '10px' : '12px', transition: 'all 0.2s' }}>🗑️ {t('delete')}</button>
                     </div>
                   </div>
                 </div>
@@ -958,75 +722,16 @@ function ManageStaff() {
           </div>
         )}
 
-        {/* ========================================================== */}
-        {/* MODALS - Updated with Email Field */}
-        {/* ========================================================== */}
-
         {/* ===== DELETE CONFIRMATION ===== */}
         {showDeleteConfirm && (
-          <div style={{ 
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
-            background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', 
-            display: 'flex', justifyContent: 'center', alignItems: 'center', 
-            zIndex: 1001, animation: 'fadeIn 0.2s ease' 
-          }}>
-            <div style={{ 
-              background: cardBg, 
-              padding: isMobile ? '24px' : '28px', 
-              borderRadius: '28px', 
-              maxWidth: '380px', 
-              width: '90%', 
-              textAlign: 'center', 
-              ...glassEffect, 
-              animation: 'popIn 0.3s cubic-bezier(0.34, 1.2, 0.64, 1)' 
-            }}>
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1001, animation: 'fadeIn 0.2s ease' }}>
+            <div style={{ background: cardBg, padding: isMobile ? '24px' : '28px', borderRadius: '28px', maxWidth: '380px', width: '90%', textAlign: 'center', ...glassEffect, animation: 'popIn 0.3s cubic-bezier(0.34, 1.2, 0.64, 1)' }}>
               <div style={{ fontSize: '56px', marginBottom: '16px' }}>⚠️</div>
-              <h3 style={{ 
-                margin: 0, 
-                color: textColor, 
-                fontSize: isMobile ? '18px' : '20px', 
-                fontWeight: 'bold' 
-              }}>
-                {t('confirm_delete')}
-              </h3>
-              <p style={{ 
-                color: textMuted, 
-                marginTop: '12px', 
-                fontSize: isMobile ? '13px' : '14px' 
-              }}>
-                "{showDeleteConfirm.name || showDeleteConfirm.username}" {language === 'bm' ? 'akan dipadam' : 'will be deleted'}
-              </p>
+              <h3 style={{ margin: 0, color: textColor, fontSize: isMobile ? '18px' : '20px', fontWeight: 'bold' }}>{t('confirm_delete')}</h3>
+              <p style={{ color: textMuted, marginTop: '12px', fontSize: isMobile ? '13px' : '14px' }}>"{showDeleteConfirm.name || showDeleteConfirm.username}" {language === 'bm' ? 'akan dipadam' : 'will be deleted'}</p>
               <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
-                <button 
-                  onClick={() => deleteStaff(showDeleteConfirm.id, showDeleteConfirm.username)} 
-                  style={{ 
-                    flex: 1, 
-                    background: 'linear-gradient(135deg, #ef4444, #dc2626)', 
-                    color: 'white', 
-                    padding: '12px', 
-                    border: 'none', 
-                    borderRadius: '40px', 
-                    cursor: 'pointer', 
-                    fontWeight: 'bold' 
-                  }}
-                >
-                  ✅ {t('delete')}
-                </button>
-                <button 
-                  onClick={() => setShowDeleteConfirm(null)} 
-                  style={{ 
-                    flex: 1, 
-                    background: '#64748b', 
-                    color: 'white', 
-                    padding: '12px', 
-                    border: 'none', 
-                    borderRadius: '40px', 
-                    cursor: 'pointer', 
-                    fontWeight: 'bold' 
-                  }}
-                >
-                  ❌ {t('cancel')}
-                </button>
+                <button onClick={() => deleteStaff(showDeleteConfirm.id, showDeleteConfirm.username)} style={{ flex: 1, background: 'linear-gradient(135deg, #ef4444, #dc2626)', color: 'white', padding: '12px', border: 'none', borderRadius: '40px', cursor: 'pointer', fontWeight: 'bold' }}>✅ {t('delete')}</button>
+                <button onClick={() => setShowDeleteConfirm(null)} style={{ flex: 1, background: '#64748b', color: 'white', padding: '12px', border: 'none', borderRadius: '40px', cursor: 'pointer', fontWeight: 'bold' }}>❌ {t('cancel')}</button>
               </div>
             </div>
           </div>
@@ -1034,117 +739,30 @@ function ManageStaff() {
 
         {/* ===== ADD STAFF MODAL ===== */}
         {showAddModal && (
-          <div style={{ 
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
-            background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', 
-            display: 'flex', justifyContent: 'center', alignItems: 'center', 
-            zIndex: 1000 
-          }}>
-            <div style={{ 
-              background: cardBg, 
-              padding: isMobile ? '24px' : '32px', 
-              borderRadius: '32px', 
-              maxWidth: '480px', 
-              width: '90%', 
-              ...glassEffect, 
-              animation: 'popIn 0.3s ease' 
-            }}>
-              <h2 style={{ 
-                marginTop: 0, 
-                color: textColor, 
-                fontSize: isMobile ? '20px' : '22px', 
-                fontWeight: 'bold' 
-              }}>
-                {t('add_staff_title')}
-              </h2>
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+            <div style={{ background: cardBg, padding: isMobile ? '24px' : '32px', borderRadius: '32px', maxWidth: '480px', width: '90%', ...glassEffect, animation: 'popIn 0.3s ease' }}>
+              <h2 style={{ marginTop: 0, color: textColor, fontSize: isMobile ? '20px' : '22px', fontWeight: 'bold' }}>{t('add_staff_title')}</h2>
               
-              {/* NEW: Email Field */}
-              <label style={labelStyle}>{t('email')} *</label>
-              <input 
-                type="email" 
-                placeholder={t('email')} 
-                value={formData.email} 
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })} 
-                style={inputStyle}
-                onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)' }}
-                onBlur={e => { e.currentTarget.style.borderColor = inputBorder; e.currentTarget.style.boxShadow = 'none' }}
-              />
+              <label style={labelStyle}>📧 {t('email')} *</label>
+              <input type="email" placeholder={t('email')} value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} style={inputStyle} onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)' }} onBlur={e => { e.currentTarget.style.borderColor = inputBorder; e.currentTarget.style.boxShadow = 'none' }} />
               
-              <label style={labelStyle}>{t('username')} *</label>
-              <input 
-                type="text" 
-                placeholder={t('username')} 
-                value={formData.username} 
-                onChange={(e) => setFormData({ ...formData, username: e.target.value })} 
-                style={inputStyle}
-                onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)' }}
-                onBlur={e => { e.currentTarget.style.borderColor = inputBorder; e.currentTarget.style.boxShadow = 'none' }}
-              />
+              <label style={labelStyle}>👤 {t('username')} *</label>
+              <input type="text" placeholder={t('username')} value={formData.username} onChange={(e) => setFormData({ ...formData, username: e.target.value })} style={inputStyle} onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)' }} onBlur={e => { e.currentTarget.style.borderColor = inputBorder; e.currentTarget.style.boxShadow = 'none' }} />
               
-              <label style={labelStyle}>{t('password')} * ({t('min_6_chars')})</label>
+              <label style={labelStyle}>🔒 {t('password')} * ({t('min_6_chars')})</label>
               <div style={{ position: 'relative', marginBottom: '14px' }}>
-                <input 
-                  type={showPassword ? "text" : "password"} 
-                  placeholder={t('password')} 
-                  value={formData.password} 
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })} 
-                  style={{ 
-                    ...inputStyle, 
-                    paddingRight: '45px',
-                    marginBottom: 0
-                  }}
-                  onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)' }}
-                  onBlur={e => { e.currentTarget.style.borderColor = inputBorder; e.currentTarget.style.boxShadow = 'none' }}
-                />
-                <button 
-                  type="button" 
-                  onClick={() => setShowPassword(!showPassword)} 
-                  style={{ 
-                    position: 'absolute', 
-                    right: '14px', 
-                    top: '50%', 
-                    transform: 'translateY(-50%)',
-                    background: 'none', 
-                    border: 'none', 
-                    cursor: 'pointer', 
-                    fontSize: '18px', 
-                    color: textMuted 
-                  }}
-                >
-                  {showPassword ? '🙈' : '👁️'}
-                </button>
+                <input type={showPassword ? "text" : "password"} placeholder={t('password')} value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} style={{ ...inputStyle, paddingRight: '45px', marginBottom: 0 }} onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)' }} onBlur={e => { e.currentTarget.style.borderColor = inputBorder; e.currentTarget.style.boxShadow = 'none' }} />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px', color: textMuted }}>{showPassword ? '🙈' : '👁️'}</button>
               </div>
               
-              <label style={labelStyle}>{t('confirm_password')} *</label>
-              <input 
-                type="password" 
-                placeholder={t('confirm_password')} 
-                value={formData.confirmPassword} 
-                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })} 
-                style={inputStyle}
-                onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)' }}
-                onBlur={e => { e.currentTarget.style.borderColor = inputBorder; e.currentTarget.style.boxShadow = 'none' }}
-              />
+              <label style={labelStyle}>🔒 {t('confirm_password')} *</label>
+              <input type="password" placeholder={t('confirm_password')} value={formData.confirmPassword} onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })} style={inputStyle} onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)' }} onBlur={e => { e.currentTarget.style.borderColor = inputBorder; e.currentTarget.style.boxShadow = 'none' }} />
               
-              <label style={labelStyle}>{t('full_name')}</label>
-              <input 
-                type="text" 
-                placeholder={t('full_name')} 
-                value={formData.name} 
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })} 
-                style={inputStyle}
-                onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)' }}
-                onBlur={e => { e.currentTarget.style.borderColor = inputBorder; e.currentTarget.style.boxShadow = 'none' }}
-              />
+              <label style={labelStyle}>📛 {t('full_name')}</label>
+              <input type="text" placeholder={t('full_name')} value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} style={inputStyle} onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)' }} onBlur={e => { e.currentTarget.style.borderColor = inputBorder; e.currentTarget.style.boxShadow = 'none' }} />
               
-              <label style={labelStyle}>{t('role')}</label>
-              <select 
-                value={formData.role} 
-                onChange={(e) => setFormData({ ...formData, role: e.target.value })} 
-                style={inputStyle}
-                onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)' }}
-                onBlur={e => { e.currentTarget.style.borderColor = inputBorder; e.currentTarget.style.boxShadow = 'none' }}
-              >
+              <label style={labelStyle}>🎭 {t('role')}</label>
+              <select value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })} style={inputStyle} onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)' }} onBlur={e => { e.currentTarget.style.borderColor = inputBorder; e.currentTarget.style.boxShadow = 'none' }}>
                 <option value="staff">👤 {t('staff')}</option>
                 <option value="kitchen">🍳 {t('kitchen_staff')}</option>
                 <option value="admin">👑 {t('admin')}</option>
@@ -1153,57 +771,18 @@ function ManageStaff() {
               {formData.role !== 'admin' && (
                 <div style={{ marginBottom: '24px' }}>
                   <label style={labelStyle}>🚪 {t('access')}</label>
-                  <select 
-                    value={formData.permissions} 
-                    onChange={(e) => setFormData({ ...formData, permissions: e.target.value })} 
-                    style={inputStyle}
-                    onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)' }}
-                    onBlur={e => { e.currentTarget.style.borderColor = inputBorder; e.currentTarget.style.boxShadow = 'none' }}
-                  >
+                  <select value={formData.permissions} onChange={(e) => setFormData({ ...formData, permissions: e.target.value })} style={inputStyle} onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)' }} onBlur={e => { e.currentTarget.style.borderColor = inputBorder; e.currentTarget.style.boxShadow = 'none' }}>
                     <option value="pos">🧾 {t('pos_only')}</option>
                     <option value="kitchen">🍳 {t('kitchen_only')}</option>
                     <option value="both">🧾 + 🍳 {t('both_access')}</option>
                   </select>
-                  <p style={{ 
-                    fontSize: '11px', 
-                    color: textMuted, 
-                    marginTop: '4px' 
-                  }}>
-                    {t('select_access')}
-                  </p>
+                  <p style={{ fontSize: '11px', color: textMuted, marginTop: '4px' }}>{t('select_access')}</p>
                 </div>
               )}
               
               <div style={{ display: 'flex', gap: '12px' }}>
-                <button 
-                  onClick={addStaff} 
-                  style={{ 
-                    flex: 1, 
-                    background: 'linear-gradient(135deg, #22c55e, #16a34a)', 
-                    color: 'white', 
-                    padding: '14px', 
-                    border: 'none', 
-                    borderRadius: '60px', 
-                    cursor: 'pointer', 
-                    fontWeight: 'bold' 
-                  }}
-                >
-                  {t('add')}
-                </button>
-                <button 
-                  onClick={() => setShowAddModal(false)} 
-                  style={{ 
-                    flex: 1, 
-                    background: '#64748b', 
-                    color: 'white', 
-                    padding: '14px', 
-                    border: 'none', 
-                    borderRadius: '60px', 
-                    cursor: 'pointer' 
-                  }}
-                >
-                  {t('cancel')}
-                </button>
+                <button onClick={addStaff} style={{ flex: 1, background: 'linear-gradient(135deg, #22c55e, #16a34a)', color: 'white', padding: '14px', border: 'none', borderRadius: '60px', cursor: 'pointer', fontWeight: 'bold' }}>{t('add')}</button>
+                <button onClick={() => setShowAddModal(false)} style={{ flex: 1, background: '#64748b', color: 'white', padding: '14px', border: 'none', borderRadius: '60px', cursor: 'pointer' }}>{t('cancel')}</button>
               </div>
             </div>
           </div>
@@ -1211,115 +790,31 @@ function ManageStaff() {
 
         {/* ===== EDIT STAFF MODAL ===== */}
         {showEditModal && selectedStaff && (
-          <div style={{ 
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
-            background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', 
-            display: 'flex', justifyContent: 'center', alignItems: 'center', 
-            zIndex: 1000 
-          }}>
-            <div style={{ 
-              background: cardBg, 
-              padding: isMobile ? '24px' : '32px', 
-              borderRadius: '32px', 
-              maxWidth: '480px', 
-              width: '90%', 
-              ...glassEffect, 
-              animation: 'popIn 0.3s ease' 
-            }}>
-              <h2 style={{ 
-                marginTop: 0, 
-                color: textColor, 
-                fontSize: isMobile ? '20px' : '22px', 
-                fontWeight: 'bold' 
-              }}>
-                {t('edit_staff_title')}
-              </h2>
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+            <div style={{ background: cardBg, padding: isMobile ? '24px' : '32px', borderRadius: '32px', maxWidth: '480px', width: '90%', ...glassEffect, animation: 'popIn 0.3s ease' }}>
+              <h2 style={{ marginTop: 0, color: textColor, fontSize: isMobile ? '20px' : '22px', fontWeight: 'bold' }}>{t('edit_staff_title')}</h2>
               
-              <label style={labelStyle}>{t('username')}</label>
-              <input 
-                type="text" 
-                placeholder={t('username')} 
-                value={formData.username} 
-                disabled 
-                style={{ 
-                  ...inputStyle, 
-                  background: darkMode ? '#2a2a3e' : '#f0f0f0', 
-                  color: darkMode ? '#888' : '#999',
-                  cursor: 'not-allowed'
-                }} 
-              />
+              <label style={labelStyle}>👤 {t('username')}</label>
+              <input type="text" value={formData.username} disabled style={{ ...inputStyle, background: darkMode ? '#2a2a3e' : '#f0f0f0', color: darkMode ? '#888' : '#999', cursor: 'not-allowed' }} />
               
-              <label style={labelStyle}>{t('password_optional')}</label>
+              <label style={labelStyle}>📧 {t('email')}</label>
+              <input type="email" placeholder={t('email')} value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} style={inputStyle} onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)' }} onBlur={e => { e.currentTarget.style.borderColor = inputBorder; e.currentTarget.style.boxShadow = 'none' }} />
+              <button onClick={updateStaffEmail} style={{ width: '100%', background: 'linear-gradient(135deg, #3b82f6, #2563eb)', color: 'white', padding: '10px', border: 'none', borderRadius: '40px', cursor: 'pointer', fontWeight: 'bold', marginBottom: '14px' }}>📧 {t('update_email')}</button>
+              
+              <label style={labelStyle}>🔒 {t('password_optional')}</label>
               <div style={{ position: 'relative', marginBottom: '14px' }}>
-                <input 
-                  type={showPassword ? "text" : "password"} 
-                  placeholder={t('password_optional')} 
-                  value={formData.password} 
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })} 
-                  style={{ 
-                    ...inputStyle, 
-                    paddingRight: '45px',
-                    marginBottom: 0
-                  }}
-                  onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)' }}
-                  onBlur={e => { e.currentTarget.style.borderColor = inputBorder; e.currentTarget.style.boxShadow = 'none' }}
-                />
-                <button 
-                  type="button" 
-                  onClick={() => setShowPassword(!showPassword)} 
-                  style={{ 
-                    position: 'absolute', 
-                    right: '14px', 
-                    top: '50%', 
-                    transform: 'translateY(-50%)',
-                    background: 'none', 
-                    border: 'none', 
-                    cursor: 'pointer', 
-                    fontSize: '18px', 
-                    color: textMuted 
-                  }}
-                >
-                  {showPassword ? '🙈' : '👁️'}
-                </button>
+                <input type={showPassword ? "text" : "password"} placeholder={t('password_optional')} value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} style={{ ...inputStyle, paddingRight: '45px', marginBottom: 0 }} onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)' }} onBlur={e => { e.currentTarget.style.borderColor = inputBorder; e.currentTarget.style.boxShadow = 'none' }} />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px', color: textMuted }}>{showPassword ? '🙈' : '👁️'}</button>
               </div>
               
-              <label style={labelStyle}>{t('confirm_password')}</label>
-              <input 
-                type="password" 
-                placeholder={t('confirm_password')} 
-                value={formData.confirmPassword} 
-                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })} 
-                style={inputStyle}
-                onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)' }}
-                onBlur={e => { e.currentTarget.style.borderColor = inputBorder; e.currentTarget.style.boxShadow = 'none' }}
-              />
+              <label style={labelStyle}>🔒 {t('confirm_password')}</label>
+              <input type="password" placeholder={t('confirm_password')} value={formData.confirmPassword} onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })} style={inputStyle} onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)' }} onBlur={e => { e.currentTarget.style.borderColor = inputBorder; e.currentTarget.style.boxShadow = 'none' }} />
               
-              <label style={labelStyle}>{t('full_name')}</label>
-              <input 
-                type="text" 
-                placeholder={t('full_name')} 
-                value={formData.name} 
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })} 
-                style={inputStyle}
-                onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)' }}
-                onBlur={e => { e.currentTarget.style.borderColor = inputBorder; e.currentTarget.style.boxShadow = 'none' }}
-              />
+              <label style={labelStyle}>📛 {t('full_name')}</label>
+              <input type="text" placeholder={t('full_name')} value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} style={inputStyle} onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)' }} onBlur={e => { e.currentTarget.style.borderColor = inputBorder; e.currentTarget.style.boxShadow = 'none' }} />
               
-              <label style={labelStyle}>{t('role')}</label>
-              <select 
-                value={formData.role} 
-                onChange={(e) => setFormData({ ...formData, role: e.target.value })} 
-                disabled={selectedStaff.username === 'admin' || (currentUser && currentUser.id === selectedStaff.id)}
-                style={{ 
-                  ...inputStyle, 
-                  background: (selectedStaff.username === 'admin' || (currentUser && currentUser.id === selectedStaff.id)) 
-                    ? (darkMode ? '#2a2a3e' : '#f0f0f0') 
-                    : inputBg,
-                  cursor: (selectedStaff.username === 'admin' || (currentUser && currentUser.id === selectedStaff.id)) 
-                    ? 'not-allowed' 
-                    : 'pointer'
-                }}
-              >
+              <label style={labelStyle}>🎭 {t('role')}</label>
+              <select value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })} disabled={selectedStaff.username === 'admin' || (currentUser && currentUser.id === selectedStaff.id)} style={{ ...inputStyle, background: (selectedStaff.username === 'admin' || (currentUser && currentUser.id === selectedStaff.id)) ? (darkMode ? '#2a2a3e' : '#f0f0f0') : inputBg, cursor: (selectedStaff.username === 'admin' || (currentUser && currentUser.id === selectedStaff.id)) ? 'not-allowed' : 'pointer' }}>
                 <option value="staff">👤 {t('staff')}</option>
                 <option value="kitchen">🍳 {t('kitchen_staff')}</option>
                 <option value="admin">👑 {t('admin')}</option>
@@ -1328,67 +823,22 @@ function ManageStaff() {
               {formData.role !== 'admin' && selectedStaff.username !== 'admin' && (
                 <div style={{ marginBottom: '24px' }}>
                   <label style={labelStyle}>🚪 {t('access')}</label>
-                  <select 
-                    value={formData.permissions} 
-                    onChange={(e) => setFormData({ ...formData, permissions: e.target.value })} 
-                    style={inputStyle}
-                    onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)' }}
-                    onBlur={e => { e.currentTarget.style.borderColor = inputBorder; e.currentTarget.style.boxShadow = 'none' }}
-                  >
+                  <select value={formData.permissions} onChange={(e) => setFormData({ ...formData, permissions: e.target.value })} style={inputStyle} onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)' }} onBlur={e => { e.currentTarget.style.borderColor = inputBorder; e.currentTarget.style.boxShadow = 'none' }}>
                     <option value="pos">🧾 {t('pos_only')}</option>
                     <option value="kitchen">🍳 {t('kitchen_only')}</option>
                     <option value="both">🧾 + 🍳 {t('both_access')}</option>
                   </select>
-                  <p style={{ 
-                    fontSize: '11px', 
-                    color: textMuted, 
-                    marginTop: '4px' 
-                  }}>
-                    {t('select_access')}
-                  </p>
+                  <p style={{ fontSize: '11px', color: textMuted, marginTop: '4px' }}>{t('select_access')}</p>
                 </div>
               )}
               
               {(selectedStaff.username === 'admin' || (currentUser && currentUser.id === selectedStaff.id)) && (
-                <p style={{ 
-                  fontSize: '11px', 
-                  color: '#f59e0b', 
-                  marginBottom: '15px' 
-                }}>
-                  ⚠️ {t('cannot_change_role')}
-                </p>
+                <p style={{ fontSize: '11px', color: '#f59e0b', marginBottom: '15px' }}>⚠️ {t('cannot_change_role')}</p>
               )}
               
               <div style={{ display: 'flex', gap: '12px' }}>
-                <button 
-                  onClick={updateStaff} 
-                  style={{ 
-                    flex: 1, 
-                    background: 'linear-gradient(135deg, #22c55e, #16a34a)', 
-                    color: 'white', 
-                    padding: '14px', 
-                    border: 'none', 
-                    borderRadius: '60px', 
-                    cursor: 'pointer', 
-                    fontWeight: 'bold' 
-                  }}
-                >
-                  {t('save')}
-                </button>
-                <button 
-                  onClick={() => setShowEditModal(false)} 
-                  style={{ 
-                    flex: 1, 
-                    background: '#64748b', 
-                    color: 'white', 
-                    padding: '14px', 
-                    border: 'none', 
-                    borderRadius: '60px', 
-                    cursor: 'pointer' 
-                  }}
-                >
-                  {t('cancel')}
-                </button>
+                <button onClick={updateStaff} style={{ flex: 1, background: 'linear-gradient(135deg, #22c55e, #16a34a)', color: 'white', padding: '14px', border: 'none', borderRadius: '60px', cursor: 'pointer', fontWeight: 'bold' }}>{t('save')}</button>
+                <button onClick={() => setShowEditModal(false)} style={{ flex: 1, background: '#64748b', color: 'white', padding: '14px', border: 'none', borderRadius: '60px', cursor: 'pointer' }}>{t('cancel')}</button>
               </div>
             </div>
           </div>
@@ -1396,192 +846,44 @@ function ManageStaff() {
 
         {/* ===== RESET PASSWORD MODAL ===== */}
         {showResetPasswordModal && selectedStaff && (
-          <div style={{ 
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
-            background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', 
-            display: 'flex', justifyContent: 'center', alignItems: 'center', 
-            zIndex: 1000 
-          }}>
-            <div style={{ 
-              background: cardBg, 
-              padding: isMobile ? '24px' : '32px', 
-              borderRadius: '32px', 
-              maxWidth: '480px', 
-              width: '90%', 
-              ...glassEffect, 
-              animation: 'popIn 0.3s ease' 
-            }}>
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+            <div style={{ background: cardBg, padding: isMobile ? '24px' : '32px', borderRadius: '32px', maxWidth: '480px', width: '90%', ...glassEffect, animation: 'popIn 0.3s ease' }}>
               <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                <div style={{ 
-                  width: '56px', 
-                  height: '56px', 
-                  background: 'linear-gradient(135deg, #3b82f6, #2563eb)', 
-                  borderRadius: '28px', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center', 
-                  margin: '0 auto 12px auto' 
-                }}>
-                  <span style={{ fontSize: '28px' }}>🔑</span>
-                </div>
-                <h2 style={{ 
-                  marginTop: 0, 
-                  color: textColor, 
-                  fontSize: isMobile ? '20px' : '22px', 
-                  fontWeight: 'bold' 
-                }}>
-                  {t('reset_password_title')}
-                </h2>
-                <p style={{ 
-                  color: textMuted, 
-                  fontSize: isMobile ? '12px' : '13px' 
-                }}>
-                  {t('reset_password_for')} <strong>{selectedStaff.name || selectedStaff.username}</strong>
-                </p>
+                <div style={{ width: '56px', height: '56px', background: 'linear-gradient(135deg, #3b82f6, #2563eb)', borderRadius: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px auto' }}><span style={{ fontSize: '28px' }}>🔑</span></div>
+                <h2 style={{ marginTop: 0, color: textColor, fontSize: isMobile ? '20px' : '22px', fontWeight: 'bold' }}>{t('reset_password_title')}</h2>
+                <p style={{ color: textMuted, fontSize: isMobile ? '12px' : '13px' }}>{t('reset_password_for')} <strong>{selectedStaff.name || selectedStaff.username}</strong></p>
               </div>
               
-              <label style={labelStyle}>{t('new_password')} * ({t('min_6_chars')})</label>
+              <label style={labelStyle}>🔒 {t('new_password')} * ({t('min_6_chars')})</label>
               <div style={{ position: 'relative', marginBottom: '14px' }}>
-                <input 
-                  type={showPassword ? "text" : "password"} 
-                  placeholder={t('new_password')} 
-                  value={resetPasswordData.password} 
-                  onChange={(e) => setResetPasswordData({ ...resetPasswordData, password: e.target.value })} 
-                  style={{ 
-                    ...inputStyle, 
-                    paddingRight: '45px',
-                    marginBottom: 0
-                  }}
-                  onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)' }}
-                  onBlur={e => { e.currentTarget.style.borderColor = inputBorder; e.currentTarget.style.boxShadow = 'none' }}
-                />
-                <button 
-                  type="button" 
-                  onClick={() => setShowPassword(!showPassword)} 
-                  style={{ 
-                    position: 'absolute', 
-                    right: '14px', 
-                    top: '50%', 
-                    transform: 'translateY(-50%)',
-                    background: 'none', 
-                    border: 'none', 
-                    cursor: 'pointer', 
-                    fontSize: '18px', 
-                    color: textMuted 
-                  }}
-                >
-                  {showPassword ? '🙈' : '👁️'}
-                </button>
+                <input type={showPassword ? "text" : "password"} placeholder={t('new_password')} value={resetPasswordData.password} onChange={(e) => setResetPasswordData({ ...resetPasswordData, password: e.target.value })} style={{ ...inputStyle, paddingRight: '45px', marginBottom: 0 }} onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)' }} onBlur={e => { e.currentTarget.style.borderColor = inputBorder; e.currentTarget.style.boxShadow = 'none' }} />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px', color: textMuted }}>{showPassword ? '🙈' : '👁️'}</button>
               </div>
               
-              <label style={labelStyle}>{t('confirm_new_password')} *</label>
-              <input 
-                type="password" 
-                placeholder={t('confirm_new_password')} 
-                value={resetPasswordData.confirmPassword} 
-                onChange={(e) => setResetPasswordData({ ...resetPasswordData, confirmPassword: e.target.value })} 
-                style={{ 
-                  ...inputStyle,
-                  marginBottom: '24px'
-                }}
-                onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)' }}
-                onBlur={e => { e.currentTarget.style.borderColor = inputBorder; e.currentTarget.style.boxShadow = 'none' }}
-              />
+              <label style={labelStyle}>🔒 {t('confirm_new_password')} *</label>
+              <input type="password" placeholder={t('confirm_new_password')} value={resetPasswordData.confirmPassword} onChange={(e) => setResetPasswordData({ ...resetPasswordData, confirmPassword: e.target.value })} style={{ ...inputStyle, marginBottom: '24px' }} onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)' }} onBlur={e => { e.currentTarget.style.borderColor = inputBorder; e.currentTarget.style.boxShadow = 'none' }} />
               
               <div style={{ display: 'flex', gap: '12px' }}>
-                <button 
-                  onClick={resetPassword} 
-                  style={{ 
-                    flex: 1, 
-                    background: 'linear-gradient(135deg, #22c55e, #16a34a)', 
-                    color: 'white', 
-                    padding: '14px', 
-                    border: 'none', 
-                    borderRadius: '60px', 
-                    cursor: 'pointer', 
-                    fontWeight: 'bold' 
-                  }}
-                >
-                  🔑 {t('reset')}
-                </button>
-                <button 
-                  onClick={() => setShowResetPasswordModal(false)} 
-                  style={{ 
-                    flex: 1, 
-                    background: '#64748b', 
-                    color: 'white', 
-                    padding: '14px', 
-                    border: 'none', 
-                    borderRadius: '60px', 
-                    cursor: 'pointer' 
-                  }}
-                >
-                  {t('cancel')}
-                </button>
+                <button onClick={resetPassword} style={{ flex: 1, background: 'linear-gradient(135deg, #22c55e, #16a34a)', color: 'white', padding: '14px', border: 'none', borderRadius: '60px', cursor: 'pointer', fontWeight: 'bold' }}>🔑 {t('reset')}</button>
+                <button onClick={() => setShowResetPasswordModal(false)} style={{ flex: 1, background: '#64748b', color: 'white', padding: '14px', border: 'none', borderRadius: '60px', cursor: 'pointer' }}>{t('cancel')}</button>
               </div>
             </div>
           </div>
         )}
 
-        {/* ========================================================== */}
-        {/* STYLES */}
-        {/* ========================================================== */}
         <style>
           {`
-            .spinner { 
-              width: 48px; 
-              height: 48px; 
-              border: 4px solid rgba(59,130,246,0.15); 
-              border-top-color: #3b82f6; 
-              border-radius: 50%; 
-              animation: spin 1s linear infinite; 
-              margin: 0 auto; 
-            }
-            
-            @keyframes spin { 
-              to { transform: rotate(360deg); } 
-            }
-            
-            @keyframes fadeIn { 
-              from { opacity: 0; } 
-              to { opacity: 1; } 
-            }
-            
-            @keyframes popIn { 
-              0% { opacity: 0; transform: scale(0.95) translateY(10px); } 
-              100% { opacity: 1; transform: scale(1) translateY(0); } 
-            }
-            
-            ::-webkit-scrollbar { 
-              width: 6px; 
-            }
-            
-            ::-webkit-scrollbar-track { 
-              background: ${darkMode ? '#1a1a2e' : '#e2e8f0'}; 
-              border-radius: 10px; 
-            }
-            
-            ::-webkit-scrollbar-thumb { 
-              background: ${darkMode ? '#3d3d5c' : '#94a3b8'}; 
-              border-radius: 10px; 
-            }
-            
-            button, input, select { 
-              transition: all 0.2s ease; 
-            }
-            
-            button:hover:not(:disabled) { 
-              opacity: 0.88; 
-              transform: scale(0.97); 
-            }
-            
-            button:active:not(:disabled) {
-              transform: scale(0.93);
-            }
-            
-            input:focus, select:focus { 
-              outline: none; 
-            }
+            .spinner { width: 48px; height: 48px; border: 4px solid rgba(59,130,246,0.15); border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto; }
+            @keyframes spin { to { transform: rotate(360deg); } }
+            @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+            @keyframes popIn { 0% { opacity: 0; transform: scale(0.95) translateY(10px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+            ::-webkit-scrollbar { width: 6px; }
+            ::-webkit-scrollbar-track { background: ${darkMode ? '#1a1a2e' : '#e2e8f0'}; border-radius: 10px; }
+            ::-webkit-scrollbar-thumb { background: ${darkMode ? '#3d3d5c' : '#94a3b8'}; border-radius: 10px; }
+            button, input, select { transition: all 0.2s ease; }
+            button:hover:not(:disabled) { opacity: 0.88; transform: scale(0.97); }
+            button:active:not(:disabled) { transform: scale(0.93); }
+            input:focus, select:focus { outline: none; }
           `}
         </style>
       </div>
