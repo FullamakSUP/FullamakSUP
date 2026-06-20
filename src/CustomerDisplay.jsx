@@ -61,6 +61,16 @@ function CustomerDisplay() {
   const [searchOrder, setSearchOrder] = useState('')
   const [isMobile, setIsMobile] = useState(false)
   
+  // ============================================================
+  // DISPLAY TOGGLE SETTINGS - NEW
+  // ============================================================
+  const [displaySettings, setDisplaySettings] = useState({
+    showFood: true,
+    showDrinks: true,
+    showSpecial: true,
+    showPromos: true
+  })
+  
   // Business hours
   const [businessHoursStart, setBusinessHoursStart] = useState('09:00')
   const [businessHoursEnd, setBusinessHoursEnd] = useState('22:00')
@@ -103,6 +113,16 @@ function CustomerDisplay() {
     error_updating: { en: 'Error updating order', ms: 'Ralat kemaskini pesanan' },
     all: { en: 'All', ms: 'Semua' },
     special_today: { en: 'Today\'s Special Menu', ms: 'Menu Istimewa Hari Ini' },
+    // Display toggle translations
+    display_settings: { en: 'Display Settings', ms: 'Tetapan Paparan' },
+    show_food: { en: '🍳 Food', ms: '🍳 Makanan' },
+    show_drinks: { en: '🥤 Drinks', ms: '🥤 Minuman' },
+    show_special: { en: '⭐ Special', ms: '⭐ Istimewa' },
+    show_promos: { en: '🏷️ Promotions', ms: '🏷️ Promosi' },
+    showing_items: { en: 'Showing', ms: 'Menunjukkan' },
+    of_items: { en: 'of', ms: 'daripada' },
+    items_count: { en: 'items', ms: 'item' },
+    no_items_to_display: { en: 'No items to display. Please adjust display settings.', ms: 'Tiada item untuk dipaparkan. Sila tukar tetapan paparan.' },
   }
 
   const t2 = (key) => {
@@ -325,6 +345,46 @@ function CustomerDisplay() {
   const showTakeawayOrders = async () => {
     setSelectedTable('takeaway')
     await loadTableOrders('takeaway')
+  }
+
+  // ============================================================
+  // TOGGLE DISPLAY SETTINGS - NEW
+  // ============================================================
+  const toggleDisplay = (key) => {
+    setDisplaySettings(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }))
+  }
+
+  // ============================================================
+  // GET FILTERED MENU - NEW
+  // ============================================================
+  const getFilteredDisplayMenu = () => {
+    let filtered = [...menu]
+    
+    // Filter by display settings
+    if (!displaySettings.showFood) {
+      // Hide all food items (including sub-categories)
+      const foodCategories = ['Makanan', 'Mee', 'Bihup SUP', 'Telur', 'Meggie Sup', 'Sup', 'Nasi']
+      filtered = filtered.filter(item => !foodCategories.includes(item.category))
+    }
+    
+    if (!displaySettings.showDrinks) {
+      // Hide all drink items (including sub-categories)
+      const drinkCategories = ['Minuman', 'Teh', 'Kopi', 'Jus', 'Air']
+      filtered = filtered.filter(item => !drinkCategories.includes(item.category))
+    }
+    
+    if (!displaySettings.showSpecial) {
+      filtered = filtered.filter(item => item.category !== 'Istimewa')
+    }
+    
+    if (!displaySettings.showPromos) {
+      filtered = filtered.filter(item => !item.is_promo)
+    }
+    
+    return filtered
   }
 
   // ============================================================
@@ -636,12 +696,14 @@ function CustomerDisplay() {
     }
   }
 
-  // Filter categories - exclude drinks
-  const categoryNames = ['All', ...categories.filter(cat => cat.name !== 'Minuman').map(cat => cat.name)]
+  // Get categories for filter - include all categories
+  const categoryNames = ['All', ...categories.map(cat => cat.name)]
 
-  // Filter menu - exclude drinks
-  const filteredMenu = menu.filter(item => {
-    if (item.category === 'Minuman') return false
+  // Filter menu for display
+  const displayMenu = getFilteredDisplayMenu()
+  
+  // Filter menu by category and search
+  const filteredMenu = displayMenu.filter(item => {
     const matchCategory = selectedCategory === 'All' || item.category === selectedCategory
     const matchSearch = item.name.toLowerCase().includes(searchMenu.toLowerCase())
     return matchCategory && matchSearch
@@ -862,9 +924,9 @@ function CustomerDisplay() {
       </div>
 
       {/* ============================================================
-      SPECIAL MENU BANNER - BIG & EYE-CATCHING 
+      SPECIAL MENU BANNER
       ============================================================ */}
-      {specialMenuEnabled && specialMenuItems.length > 0 && (
+      {specialMenuEnabled && specialMenuItems.length > 0 && displaySettings.showSpecial && (
         <div style={{ 
           background: 'linear-gradient(135deg, #fef3c7, #fde68a, #fcd34d)',
           borderRadius: '24px', 
@@ -876,8 +938,6 @@ function CustomerDisplay() {
           overflow: 'hidden',
           flexShrink: 0
         }}>
-          
-          {/* Decorative background elements */}
           <div style={{
             position: 'absolute',
             top: '-50%',
@@ -888,18 +948,7 @@ function CustomerDisplay() {
             borderRadius: '50%',
             pointerEvents: 'none'
           }} />
-          <div style={{
-            position: 'absolute',
-            bottom: '-40%',
-            left: '-10%',
-            width: '250px',
-            height: '250px',
-            background: 'radial-gradient(circle, rgba(251,191,36,0.08) 0%, transparent 70%)',
-            borderRadius: '50%',
-            pointerEvents: 'none'
-          }} />
           
-          {/* Header Section */}
           <div style={{ 
             display: 'flex', 
             alignItems: 'center', 
@@ -936,7 +985,6 @@ function CustomerDisplay() {
               </div>
             </div>
             
-            {/* Badge "HOT" */}
             <div style={{
               background: 'linear-gradient(135deg, #ef4444, #dc2626)',
               color: 'white',
@@ -951,7 +999,6 @@ function CustomerDisplay() {
             </div>
           </div>
           
-          {/* Special Items Grid - BIGGER */}
           <div style={{ 
             display: 'grid', 
             gridTemplateColumns: isMobile 
@@ -977,16 +1024,7 @@ function CustomerDisplay() {
                   transition: 'all 0.3s ease',
                   cursor: 'default'
                 }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.transform = 'translateY(-3px)'
-                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)'
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.transform = 'translateY(0)'
-                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'
-                }}
               >
-                {/* Image/Icon */}
                 <div style={{ flexShrink: 0 }}>
                   {item.image_url ? (
                     <img 
@@ -1017,7 +1055,6 @@ function CustomerDisplay() {
                   )}
                 </div>
                 
-                {/* Info */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ 
                     fontWeight: 'bold', 
@@ -1043,7 +1080,6 @@ function CustomerDisplay() {
                   )}
                 </div>
                 
-                {/* Price - BIGGER & BOLDER */}
                 <div style={{ 
                   flexShrink: 0,
                   background: 'linear-gradient(135deg, #22c55e, #16a34a)',
@@ -1060,7 +1096,6 @@ function CustomerDisplay() {
             ))}
           </div>
           
-          {/* Footer - "More items" */}
           {specialMenuItems.length > (isMobile ? 6 : 8) && (
             <div style={{ 
               textAlign: 'center', 
@@ -1076,6 +1111,118 @@ function CustomerDisplay() {
           )}
         </div>
       )}
+
+      {/* ============================================================
+      DISPLAY TOGGLE CONTROLS - NEW
+      ============================================================ */}
+      <div style={{ 
+        ...glassEffect, 
+        borderRadius: '16px', 
+        padding: isMobile ? '10px 14px' : '12px 20px', 
+        marginBottom: '16px',
+        flexShrink: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '8px'
+      }}>
+        <span style={{ 
+          color: textColor, 
+          fontWeight: 'bold', 
+          fontSize: isMobile ? '12px' : '14px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px'
+        }}>
+          ⚙️ {t2('display_settings')}
+        </span>
+        
+        <div style={{ 
+          display: 'flex', 
+          gap: isMobile ? '8px' : '16px', 
+          flexWrap: 'wrap',
+          alignItems: 'center'
+        }}>
+          <label style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            cursor: 'pointer',
+            color: textColor,
+            fontSize: isMobile ? '11px' : '13px'
+          }}>
+            <input
+              type="checkbox"
+              checked={displaySettings.showFood}
+              onChange={() => toggleDisplay('showFood')}
+              style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+            />
+            {t2('show_food')}
+          </label>
+          
+          <label style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            cursor: 'pointer',
+            color: textColor,
+            fontSize: isMobile ? '11px' : '13px'
+          }}>
+            <input
+              type="checkbox"
+              checked={displaySettings.showDrinks}
+              onChange={() => toggleDisplay('showDrinks')}
+              style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+            />
+            {t2('show_drinks')}
+          </label>
+          
+          <label style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            cursor: 'pointer',
+            color: textColor,
+            fontSize: isMobile ? '11px' : '13px'
+          }}>
+            <input
+              type="checkbox"
+              checked={displaySettings.showSpecial}
+              onChange={() => toggleDisplay('showSpecial')}
+              style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+            />
+            {t2('show_special')}
+          </label>
+          
+          <label style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            cursor: 'pointer',
+            color: textColor,
+            fontSize: isMobile ? '11px' : '13px'
+          }}>
+            <input
+              type="checkbox"
+              checked={displaySettings.showPromos}
+              onChange={() => toggleDisplay('showPromos')}
+              style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+            />
+            {t2('show_promos')}
+          </label>
+          
+          <span style={{
+            fontSize: isMobile ? '10px' : '12px',
+            color: textMuted,
+            padding: '4px 12px',
+            background: secondaryBg,
+            borderRadius: '20px'
+          }}>
+            {t2('showing_items')} {filteredMenu.length} {t2('of_items')} {displayMenu.length} {t2('items_count')}
+          </span>
+        </div>
+      </div>
 
       {/* ===== MAIN CONTENT ===== */}
       <div style={{ 
@@ -1124,79 +1271,106 @@ function CustomerDisplay() {
           overflowY: 'auto',
           paddingRight: '4px'
         }}>
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', 
-            gap: '14px'
-          }}>
-            {filteredMenu.map(item => {
-              const hasImage = item.image_url && item.image_url.trim() !== ''
-              return (
-                <div 
-                  key={item.id} 
-                  style={{ 
-                    background: cardBg,
-                    borderRadius: '16px',
-                    padding: '14px',
-                    textAlign: 'center',
-                    border: `1px solid ${borderColor}`,
-                    transition: 'transform 0.2s, box-shadow 0.2s',
-                    cursor: 'default'
-                  }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.transform = 'translateY(-4px)'
-                    e.currentTarget.style.boxShadow = darkMode 
-                      ? '0 8px 32px rgba(0,0,0,0.4)' 
-                      : '0 8px 32px rgba(0,0,0,0.1)'
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.transform = 'translateY(0)'
-                    e.currentTarget.style.boxShadow = 'none'
-                  }}
-                >
-                  {hasImage ? (
-                    <img 
-                      src={item.image_url} 
-                      alt={item.name} 
-                      style={{ 
-                        width: '70px', 
-                        height: '70px', 
-                        objectFit: 'cover', 
-                        borderRadius: '14px', 
-                        margin: '0 auto 10px auto',
-                        display: 'block'
-                      }}
-                      onError={(e) => { e.target.style.display = 'none' }}
-                    />
-                  ) : (
-                    <div style={{ fontSize: '40px', marginBottom: '6px' }}>{getDefaultIcon(item.category)}</div>
-                  )}
-                  <div style={{ 
-                    fontWeight: 'bold', 
-                    fontSize: '14px', 
-                    color: textColor, 
-                    marginBottom: '6px',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis'
-                  }}>
-                    {item.name}
+          {filteredMenu.length === 0 ? (
+            <div style={{ 
+              textAlign: 'center', 
+              padding: isMobile ? '40px 20px' : '80px 20px', 
+              ...glassEffect, 
+              borderRadius: '24px' 
+            }}>
+              <span style={{ fontSize: isMobile ? '48px' : '64px', opacity: 0.5 }}>📭</span>
+              <p style={{ color: textMuted, marginTop: '12px', fontSize: isMobile ? '14px' : '16px' }}>
+                {t2('no_items_to_display')}
+              </p>
+            </div>
+          ) : (
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', 
+              gap: '14px'
+            }}>
+              {filteredMenu.map(item => {
+                const hasImage = item.image_url && item.image_url.trim() !== ''
+                return (
+                  <div 
+                    key={item.id} 
+                    style={{ 
+                      background: cardBg,
+                      borderRadius: '16px',
+                      padding: '14px',
+                      textAlign: 'center',
+                      border: `1px solid ${borderColor}`,
+                      transition: 'transform 0.2s, box-shadow 0.2s',
+                      cursor: 'default'
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.transform = 'translateY(-4px)'
+                      e.currentTarget.style.boxShadow = darkMode 
+                        ? '0 8px 32px rgba(0,0,0,0.4)' 
+                        : '0 8px 32px rgba(0,0,0,0.1)'
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.transform = 'translateY(0)'
+                      e.currentTarget.style.boxShadow = 'none'
+                    }}
+                  >
+                    {hasImage ? (
+                      <img 
+                        src={item.image_url} 
+                        alt={item.name} 
+                        style={{ 
+                          width: '70px', 
+                          height: '70px', 
+                          objectFit: 'cover', 
+                          borderRadius: '14px', 
+                          margin: '0 auto 10px auto',
+                          display: 'block'
+                        }}
+                        onError={(e) => { e.target.style.display = 'none' }}
+                      />
+                    ) : (
+                      <div style={{ fontSize: '40px', marginBottom: '6px' }}>{getDefaultIcon(item.category)}</div>
+                    )}
+                    <div style={{ 
+                      fontWeight: 'bold', 
+                      fontSize: '14px', 
+                      color: textColor, 
+                      marginBottom: '6px',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis'
+                    }}>
+                      {item.name}
+                    </div>
+                    <div style={{ 
+                      color: darkMode ? '#4ade80' : '#22c55e', 
+                      fontWeight: 'bold', 
+                      fontSize: '18px',
+                      background: secondaryBg,
+                      display: 'inline-block',
+                      padding: '2px 14px',
+                      borderRadius: '30px'
+                    }}>
+                      RM {item.price}
+                    </div>
+                    {item.description && (
+                      <div style={{ 
+                        fontSize: '10px', 
+                        color: textMuted, 
+                        fontStyle: 'italic',
+                        marginTop: '6px',
+                        background: secondaryBg,
+                        padding: '3px 8px',
+                        borderRadius: '6px'
+                      }}>
+                        📝 {item.description}
+                      </div>
+                    )}
                   </div>
-                  <div style={{ 
-                    color: darkMode ? '#4ade80' : '#22c55e', 
-                    fontWeight: 'bold', 
-                    fontSize: '18px',
-                    background: secondaryBg,
-                    display: 'inline-block',
-                    padding: '2px 14px',
-                    borderRadius: '30px'
-                  }}>
-                    RM {item.price}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
+                )
+              })}
+            </div>
+          )}
         </div>
       </div>
 
