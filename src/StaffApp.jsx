@@ -21,7 +21,7 @@ function StaffApp() {
   const { darkMode } = useTheme()
   const { language, t } = useLanguage()
   const [menu, setMenu] = useState([])
-  const [dbCategories, setDbCategories] = useState([]) // ALL categories from database
+  const [dbCategories, setDbCategories] = useState([])
   const [drinkOptions, setDrinkOptions] = useState({})
   const [cart, setCart] = useState([])
   const [customerOrders, setCustomerOrders] = useState([])
@@ -69,13 +69,12 @@ function StaffApp() {
   }, [])
 
   // ============================================================
-  // THEME COLORS - CANTIK & JELAS
+  // THEME COLORS
   // ============================================================
   const bgColor = darkMode ? '#0a0a16' : '#f0f4f8'
   const cardBg = darkMode ? 'rgba(20, 20, 40, 0.95)' : 'rgba(255, 255, 255, 0.95)'
   const textColor = darkMode ? '#f1f5f9' : '#0f172a'
   const textMuted = darkMode ? '#94a3b8' : '#64748b'
-  const textLight = darkMode ? '#f8fafc' : '#1e293b'
   const borderColor = darkMode ? 'rgba(71, 85, 105, 0.3)' : 'rgba(203, 213, 225, 0.5)'
   const inputBg = darkMode ? '#1a1a2e' : '#ffffff'
   const inputBorder = darkMode ? '#3d3d5c' : '#cbd5e1'
@@ -111,7 +110,6 @@ function StaffApp() {
     
     if (data) {
       console.log('✅ Categories loaded:', data.map(c => c.name))
-      // SET ALL CATEGORIES - NO FILTERING (includes sub-categories)
       setDbCategories(data)
     }
   }
@@ -137,15 +135,13 @@ function StaffApp() {
   }, [])
 
   useEffect(() => {
-    // Load all data
     loadMenu()
     loadDrinkOptions()
     loadCustomerOrders()
     loadUnpaidOrders()
     loadSettings()
-    loadCategoriesFromDB() // <-- LOAD CATEGORIES FROM DB (NO FILTER)
+    loadCategoriesFromDB()
 
-    // Subscriptions
     const menuSubscription = supabase
       .channel('menu_changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'menu' }, () => loadMenu())
@@ -422,11 +418,19 @@ function StaffApp() {
   // CART FUNCTIONS
   // ============================================================
   const openDrinkOptionsForItem = (item) => { 
-    setSelectedDrinkItem(item); 
-    setSelectedDrinkOption('Panas'); 
+    setSelectedDrinkItem(item)
+    const options = drinkOptions[item.name]
+    if (options && options.length > 0) {
+      setSelectedDrinkOption(options[0].type)
+    } else {
+      setSelectedDrinkOption('Panas')
+    }
     setShowDrinkModal(true) 
   }
   
+  // ============================================================
+  // ADD DRINK TO CART - WITH BUNGKUS SUPPORT
+  // ============================================================
   const addDrinkToCart = () => {
     if (!selectedDrinkItem) return
     const options = drinkOptions[selectedDrinkItem.name]
@@ -436,7 +440,10 @@ function StaffApp() {
     setAddingItemId(`${selectedDrinkItem.id}_${selectedDrinkOption}`)
     setTimeout(() => setAddingItemId(null), 300)
     
-    const optionLabel = selectedDrinkOption === 'Panas' ? '☕ Panas' : '🧊 Sejuk'
+    let optionLabel = ''
+    if (selectedDrinkOption === 'Panas') optionLabel = '☕ Panas'
+    else if (selectedDrinkOption === 'Sejuk') optionLabel = '🧊 Sejuk'
+    else if (selectedDrinkOption === 'Bungkus') optionLabel = '📦 Bungkus'
     
     setCart([...cart, { 
       id: `${selectedDrinkItem.id}_${selectedDrinkOption}`, 
@@ -553,10 +560,8 @@ function StaffApp() {
   // ============================================================
   // GET CATEGORIES - SHOW ALL (NO FILTER)
   // ============================================================
-  // Build categories list: 'Semua' + ALL categories from database (NO FILTER)
   const categoryNames = ['Semua', ...dbCategories.map(cat => cat.name)]
   
-  // Filter menu by selected category
   const filteredMenu = selectedCategory === 'Semua' 
     ? menu 
     : menu.filter(item => item.category === selectedCategory)
@@ -583,7 +588,7 @@ function StaffApp() {
   const renderOrderItems = (items) => {
     if (!items) return null
     return items.map((item, idx) => {
-      const optionLabel = item.option_type === 'Panas' ? '🔥' : item.option_type === 'Sejuk' ? '🧊' : ''
+      const optionLabel = item.option_type === 'Panas' ? '🔥' : item.option_type === 'Sejuk' ? '🧊' : item.option_type === 'Bungkus' ? '📦' : ''
       return (
         <div key={idx} style={{ 
           display: 'flex', 
@@ -605,7 +610,7 @@ function StaffApp() {
   const renderUnpaidItems = (items) => {
     if (!items) return null
     return items.map((item, idx) => {
-      const optionLabel = item.option_type === 'Panas' ? '🔥' : item.option_type === 'Sejuk' ? '🧊' : ''
+      const optionLabel = item.option_type === 'Panas' ? '🔥' : item.option_type === 'Sejuk' ? '🧊' : item.option_type === 'Bungkus' ? '📦' : ''
       return (
         <div key={idx} style={{ 
           display: 'flex', 
@@ -1015,7 +1020,7 @@ function StaffApp() {
         )}
 
         {/* ========================================================== */}
-        {/* POS TAB - WITH ALL CATEGORIES (INCLUDING SUB-CATEGORIES) */}
+        {/* POS TAB */}
         {/* ========================================================== */}
         {activeTab === 'pos' && (
           <>
@@ -1038,7 +1043,7 @@ function StaffApp() {
               </span>
             </h1>
             
-            {/* ===== CATEGORY FILTERS - SHOW ALL CATEGORIES ===== */}
+            {/* CATEGORY FILTERS */}
             <div style={{ 
               display: 'flex', 
               gap: '8px', 
@@ -1096,7 +1101,7 @@ function StaffApp() {
               flexWrap: 'wrap', 
               flexDirection: isMobile ? 'column' : 'row' 
             }}>
-              {/* ===== MENU GRID ===== */}
+              {/* MENU GRID */}
               <div style={{ flex: 2 }}>
                 <div style={{ 
                   display: 'grid', 
@@ -1108,6 +1113,7 @@ function StaffApp() {
                     const hasImage = item.image_url && item.image_url !== null && item.image_url.trim() !== ''
                     const panasPrice = hasDrinkOptions ? drinkOptions[item.name]?.find(o => o.type === 'Panas')?.price : null
                     const sejukPrice = hasDrinkOptions ? drinkOptions[item.name]?.find(o => o.type === 'Sejuk')?.price : null
+                    const bungkusPrice = hasDrinkOptions ? drinkOptions[item.name]?.find(o => o.type === 'Bungkus')?.price : null
                     const isAdding = addingItemId === item.id
                     const hasDescription = item.description && item.description.trim() !== ''
                     
@@ -1198,6 +1204,7 @@ function StaffApp() {
                           }}>
                             {panasPrice && <span style={{ color: '#f97316', fontWeight: 'bold' }}>🔥 RM {panasPrice}</span>}
                             {sejukPrice && <span style={{ color: '#06b6d4', fontWeight: 'bold' }}>🧊 RM {sejukPrice}</span>}
+                            {bungkusPrice && <span style={{ color: '#8b5cf6', fontWeight: 'bold' }}>📦 RM {bungkusPrice}</span>}
                           </div>
                         ) : (
                           <p style={{ 
@@ -1235,7 +1242,7 @@ function StaffApp() {
                 </div>
               </div>
               
-              {/* ===== CART SECTION ===== */}
+              {/* CART SECTION */}
               <div style={{ 
                 flex: 1, 
                 ...glassEffect, 
@@ -1282,7 +1289,7 @@ function StaffApp() {
                   <>
                     <div style={{ marginBottom: '16px', maxHeight: '350px', overflowY: 'auto' }}>
                       {cart.map(item => {
-                        const optionLabel = item.option_type === 'Panas' ? '🔥' : item.option_type === 'Sejuk' ? '🧊' : ''
+                        const optionLabel = item.option_type === 'Panas' ? '🔥' : item.option_type === 'Sejuk' ? '🧊' : item.option_type === 'Bungkus' ? '📦' : ''
                         return (
                           <div key={item.id} style={{ 
                             borderBottom: `1px solid ${borderColor}`, 
@@ -1935,7 +1942,7 @@ function StaffApp() {
         )}
 
         {/* ========================================================== */}
-        {/* DRINK OPTIONS MODAL */}
+        {/* DRINK OPTIONS MODAL - WITH BUNGKUS SUPPORT */}
         {/* ========================================================== */}
         {showDrinkModal && selectedDrinkItem && (
           <div style={{ 
@@ -1974,6 +1981,7 @@ function StaffApp() {
                 {t('drink_type')}
               </p>
               
+              {/* ✅ DRINK OPTIONS - WITH BUNGKUS */}
               <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
                 {drinkOptions[selectedDrinkItem.name]?.some(o => o.type === 'Panas') && (
                   <button 
@@ -2016,6 +2024,29 @@ function StaffApp() {
                     🧊 {t('cold')}
                     <br />
                     <small>RM {drinkOptions[selectedDrinkItem.name]?.find(o => o.type === 'Sejuk')?.price}</small>
+                  </button>
+                )}
+                
+                {/* ✅ BUNGKUS OPTION */}
+                {drinkOptions[selectedDrinkItem.name]?.some(o => o.type === 'Bungkus') && (
+                  <button 
+                    onClick={() => setSelectedDrinkOption('Bungkus')} 
+                    style={{ 
+                      flex: 1, 
+                      padding: isMobile ? '14px' : '16px', 
+                      background: selectedDrinkOption === 'Bungkus' ? 'linear-gradient(135deg, #8b5cf6, #7c3aed)' : secondaryBg, 
+                      color: selectedDrinkOption === 'Bungkus' ? 'white' : textColor, 
+                      border: selectedDrinkOption === 'Bungkus' ? 'none' : `1px solid ${borderColor}`, 
+                      borderRadius: '16px', 
+                      cursor: 'pointer', 
+                      fontWeight: 'bold',
+                      transition: 'all 0.2s',
+                      fontSize: isMobile ? '13px' : '14px'
+                    }}
+                  >
+                    📦 {t('takeaway')}
+                    <br />
+                    <small>RM {drinkOptions[selectedDrinkItem.name]?.find(o => o.type === 'Bungkus')?.price}</small>
                   </button>
                 )}
               </div>
@@ -2391,11 +2422,11 @@ function StaffApp() {
             }
             ::-webkit-scrollbar-track { 
               background: ${darkMode ? '#1a1a2e' : '#e2e8f0'}; 
-              border-radius: 10px; 
+              borderRadius: 10px; 
             }
             ::-webkit-scrollbar-thumb { 
               background: ${darkMode ? '#3d3d5c' : '#94a3b8'}; 
-              border-radius: 10px; 
+              borderRadius: 10px; 
             }
             button { 
               transition: all 0.2s; 
@@ -2415,15 +2446,6 @@ function StaffApp() {
               outline: none; 
               border-color: #3b82f6;
               box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
-            }
-            .card-hover {
-              transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            }
-            .card-hover:hover {
-              transform: translateY(-4px);
-              box-shadow: ${darkMode 
-                ? '0 12px 40px rgba(0,0,0,0.5)' 
-                : '0 12px 40px rgba(0,0,0,0.12)'};
             }
           `}
         </style>
