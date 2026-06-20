@@ -3,11 +3,14 @@ import { useTheme } from './context/ThemeContext'
 import { useLanguage } from './context/LanguageContext'
 import toast from 'react-hot-toast'
 import { supabase } from './lib/supabase'
+import { useNavigate } from 'react-router-dom'
 
-function Login({ onLogin }) {
+function Login() {
   const { darkMode, toggleDarkMode } = useTheme()
   const { language, setLanguage } = useLanguage()
-  const [username, setUsername] = useState('')
+  const navigate = useNavigate()
+  
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -27,17 +30,17 @@ function Login({ onLogin }) {
   const translations = {
     // Login Page
     login_title: { en: 'POS System for Small & Medium Restaurants', ms: 'Sistem POS untuk Restoran Kecil & Sederhana' },
-    username: { en: 'Username', ms: 'Nama Pengguna' },
+    email: { en: 'Email', ms: 'Emel' },
     password: { en: 'Password', ms: 'Kata Laluan' },
-    enter_username: { en: 'Enter username', ms: 'Masukkan nama pengguna' },
+    enter_email: { en: 'Enter email address', ms: 'Masukkan alamat emel' },
     enter_password: { en: 'Enter password', ms: 'Masukkan kata laluan' },
     login: { en: 'Login', ms: 'Log Masuk' },
     logging_in: { en: 'Logging in...', ms: 'Log masuk...' },
     english: { en: 'Bahasa Melayu', ms: 'English' },
     
     // Error Messages
-    enter_credentials: { en: 'Please enter username and password', ms: 'Sila masukkan nama pengguna dan kata laluan' },
-    invalid_credentials: { en: 'Invalid username or password', ms: 'Nama pengguna atau kata laluan salah' },
+    enter_credentials: { en: 'Please enter email and password', ms: 'Sila masukkan emel dan kata laluan' },
+    invalid_credentials: { en: 'Invalid email or password', ms: 'Emel atau kata laluan salah' },
     login_error: { en: 'Login error. Please try again.', ms: 'Ralat log masuk. Sila cuba lagi.' },
     welcome: { en: 'Welcome', ms: 'Selamat datang' },
     
@@ -64,17 +67,20 @@ function Login({ onLogin }) {
   }, [])
 
   // ============================================================
-  // THEME COLORS
+  // THEME COLORS - BLUE THEME
   // ============================================================
-  const bgColor = darkMode ? '#0a0a16' : '#f0f4f8'
+  const bgColor = darkMode ? '#0a0a16' : '#eef2ff'
   const cardBg = darkMode ? 'rgba(20, 20, 40, 0.95)' : 'rgba(255, 255, 255, 0.95)'
   const textColor = darkMode ? '#f1f5f9' : '#0f172a'
-  const textMuted = darkMode ? '#94a3b8' : '#64748b'
+  const textMuted = darkMode ? '#94a3b8' : '#475569'
   const borderColor = darkMode ? 'rgba(71, 85, 105, 0.3)' : 'rgba(203, 213, 225, 0.4)'
   const inputBg = darkMode ? '#1a1a30' : '#ffffff'
   const inputBorder = darkMode ? '#334155' : '#cbd5e1'
-  const primaryGradient = 'linear-gradient(135deg, #3b82f6, #1d4ed8)'
-  const primaryGlow = 'rgba(59, 130, 246, 0.4)'
+  
+  // BLUE THEME GRADIENTS
+  const primaryGradient = 'linear-gradient(135deg, #2563eb, #1d4ed8, #1e40af)'
+  const primaryGlow = 'rgba(37, 99, 235, 0.4)'
+  const secondaryGradient = 'linear-gradient(145deg, #1e293b, #0f172a, #0a0a16)'
   
   const glassEffect = {
     background: cardBg,
@@ -82,7 +88,7 @@ function Login({ onLogin }) {
     border: `1px solid ${borderColor}`,
     boxShadow: darkMode 
       ? '0 25px 60px -12px rgba(0,0,0,0.7)' 
-      : '0 25px 60px -12px rgba(0,0,0,0.15)'
+      : '0 25px 60px -12px rgba(37, 99, 235, 0.15)'
   }
 
   // ============================================================
@@ -123,12 +129,12 @@ function Login({ onLogin }) {
   }
 
   // ============================================================
-  // HANDLE LOGIN
+  // HANDLE LOGIN - SUPABASE AUTH
   // ============================================================
   const handleSubmit = async (e) => {
     e.preventDefault()
     
-    if (!username || !password) {
+    if (!email || !password) {
       toast.error(t('enter_credentials'))
       return
     }
@@ -136,48 +142,60 @@ function Login({ onLogin }) {
     setLoading(true)
 
     try {
-      const { data, error } = await supabase
+      // 🔐 Login with Supabase Auth using EMAIL
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: password
+      })
+
+      if (error) {
+        console.error('Auth error:', error)
+        toast.error(t('invalid_credentials'))
+        setLoading(false)
+        return
+      }
+
+      // ✅ Get staff details using auth_id
+      const { data: staffData, error: staffError } = await supabase
         .from('staff')
-        .select('*')
-        .eq('username', username.toLowerCase())
+        .select('id, username, name, role')
+        .eq('auth_id', data.user.id)
         .single()
 
-      if (error || !data) {
-        toast.error(t('invalid_credentials'))
+      if (staffError) {
+        console.error('Staff fetch error:', staffError)
+        toast.error(t('login_error'))
         setLoading(false)
         return
       }
 
-      if (data.password !== password) {
-        toast.error(t('invalid_credentials'))
-        setLoading(false)
-        return
-      }
-
+      // 📦 Prepare user data
       const userData = {
-        id: data.id,
-        username: data.username,
-        name: data.name || data.username,
-        role: data.role
+        id: staffData.id,
+        email: data.user.email,
+        username: staffData.username,
+        name: staffData.name || staffData.username || 'Staff',
+        role: staffData.role || 'staff'
       }
       
+      // 💾 Save to sessionStorage for backward compatibility
       sessionStorage.setItem('staffAuth', JSON.stringify(userData))
       
       toast.success(`${t('welcome')}, ${userData.name}!`)
       
-      if (onLogin) {
-        onLogin(userData)
-      } else {
+      // 🚀 Redirect based on role
+      setTimeout(() => {
         if (userData.role === 'admin') {
-          window.location.href = '/dashboard'
+          navigate('/dashboard')
         } else if (userData.role === 'staff') {
-          window.location.href = '/staff'
+          navigate('/staff')
         } else if (userData.role === 'kitchen') {
-          window.location.href = '/kitchen'
+          navigate('/kitchen')
         } else {
-          window.location.href = '/dashboard'
+          navigate('/dashboard')
         }
-      }
+      }, 500)
+
     } catch (err) {
       console.error('Login error:', err)
       toast.error(t('login_error'))
@@ -208,7 +226,7 @@ function Login({ onLogin }) {
         right: '-20%', 
         width: isMobile ? '300px' : '600px', 
         height: isMobile ? '300px' : '600px', 
-        background: 'radial-gradient(circle, rgba(59,130,246,0.12) 0%, rgba(59,130,246,0) 70%)', 
+        background: 'radial-gradient(circle, rgba(37,99,235,0.12) 0%, rgba(37,99,235,0) 70%)', 
         borderRadius: '50%', 
         animation: 'float1 8s ease-in-out infinite' 
       }} />
@@ -218,7 +236,7 @@ function Login({ onLogin }) {
         left: '-20%', 
         width: isMobile ? '250px' : '500px', 
         height: isMobile ? '250px' : '500px', 
-        background: 'radial-gradient(circle, rgba(34,197,94,0.08) 0%, rgba(34,197,94,0) 70%)', 
+        background: 'radial-gradient(circle, rgba(59,130,246,0.08) 0%, rgba(59,130,246,0) 70%)', 
         borderRadius: '50%', 
         animation: 'float2 6s ease-in-out infinite reverse' 
       }} />
@@ -229,7 +247,7 @@ function Login({ onLogin }) {
         transform: 'translate(-50%, -50%)',
         width: isMobile ? '400px' : '800px', 
         height: isMobile ? '400px' : '800px', 
-        background: 'radial-gradient(circle, rgba(139,92,246,0.05) 0%, rgba(139,92,246,0) 70%)', 
+        background: 'radial-gradient(circle, rgba(99,102,241,0.05) 0%, rgba(99,102,241,0) 70%)', 
         borderRadius: '50%', 
         animation: 'float3 10s ease-in-out infinite' 
       }} />
@@ -250,7 +268,7 @@ function Login({ onLogin }) {
         {!isMobile && (
           <div style={{ 
             flex: 1, 
-            background: 'linear-gradient(145deg, #1e293b, #0f172a, #0a0a16)', 
+            background: secondaryGradient, 
             padding: '48px', 
             display: 'flex', 
             flexDirection: 'column', 
@@ -268,22 +286,32 @@ function Login({ onLogin }) {
               right: '-50%', 
               width: '200%', 
               height: '200%', 
-              background: 'radial-gradient(circle, rgba(59,130,246,0.05) 0%, transparent 70%)',
+              background: 'radial-gradient(circle, rgba(37,99,235,0.05) 0%, transparent 70%)',
               borderRadius: '50%'
+            }} />
+            
+            {/* Blue accent line */}
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '4px',
+              background: primaryGradient
             }} />
             
             <div style={{ 
               width: '130px', 
               height: '130px', 
-              background: 'rgba(255,255,255,0.06)', 
+              background: 'rgba(37,99,235,0.1)', 
               borderRadius: '36px', 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center', 
               marginBottom: '32px', 
               backdropFilter: 'blur(10px)', 
-              border: '1px solid rgba(255,255,255,0.08)',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+              border: '1px solid rgba(37,99,235,0.2)',
+              boxShadow: '0 8px 32px rgba(37,99,235,0.15)',
               position: 'relative',
               zIndex: 1
             }}>
@@ -304,7 +332,11 @@ function Login({ onLogin }) {
               marginBottom: '12px', 
               letterSpacing: '-0.5px',
               position: 'relative',
-              zIndex: 1
+              zIndex: 1,
+              background: primaryGradient,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text'
             }}>
               {restaurantName}
             </h1>
@@ -324,7 +356,7 @@ function Login({ onLogin }) {
             <div style={{ 
               width: '60%', 
               height: '1px', 
-              background: 'rgba(255,255,255,0.1)', 
+              background: 'rgba(37,99,235,0.2)', 
               margin: '20px auto',
               position: 'relative',
               zIndex: 1
@@ -348,9 +380,9 @@ function Login({ onLogin }) {
               gap: '8px',
               opacity: 0.3
             }}>
+              <span style={{ width: '6px', height: '6px', background: '#2563eb', borderRadius: '50%' }} />
               <span style={{ width: '6px', height: '6px', background: '#3b82f6', borderRadius: '50%' }} />
-              <span style={{ width: '6px', height: '6px', background: '#22c55e', borderRadius: '50%' }} />
-              <span style={{ width: '6px', height: '6px', background: '#f59e0b', borderRadius: '50%' }} />
+              <span style={{ width: '6px', height: '6px', background: '#60a5fa', borderRadius: '50%' }} />
             </div>
           </div>
         )}
@@ -365,7 +397,7 @@ function Login({ onLogin }) {
             <div style={{ 
               width: '72px', 
               height: '72px', 
-              background: 'linear-gradient(135deg, #2563eb, #1e40af)', 
+              background: primaryGradient, 
               borderRadius: '22px', 
               display: 'flex', 
               alignItems: 'center', 
@@ -387,7 +419,11 @@ function Login({ onLogin }) {
               fontSize: '24px', 
               fontWeight: 'bold', 
               margin: 0, 
-              color: textColor 
+              color: textColor,
+              background: primaryGradient,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text'
             }}>
               {restaurantName}
             </h1>
@@ -488,7 +524,7 @@ function Login({ onLogin }) {
                 color: textColor, 
                 fontSize: '13px' 
               }}>
-                👤 {t('username')}
+                📧 {t('email')}
               </label>
               <div style={{ position: 'relative' }}>
                 <span style={{ 
@@ -500,14 +536,14 @@ function Login({ onLogin }) {
                   color: textMuted,
                   opacity: 0.6
                 }}>
-                  👤
+                  📧
                 </span>
                 <input 
-                  type="text" 
-                  value={username} 
-                  onChange={(e) => setUsername(e.target.value)} 
-                  placeholder={t('enter_username')} 
-                  autoComplete="off" 
+                  type="email" 
+                  value={email} 
+                  onChange={(e) => setEmail(e.target.value)} 
+                  placeholder={t('enter_email')} 
+                  autoComplete="email" 
                   style={{ 
                     width: '100%', 
                     padding: isMobile ? '14px 16px 14px 48px' : '16px 16px 16px 48px', 
@@ -521,8 +557,8 @@ function Login({ onLogin }) {
                     boxSizing: 'border-box'
                   }}
                   onFocus={e => { 
-                    e.currentTarget.style.borderColor = '#3b82f6'; 
-                    e.currentTarget.style.boxShadow = '0 0 0 4px rgba(59,130,246,0.12)' 
+                    e.currentTarget.style.borderColor = '#2563eb'; 
+                    e.currentTarget.style.boxShadow = '0 0 0 4px rgba(37,99,235,0.12)' 
                   }}
                   onBlur={e => { 
                     e.currentTarget.style.borderColor = inputBorder; 
@@ -559,6 +595,7 @@ function Login({ onLogin }) {
                   value={password} 
                   onChange={(e) => setPassword(e.target.value)} 
                   placeholder={t('enter_password')} 
+                  autoComplete="current-password"
                   style={{ 
                     width: '100%', 
                     padding: isMobile ? '14px 16px 14px 48px' : '16px 16px 16px 48px', 
@@ -573,8 +610,8 @@ function Login({ onLogin }) {
                     boxSizing: 'border-box'
                   }}
                   onFocus={e => { 
-                    e.currentTarget.style.borderColor = '#3b82f6'; 
-                    e.currentTarget.style.boxShadow = '0 0 0 4px rgba(59,130,246,0.12)' 
+                    e.currentTarget.style.borderColor = '#2563eb'; 
+                    e.currentTarget.style.boxShadow = '0 0 0 4px rgba(37,99,235,0.12)' 
                   }}
                   onBlur={e => { 
                     e.currentTarget.style.borderColor = inputBorder; 

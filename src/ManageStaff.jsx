@@ -3,6 +3,7 @@ import { useTheme } from './context/ThemeContext'
 import { useLanguage } from './context/LanguageContext'
 import Sidebar from './components/Sidebar'
 import { supabase } from './lib/supabase'
+import toast from 'react-hot-toast'
 
 function ManageStaff() {
   const { darkMode } = useTheme()
@@ -22,6 +23,7 @@ function ManageStaff() {
   const [isMobile, setIsMobile] = useState(false)
   const [resetPasswordData, setResetPasswordData] = useState({ password: '', confirmPassword: '' })
   const [formData, setFormData] = useState({
+    email: '',
     username: '',
     password: '',
     confirmPassword: '',
@@ -70,6 +72,7 @@ function ManageStaff() {
     reset: { en: 'Reset', ms: 'Reset' },
     
     // Form Labels
+    email: { en: 'Email', ms: 'Emel' },
     username: { en: 'Username', ms: 'Nama Pengguna' },
     password: { en: 'Password', ms: 'Kata Laluan' },
     confirm_password: { en: 'Confirm Password', ms: 'Sahkan Kata Laluan' },
@@ -201,11 +204,13 @@ function ManageStaff() {
   }
 
   // ============================================================
-  // CRUD FUNCTIONS
+  // CRUD FUNCTIONS - WITH SUPABASE AUTH
   // ============================================================
+  
+  // ✅ ADD STAFF - Create user in Auth + staff table
   async function addStaff() {
-    if (!formData.username || !formData.password) {
-      setMessage(`⚠️ ${t('username')} & ${t('password')} ${t('required')}`)
+    if (!formData.email || !formData.username || !formData.password) {
+      setMessage(`⚠️ ${t('email')}, ${t('username')} & ${t('password')} ${t('required')}`)
       setTimeout(() => setMessage(''), 3000)
       return
     }
@@ -229,67 +234,126 @@ function ManageStaff() {
       return
     }
 
-    let permissions = formData.permissions
-    if (formData.role === 'admin') {
-      permissions = 'all'
-    }
+    try {
+      // 1. Create user in Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+        email: formData.email.toLowerCase(),
+        password: formData.password,
+        email_confirm: true,
+        user_metadata: {
+          name: formData.name || formData.username,
+          role: formData.role
+        }
+      })
 
-    const { error } = await supabase.from('staff').insert([{
-      username: formData.username.toLowerCase(),
-      password: formData.password,
-      role: formData.role,
-      name: formData.name || formData.username,
-      permissions: permissions
-    }])
+      if (authError) throw authError
 
-    if (error) {
-      setMessage(`❌ ${t('error_updating')}: ${error.message}`)
-    } else {
+      // 2. Insert into staff table with auth_id
+      let permissions = formData.permissions
+      if (formData.role === 'admin') {
+        permissions = 'all'
+      }
+
+      const { error: staffError } = await supabase.from('staff').insert([{
+        username: formData.username.toLowerCase(),
+        name: formData.name || formData.username,
+        role: formData.role,
+        permissions: permissions,
+        auth_id: authData.user.id,
+        password: null // NULL because using Supabase Auth
+      }])
+
+      if (staffError) throw staffError
+
       setMessage(`✅ ${t('staff_added')}`)
+      toast.success(t('staff_added'))
       setTimeout(() => setMessage(''), 3000)
       setShowAddModal(false)
-      setFormData({ username: '', password: '', confirmPassword: '', role: 'staff', name: '', permissions: 'pos' })
+      setFormData({ email: '', username: '', password: '', confirmPassword: '', role: 'staff', name: '', permissions: 'pos' })
       loadStaff()
+
+    } catch (error) {
+      console.error('Add staff error:', error)
+      setMessage(`❌ ${t('error_updating')}: ${error.message}`)
+      toast.error(error.message)
     }
   }
 
+  // ✅ UPDATE STAFF - Update Auth + staff table
   async function updateStaff() {
     if (!formData.username) {
       setMessage(`⚠️ ${t('username')} ${t('required')}`)
       return
     }
 
-    let permissions = formData.permissions
-    if (formData.role === 'admin') {
-      permissions = 'all'
-    }
+    try {
+      let permissions = formData.permissions
+      if (formData.role === 'admin') {
+        permissions = 'all'
+      }
 
-    const updateData = {
-      role: formData.role,
-      name: formData.name || formData.username,
-      permissions: permissions
-    }
-    if (formData.password) {
-      updateData.password = formData.password
-    }
+      const updateData = {
+        role: formData.role,
+        name: formData.name || formData.username,
+        permissions: permissions
+      }
 
-    const { error } = await supabase
-      .from('staff')
-      .update(updateData)
-      .eq('id', selectedStaff.id)
+      // Update staff table
+      const { error: staffError } = await supabase
+        .from('staff')
+        .update(updateData)
+        .eq('id', selectedStaff.id)
 
-    if (error) {
-      setMessage(`❌ ${t('error_updating')}: ${error.message}`)
-    } else {
+      if (staffError) throw staffError
+
+      // Update auth user metadata if role changed
+      if (selectedStaff.auth_id) {
+        const { error: authError } = await supabase.auth.admin.updateUserById(
+          selectedStaff.auth_id,
+          {
+            user_metadata: {
+              name: formData.name || formData.username,
+              role: formData.role
+            }
+          }
+        )
+        if (authError) console.error('Auth update error:', authError)
+      }
+
+      // Update password if provided
+      if (formData.password) {
+        if (formData.password !== formData.confirmPassword) {
+          setMessage(`⚠️ ${t('password')} & ${t('confirm_password')} ${t('not_match')}`)
+          return
+        }
+        if (formData.password.length < 6) {
+          setMessage(`⚠️ ${t('password_min_length')}`)
+          return
+        }
+
+        const { error: passError } = await supabase.auth.admin.updateUserById(
+          selectedStaff.auth_id,
+          { password: formData.password }
+        )
+        if (passError) throw passError
+      }
+
       setMessage(`✅ ${t('staff_updated')}`)
+      toast.success(t('staff_updated'))
       setTimeout(() => setMessage(''), 3000)
       setShowEditModal(false)
       setSelectedStaff(null)
-      setFormData({ username: '', password: '', confirmPassword: '', role: 'staff', name: '', permissions: 'pos' })
+      setFormData({ email: '', username: '', password: '', confirmPassword: '', role: 'staff', name: '', permissions: 'pos' })
       loadStaff()
+
+    } catch (error) {
+      console.error('Update staff error:', error)
+      setMessage(`❌ ${t('error_updating')}: ${error.message}`)
+      toast.error(error.message)
     }
   }
 
+  // ✅ RESET PASSWORD - Via Supabase Auth
   async function resetPassword() {
     if (!resetPasswordData.password) {
       setMessage(`⚠️ ${t('password_required')}`)
@@ -309,44 +373,82 @@ function ManageStaff() {
       return
     }
 
-    const { error } = await supabase
-      .from('staff')
-      .update({ password: resetPasswordData.password })
-      .eq('id', selectedStaff.id)
+    try {
+      // Update password in Supabase Auth
+      const { error: authError } = await supabase.auth.admin.updateUserById(
+        selectedStaff.auth_id,
+        { password: resetPasswordData.password }
+      )
 
-    if (error) {
-      setMessage(`❌ ${t('error_updating')}: ${error.message}`)
-    } else {
+      if (authError) throw authError
+
       setMessage(`✅ ${t('password_reset_success')}`)
+      toast.success(t('password_reset_success'))
       setTimeout(() => setMessage(''), 3000)
       setShowResetPasswordModal(false)
       setSelectedStaff(null)
       setResetPasswordData({ password: '', confirmPassword: '' })
+
+    } catch (error) {
+      console.error('Reset password error:', error)
+      setMessage(`❌ ${t('error_updating')}: ${error.message}`)
+      toast.error(error.message)
     }
   }
 
+  // ✅ DELETE STAFF - Delete from Auth + staff table
   async function deleteStaff(id, username) {
     setShowDeleteConfirm(null)
     
     if (username === 'admin') {
       setMessage(`⚠️ ${t('cannot_delete_admin')}`)
+      toast.error(t('cannot_delete_admin'))
       setTimeout(() => setMessage(''), 3000)
       return
     }
 
     if (currentUser && currentUser.id === id) {
       setMessage(`⚠️ ${t('cannot_delete_self')}`)
+      toast.error(t('cannot_delete_self'))
       setTimeout(() => setMessage(''), 3000)
       return
     }
 
-    const { error } = await supabase.from('staff').delete().eq('id', id)
-    if (error) {
-      setMessage(`❌ ${t('error_updating')}: ${error.message}`)
-    } else {
+    try {
+      // Get staff record to get auth_id
+      const { data: staffData, error: fetchError } = await supabase
+        .from('staff')
+        .select('auth_id')
+        .eq('id', id)
+        .single()
+
+      if (fetchError) throw fetchError
+
+      // Delete from Supabase Auth if auth_id exists
+      if (staffData?.auth_id) {
+        const { error: authError } = await supabase.auth.admin.deleteUser(
+          staffData.auth_id
+        )
+        if (authError) console.error('Auth delete error:', authError)
+      }
+
+      // Delete from staff table
+      const { error: staffError } = await supabase
+        .from('staff')
+        .delete()
+        .eq('id', id)
+
+      if (staffError) throw staffError
+
       setMessage(`✅ ${t('staff_deleted')}`)
+      toast.success(t('staff_deleted'))
       setTimeout(() => setMessage(''), 3000)
       loadStaff()
+
+    } catch (error) {
+      console.error('Delete staff error:', error)
+      setMessage(`❌ ${t('error_updating')}: ${error.message}`)
+      toast.error(error.message)
     }
   }
 
@@ -356,6 +458,7 @@ function ManageStaff() {
   const openEditModal = (staffMember) => {
     setSelectedStaff(staffMember)
     setFormData({
+      email: staffMember.email || '',
       username: staffMember.username,
       password: '',
       confirmPassword: '',
@@ -437,7 +540,7 @@ function ManageStaff() {
   }
 
   // ============================================================
-  // RENDER
+  // RENDER (SAME AS BEFORE - JUST USE UPDATED FUNCTIONS)
   // ============================================================
   return (
     <Sidebar>
@@ -856,7 +959,7 @@ function ManageStaff() {
         )}
 
         {/* ========================================================== */}
-        {/* MODALS */}
+        {/* MODALS - Updated with Email Field */}
         {/* ========================================================== */}
 
         {/* ===== DELETE CONFIRMATION ===== */}
@@ -954,6 +1057,18 @@ function ManageStaff() {
               }}>
                 {t('add_staff_title')}
               </h2>
+              
+              {/* NEW: Email Field */}
+              <label style={labelStyle}>{t('email')} *</label>
+              <input 
+                type="email" 
+                placeholder={t('email')} 
+                value={formData.email} 
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })} 
+                style={inputStyle}
+                onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)' }}
+                onBlur={e => { e.currentTarget.style.borderColor = inputBorder; e.currentTarget.style.boxShadow = 'none' }}
+              />
               
               <label style={labelStyle}>{t('username')} *</label>
               <input 
